@@ -1,0 +1,7 @@
+(ip src fe80::/64 ip dst ANY6 union ip dst fe80::/64 ip src ANY6)
+except
+(ip dst any6 union ip dst any6)
+except
+(ip src :: ip dst ::1)
+union
+ip src fe80:: union ip dst fe80::

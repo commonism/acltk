@@ -1,0 +1,609 @@
+{%- macro host(obj) -%}
+{%- if obj.__class__.__name__ == 'NetworkHost' -%}
+{%- if obj.target -%}
+    <a href="#name_alias_{{ obj.target.hostname }}">{{ obj.address }}</a>
+{%- else -%}
+    {{ obj.address }}
+{%- endif -%}
+{%- elif obj.__class__.__name__ == 'NetworkGroup' -%}
+    <a href="#network_group_{{ obj.name}}">{{ obj.name }}</a>
+{%- elif obj.__class__.__name__ == 'Network' -%}
+{%- if obj.target -%}
+    <a href="#name_alias_{{ obj.target.hostname }}">{{ obj.network }}</a>
+{%- else -%}
+    {{ obj.network }}
+{%- endif -%}
+{%- elif obj.__class__.__name__ == 'NetworkObject' -%}
+    <a href="#network_object_{{ obj.name}}">{{ obj.name }}</a>
+{%- elif obj.__class__.__name__ == 'NetworkAny' -%}
+    any
+{%- elif obj.__class__.__name__ == 'NetworkAny4' -%}
+    any4
+{%- elif obj.__class__.__name__ == 'NetworkAny6' -%}
+    any6
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro port(obj) -%}
+{%- if obj == None -%}
+{%- elif obj.__class__.__name__ == 'Port'%}
+    {{ obj.op }} {{ obj.num }}
+{%- elif obj.__class__.__name__ == 'PortRange'%}
+    {{ obj.start}}-{{ obj.stop }}
+{%- elif obj.__class__.__name__ == 'PortGroup'%}
+     <a href="#port_group_{{ obj.name}}">{{ obj.name }}</a>
+{%- else -%}
+    {{ obj }}
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro protocol(obj) -%}
+{%- if obj.__class__.__name__ == 'Protocol' -%}
+    {{ obj.name }}
+{%- elif obj.__class__.__name__ == 'ProtocolGroup' -%}
+    <a href="#protocol_group_{{ obj.name }}">{{ obj.name }}</a>
+{%- elif obj.__class__.__name__ == 'ServiceGroup' -%}
+    <a href="#service_group_{{ obj.name }}">{{ obj.name }}</a>
+{%- elif obj.__class__.__name__ == 'ServiceObject' -%}
+    <a href="#service_object_{{ obj.name }}">{{ obj.name }}</a>
+{%- else -%}
+    {{ obj.__class__.__name__ }}
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro icmp(obj) -%}
+{%- if obj.__class__.__name__ == 'ICMP' -%}
+    {{ obj.type }}
+{%- elif obj.__class__.__name__ == 'ICMPGroup' -%}
+	<a href="#icmp_group_{{ obj.name }}">{{ obj.name }}</a>
+{%- else -%}
+    {{ obj.__class__.__name__ }}
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro options(obj) -%}
+{%- for i in obj.values() -%}
+{%- if i.__class__.__name__ == 'ACLRuleOptionLog' -%}
+log {{ i.options|join(" ") }}
+{%- elif i.__class__.__name__ == 'ACLRuleOptionTimeRange' -%}
+&#x231A;:<a href="#time_range_{{ i.name }}">{{ i.name }}</a>
+{%- elif i.__class__.__name__ == 'ACLRuleOptionInActive' -%}
+inactive
+{%- else -%}
+{{ i.__class__.__name__ }}
+{%- endif -%}
+{%- endfor -%}
+{%- endmacro -%}
+
+
+{%- macro visible(obj) -%}
+{%- if selection is not none and obj not in selection -%}
+class="filterd_by_the_filter"
+{%- endif -%}
+{%- endmacro -%}
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>{{ aclconfig.name }}</title>
+
+<meta name="date" content ="{{ args.time }}" />
+<meta name="description" content ="parsed cisco acl rules for {{ aclconfig.name }}" />
+<meta name="robots" content="noindex" />
+<meta name="author" content="RRZN" />
+
+
+
+<STYLE TYPE="text/css">
+<!--
+.centeralign 	{ text-align:center }
+a.href			{ color:#0000FF;
+  				  text-decoration:none; }
+caption			{ font-size: 200%;
+                  font-weight: bold; }
+thead			{ font-style: italic; }
+
+.new_network_group{ font-weight: bold;
+					font-size: 110%; }
+.new_service_group{ font-weight: bold;
+					font-size: 110%; }
+.new_time_range{ font-weight: bold;
+                 font-size: 110%; }
+.network_group_description{
+					font-size: 80%;
+					font-style: italic; }
+.service_group_description{
+					font-size: 80%;
+					font-style: italic; }
+.different_acl_id { font-weight: bold;
+					text-align:center;
+					font-size: 150%; }
+.acl_description{ font-size: 80%;
+				  font-style: italic; }
+.mode_deny      { color:#FF0000;
+				  font-weight: bold; }
+.mode_permit	{ color:#008000;
+				  font-weight: bold; }
+.mode_inactive	{ background:#CCCCCC;
+				  font-style: italic; }
+.protocol_ip	{ background:#FFFFE9; }
+.protocol_tcp	{ background:#feffbb; }
+.protocol_udp	{ background:#edf9f9; }
+.protocol_icmp	{ background:#e5ffff; }
+.filterd_by_the_filter { color:grey; }
+
+-->
+</STYLE>
+</head>
+<body>
+<div align="center">
+    <h2>Hostname: {{ aclconfig.name }}</h2>
+    <h3>Erstellt am: {{ aclconfig.timestamp }}</h3>
+</div>
+<h2>Filter</h2>
+
+{%- block caf %}
+<pre>{{ caf }}</pre>
+{%- endblock %}
+
+<h2>Interface Configuration</h2>
+<table>
+</table>
+
+<h2>Name Aliases</h2>
+<table>
+{%- for obj in aclconfig.names.objects %}
+{%- if loop.first %}
+	<tr>
+		<th>Name</th>
+		<th>Address</th>
+		<th>Description</th>
+	</tr>
+{%- endif %}
+{%- if selection is not none and obj not in selection and not args.show_not_selected %}
+{%- continue %}
+{%- endif %}
+
+	<tr {{ visible(obj) }}>
+		<td><a name="name_alias_{{ obj.hostname }}" id="name_alias_{{ obj.hostname }}">{{obj.hostname}}</a></td>
+		<td>{{obj.address}}</td>
+		<td>{{obj.description}}</td>
+	</tr>
+{%- endfor %}
+</table>
+
+{%- if selection is none or 'NetworkObject' in selection or args.show_not_selected %}
+<h2>Network Objects</h2>
+<table>
+{%- for name in aclconfig.objects.network.keys()|sort %}
+{%- set obj=aclconfig.objects.network[name] %}
+{%- if loop.first %}
+	<tr>
+		<th>Name</th>
+		<th>Address</th>
+		<th>Description</th>
+	</tr>
+{%- endif %}
+
+{%- if selection is not none and obj not in selection and not args.show_not_selected %}
+{%- continue %}
+{%- endif %}
+
+<tr {{ visible(obj) }}>
+<td>
+    <a name="network_object_{{ name }}" id="network_object_{{ name }}">
+		{{ name }}
+	</a>
+</td>
+<td>{%- for i in obj.addresses %} {{ host(i) }} {%- endfor %}</td>
+<td>{%- if obj.description %}{{obj.description}} {%- endif %}</td>
+</tr>
+{%- endfor %}
+</table>
+{%- endif %}
+
+{%- if selection is none or 'NetworkGroup' in selection or args.show_not_selected %}
+<h2>Network Groups</h2>
+<table>
+	<tr>
+		<td></td>
+        <td style="width:16%;"></td>
+        <td style="width:16%;"></td>
+        <td style="width:16%;"></td>
+        <td style="width:16%;"></td>
+        <td style="width:16%;"></td>
+		<td style="width:16%;"></td>
+	</tr>
+{%- for name in aclconfig.groups.network.keys()|sort %}
+{%- set obj=aclconfig.groups.network[name] %}
+
+{%- if selection is not none and obj not in selection and not args.show_not_selected %}
+{%- continue %}
+{%- endif %}
+
+	<tr {{ visible(obj) }}>
+		<td colspan="6" class="new_network_group">
+			<a name="network_group_{{ name }}" id="network_group_{{ name }}">
+				{{ name }}
+			</a>
+		</td>
+	</tr>
+{%- if obj.description %}
+	<tr>
+		<td></td>
+		<td colspan="6" class="network_group_description">
+			{{ obj.description }}
+		</td>
+	</tr>
+{%- endif %}
+
+
+{%- for items in obj.objects|batch(6) %}
+<tr {{ visible(obj) }}>
+    <td></td>
+{%- for item in items %}
+	<td> {{ host(item) }}</td>
+{%- endfor %}
+</tr>
+{%- endfor %}
+{%- endfor %}
+</table>
+{%- endif %}
+
+{%- if selection is none or 'ServiceObject' in selection or args.show_not_selected %}
+<h2>Service Objects</h2>
+<table>
+{%- for name in aclconfig.objects.service.keys()|sort %}
+{%- set obj=aclconfig.objects.service[name] %}
+
+{%- if loop.first %}
+	<tr>
+		<td></td>
+		<td style="width:19%;">Name</td>
+		<td style="width:19%;">Protocol</td>
+		<td style="width:19%;">Source</td>
+		<td style="width:19%;">Destination</td>
+        <td style="width:19%;">Description</td>
+	</tr>
+{%- endif %}
+
+{%- if selection is not none and obj not in selection and not args.show_not_selected %}
+{%- continue %}
+{%- endif %}
+
+
+<tr {{ visible(obj) }}>
+<td></td>
+<td>
+    <a name="service_object_{{ name }}" id="service_object_{{ name }}">
+		{{ name }}
+	</a>
+</td>
+<td>{{ protocol(obj.protocol) }}</td>
+{%- if obj.protocol in ('icmp','icmp6') %}
+<td>{{ obj.icmp_type }}</td>
+<td>{{ obj.icmp_code }}</td>
+{%- else %}
+<td>{{ port(obj.source) }}</td>
+<td>{{ port(obj.destination) }}</td>
+{%- endif %}
+<td>{%- if obj.description %}{{obj.description}} {%- endif %}</td>
+</tr>
+{%- endfor %}
+</table>
+{%- endif %}
+
+{%- if selection is none or 'ServiceGroup' in selection or args.show_not_selected %}
+<h2>Service Groups</h2>
+<table>
+{%- for name in aclconfig.groups.service.keys()|sort %}
+{%- set obj=aclconfig.groups.service[name] %}
+
+{%- if selection is not none and obj not in selection and not args.show_not_selected %}
+{%- continue %}
+{%- endif %}
+
+	<tr {{ visible(obj) }}>
+		<td colspan="5" class="new_service_group">
+			<a name="service_group_{{ name }}" id="service_group_{{ name }}">
+				{{ name }}
+			</a>
+		</td>
+	</tr>
+{%- if obj.description %}
+	<tr {{ visible(obj) }}>
+		<td></td>
+		<td colspan="4" class="service_group_description">{{obj.description}}</td>
+	</tr>
+{%- endif %}
+	<tr {{ visible(obj) }}>
+		<td></td>
+		<td style="width:24%;">Name</td>
+		<td style="width:24%;">Protocol</td>
+		<td style="width:24%;">Source</td>
+		<td style="width:24%;">Destination</td>
+	</tr>
+{%- for item in obj.objects %}
+<tr {{ visible(obj) }}>
+{%- if item.__class__.__name__ == 'Service' %}
+    <td></td>
+    <td></td>
+	<td>{{ protocol(item.protocol) }}</td>
+{%- if item.protocol.name in ('icmp','icmp6') %}
+	<td>{{ item.icmp_type }}</td>
+	<td>{{ item.icmp_code }}</td>
+{%- else %}
+	<td>{{ port(item.source) }}</td>
+	<td>{{ port(item.destination) }}</td>
+{%- endif %}
+{%- elif item.__class__.__name__ == 'ServiceObject' %}
+	<td></td>
+    <td><a href="#service_object_{{ item.name}}">{{ item.name }}</a></td>
+    <td colspan="3"></td>
+{%- elif item.__class__.__name__ == 'ServiceGroup' %}
+	<td></td>
+    <td><a href="#service_group_{{ item.name}}">{{ item.name }}</a></td>
+    <td colspan="3"></td>
+{%- else %}
+	<td></td>
+    {{ item }}
+{%- endif %}
+</tr>
+{%- endfor %}
+{%- endfor %}
+</table>
+{%- endif %}
+
+
+{%- if selection is none or 'PortGroup' in selection or args.show_not_selected %}
+<h2>Port Groups</h2>
+<table>
+	<tr>
+		<td></td>
+		<td style="width:12%;"></td>
+		<td style="width:12%;"></td>
+		<td style="width:12%;"></td>
+		<td style="width:12%;"></td>
+		<td style="width:12%;"></td>
+		<td style="width:12%;"></td>
+		<td style="width:12%;"></td>
+		<td style="width:12%;"></td>
+	</tr>
+{%- for name in aclconfig.groups.port.keys()|sort %}
+{%- set obj=aclconfig.groups.port[name] %}
+{%- if selection is not none and obj not in selection and not args.show_not_selected %}
+{%- continue %}
+{%- endif %}
+
+	<tr {{ visible(obj) }}>
+		<td colspan="5" class="new_service_group">
+			<a name="port_group_{{ name }}" id="port_group_{{ name }}">
+				{{ name }} ({{ protocol(obj.protocol) }})
+			</a>
+		</td>
+	</tr>
+{%- if obj.description %}
+	<tr {{ visible(obj) }}>
+		<td></td>
+		<td colspan="8" class="service_group_description">{{obj.description}}</td>
+	</tr>
+{%- endif %}
+{%- for items in obj.objects|batch(6) %}
+<tr {{ visible(obj) }}>
+    <td></td>
+{%- for item in items %}
+	<td> {{ port(item) }}</td>
+{%- endfor %}
+</tr>
+{%- endfor %}
+{%- endfor %}
+</table>
+{%- endif %}
+
+{%- if selection is none or 'ICMPGroup' in selection or args.show_not_selected %}
+<h2>ICMP Groups</h2>
+<table>
+	<tr>
+		<td></td>
+		<td style="width:12%;"></td>
+		<td style="width:12%;"></td>
+		<td style="width:12%;"></td>
+		<td style="width:12%;"></td>
+		<td style="width:12%;"></td>
+		<td style="width:12%;"></td>
+		<td style="width:12%;"></td>
+		<td style="width:12%;"></td>
+	</tr>
+{%- for name in aclconfig.groups.icmp.keys()|sort %}
+{%- set obj=aclconfig.groups.icmp[name] %}
+{%- if selection is not none and obj not in selection and not args.show_not_selected %}
+{%- continue %}
+{%- endif %}
+
+	<tr {{ visible(obj) }}>
+		<td colspan="5" class="new_service_group">
+			<a name="icmp_group_{{ name }}" id="icmp_group_{{ name }}">
+				{{ name }}
+			</a>
+		</td>
+		<td colspan="4">{{ obj.description }}</td>
+	</tr>
+{%- for items in obj.objects|batch(8) %}
+	<tr {{ visible(obj) }}>
+    <td></td>
+{%- for item in items %}
+		<td>{{ icmp(item) }}</td>
+{%- endfor %}
+    </tr>
+{%- endfor %}
+{%- endfor %}
+</table>
+{%- endif %}
+
+{%- if selection is none or 'ProtocolGroup' in selection or args.show_not_selected %}
+<h2>Protocol Groups</h2>
+<table>
+	<tr>
+		<td></td>
+		<td style="width:12%;"></td>
+		<td style="width:12%;"></td>
+		<td style="width:12%;"></td>
+		<td style="width:12%;"></td>
+		<td style="width:12%;"></td>
+		<td style="width:12%;"></td>
+		<td style="width:12%;"></td>
+		<td style="width:12%;"></td>
+	</tr>
+
+{%- for name in aclconfig.groups.protocol.keys()|sort %}
+{%- set obj=aclconfig.groups.protocol[name] %}
+
+{%- if selection is not none and obj not in selection and not args.show_not_selected %}
+{%- continue %}
+{%- endif %}
+
+	<tr {{ visible(obj) }}>
+		<td colspan="5" class="new_service_group">
+			<a name="protocol_group_{{ name }}" id="protocol_group_{{ name }}">
+				{{ name }}
+			</a>
+		</td>
+		<td colspan="4">{{ obj.description }}</td>
+	</tr>
+{%- for items in obj.objects|batch(8) %}
+    <tr {{ visible(obj) }}>
+    <td></td>
+{%- for item in items %}
+	<td>{{ protocol(item) }}</td>
+{%- endfor %}
+	</tr>
+{%- endfor %}
+{%- endfor %}
+</table>
+{%- endif %}
+
+{%- if selection is none or 'TimeRange' in selection or args.show_not_selected %}
+<h2>Time Ranges</h2>
+<table>
+	<tr>
+		<td style="width:5%;"></td>
+		<td style="width:15%;"></td>
+		<td style="width:80%;"></td>
+	</tr>
+{%- for name in aclconfig.objects.time.keys()|sort %}
+{%- set obj=aclconfig.objects.time[name] %}
+
+{%- if selection is not none and obj not in selection and not args.show_not_selected %}
+{%- continue %}
+{%- endif %}
+
+	<tr {{ visible(obj) }}>
+		<td colspan="3" class="new_time_range">
+			<a name="time_range_{{ name }}" id="time_range_{{ name }}">
+				{{ name }}
+			</a>
+		</td>
+	</tr>
+	<tr {{ visible(obj) }}>
+		<td></td>
+		<td colspan="2">{{ obj.description }}</td>
+	</tr>
+{%- for item in obj.objects %}
+    <tr {{ visible(obj) }}>
+		<td></td>
+		<td colspan="2">{{ item }}</td>
+    </tr>
+{%- endfor %}
+{%- endfor %}
+</table>
+{%- endif %}
+
+<h2>Access Control List</h2>
+<table>
+{%- set idx = {'rule':0,'iface':0} %}
+{%- for obj in aclconfig.rules.rules %}
+{%- if loop.first or last.id != obj.id %}
+{%- if selection is none or obj.id in selection or args.show_not_selected %}
+	<tr>
+		<td class="different_acl_id" colspan="8">
+			{{ obj.id }}
+		</td>
+	</tr>
+	<tr>
+		<td>
+			#
+		</td>
+		<td>
+			Mode
+		</td>
+		<td>
+			Protokoll
+		</td>
+		<td>
+			Quell Host
+		</td>
+		<td>
+			Quell Port
+		</td>
+		<td>
+			Ziel Host
+		</td>
+		<td>
+			Ziel Port
+		</td>
+		<td>
+			Options
+		</td>
+	</tr>
+{%-  endif %}
+    {%- set _=idx.update({'iface':idx['iface']+1, 'rule':1}) %}
+{%- endif %}
+
+{%- if "inactive" in obj.options %}
+{%- set cls = 'class="mode_inactive"' %}
+{%- else %}
+{%- set cls = '' %}
+{%- endif %}
+
+{%- if selection is not none and obj not in selection %}
+{%- if args.show_not_selected %}
+{%- set cls = 'class="filterd_by_the_filter"' %}
+{%- else %}
+{%- set last=obj %}
+{%- set _=idx.update({'rule':idx['rule']+1,}) %}
+{%- continue %}
+{%- endif %}
+{%- endif %}
+
+
+<tr {{ cls| safe }}>
+    <td>{{ idx['iface'] }}.{{ idx['rule'] }}</td>
+    <td class="mode_{{ obj.mode }}">{{ obj.mode }}</td>
+    <td class="protocol_{{ obj.protocol.name }}" align="center">{{ protocol(obj.protocol) }}</td>
+    <td>{{ host(obj.src.host) }}</td>
+    <td>{{ port(obj.src.port) }}</td>
+    <td>{{ host(obj.dst.host) }}</td>
+{%- if obj.protocol.__class__.__name__ == 'Protocol' and obj.protocol.name == 'icmp' %}
+	<td>{{ icmp(obj.icmp) }}</td>
+{%- else %}
+    <td>{{ port(obj.dst.port) }}</td>
+{%- endif %}
+	<td>{{ options(obj.options) }}</td>
+</tr>
+{%- if obj.remark %}
+<tr {{ cls| safe }}>
+	<td>
+	</td>
+	<td colspan=7  class="acl_description">
+		{{ obj.remark }}
+	</td>
+</tr>
+{%- endif %}
+
+{%- set last=obj %}
+{%- set _=idx.update({'rule':idx['rule']+1,}) %}
+{%- endfor %}
+</table>
+</body>
+</html>

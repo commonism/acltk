@@ -1,0 +1,6 @@
+ip src 127.0.0.2
+union
+ip dst 127.0.0.2
+except
+ip src ANY
+ip dst ANY

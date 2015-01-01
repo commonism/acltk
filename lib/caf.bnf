@@ -1,0 +1,65 @@
+#include :: "ip.bnf"
+
+grammar
+    = @:expr $
+    ;
+
+string = ?/[A-Za-z_\-]+/?;
+
+int = ?/[0-9]+/?;
+
+comment
+	= "/*" ?/[^\*\/]*/? "*/"
+	;
+
+
+op	= "union"
+	| "intersect"
+	| "except"
+	;
+
+expr
+	= expr_r
+	| set
+	;
+
+expr_r
+	= set {op (expr_r|set)}+
+	;
+
+direction
+	= "src"
+	| "dst"
+	;
+
+network
+	= address:("ANY4"|"ANY6"|"ANY"|"any4"|"any6"|"any")
+	| address:(ip4|ip6) ["/" netmask:int]
+	;
+
+net
+	= object:{network}+
+	;
+
+set_ip
+	= "ip" ip+:(direction net)
+	;
+
+set_id
+	= "id" (string)
+	;
+
+set_expr
+	= "(" expr ")"
+	;
+
+set_r
+	= set_ip
+	| set_expr
+	| comment
+	;
+
+set = [comment] id:[set_id] objects:{set_r}*
+	;
+
+

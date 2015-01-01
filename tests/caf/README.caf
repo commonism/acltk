@@ -1,0 +1,29 @@
+/* we want all rules matching 10.1.0.0/24 on ids outside_in and inside_in
+   without the rules matching any any
+   without the rules which apply for 10.2.0.0/24
+*/
+(
+    /* rules for 10.1.0.0/24 */
+    (
+        id outside_in
+        ip dst 10.1.0.0/24
+    )
+    union
+    (
+        id inside_in
+        ip src 10.1.0.0/24
+    )
+)
+except
+(
+    (   /* any any */
+        ip src ANY
+        ip dst ANY
+    )
+)
+except
+(
+    ip dst 10.2.0.0/24
+    union
+    ip src 10.2.0.0/24
+)

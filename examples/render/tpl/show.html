@@ -1,0 +1,17 @@
+{% extends "static.html" %}
+
+{% block caf %}
+<form action="/show" method="get">
+    <pre><textarea name="caf" cols="120" rows="10">{{ caf }}</textarea></pre>
+    <input type="hidden" name="config" value="{{ aclconfig.name }}"> </br>
+    <input type="checkbox" name="sns" value="1" {% if args.show_not_selected %} checked {% endif %}> Show not selected <br>
+    <input type="checkbox" name="exp" value="1" {% if args.expand_groups %} checked {% endif %}> Unfold/expand groups <br>
+    <input type="submit" value=filter>
+</form>
+
+{% if selection is not none %}
+~ {{ selection|length }} items
+{%  else %}
+no selection
+{% endif %}
+{% endblock %}

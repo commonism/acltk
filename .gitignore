@@ -1,0 +1,7 @@
+tests/caf/private/*.caf
+tests/acl/private/*.conf
+lib/__pycache__/
+tests/__pycache__/
+build/
+.idea/
+*.pyc

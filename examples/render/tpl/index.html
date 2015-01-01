@@ -1,0 +1,28 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+       "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>ACL Choose/Upload</title>
+</head>
+<body>
+
+<h1>Choose</h1>
+
+<form action="/show" method="get">
+    <select name="config">
+{% for i in db %}
+        <option>{{ i }}</option>
+{% endfor %}
+    </select>
+    <input type=submit value=show>
+</form>
+
+
+<form action="/add" method=post enctype=multipart/form-data>
+    <p>
+    <input type=file name=file>
+    <input type=submit value=Upload>
+</form>
+
+</body>
+</html>

@@ -1,0 +1,23 @@
+(
+    (
+        (
+            id A
+        )
+        union
+        (
+            (
+                (
+                    ( id D )
+                )
+            )
+        )
+    )
+    intersect
+    (
+        id B
+        union
+        id C
+    )
+    except
+    id D
+)

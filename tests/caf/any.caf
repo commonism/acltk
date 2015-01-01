@@ -1,0 +1,23 @@
+ip src any
+union
+ip dst any
+union
+ip src any4
+union
+ip dst any4
+union
+ip src any6
+union
+ip dst any6
+union
+ip src ANY
+union
+ip dst ANY
+union
+ip src ANY4
+union
+ip dst ANY4
+union
+ip src ANY6
+union
+ip dst ANY6
