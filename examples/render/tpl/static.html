@@ -65,7 +65,7 @@
 {%- for i in obj.values() -%}
 {%- if i.__class__.__name__ == 'ACLRuleOptionLog' -%}
 log {{ i.options|join(" ") }}
-{%- elif i.__class__.__name__ == 'ACLRuleOptionTimeRange' -%}
+{%- elif i.__class__.__name__ == 'TimeRange' -%}
 &#x231A;:<a href="#time_range_{{ i.name }}">{{ i.name }}</a>
 {%- elif i.__class__.__name__ == 'ACLRuleOptionInActive' -%}
 inactive
