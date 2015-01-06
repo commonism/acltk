@@ -15,7 +15,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 from grako.parsing import graken, Parser
 
 
-__version__ = (2014, 12, 29, 23, 59, 42, 0)
+__version__ = (2015, 1, 6, 5, 50, 28, 1)
 
 __all__ = [
     'cafParser',
@@ -57,7 +57,7 @@ class cafParser(Parser):
     @graken()
     def _comment_(self):
         self._token('/*')
-        self._pattern(r'[^\*\/]*')
+        self._pattern(r'([^*]|(\*[^/]))*')
         self._token('*/')
 
     @graken()

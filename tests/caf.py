@@ -7,7 +7,7 @@ from acltk.cafObjects import cafBlock
 
 
 class cafTestParse(unittest.TestCase):
-	good = ["comments","localhosts","multi_addr","nested","single","multi_addr","v6","any"]
+	good = ["comments","localhosts","multi_addr","nested","single","multi_addr","v6","any", "README"]
 	bad = ["multi_id"]
 
 	def test_good(self):
