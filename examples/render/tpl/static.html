@@ -21,6 +21,10 @@
     any4
 {%- elif obj.__class__.__name__ == 'NetworkAny6' -%}
     any6
+{%  elif obj.__class__.__name__ == 'NetworkWildcard' %}
+VERIFY {{ obj.address }}/{{ obj.wildcard }}
+{%  else %}
+FIXME {{ obj.__class__.__name__ }}
 {%- endif -%}
 {%- endmacro -%}
 
@@ -52,6 +56,7 @@
 {%- endmacro -%}
 
 {%- macro icmp(obj) -%}
+{%- if  obj -%}
 {%- if obj.__class__.__name__ == 'ICMP' -%}
     {{ obj.type }}
 {%- elif obj.__class__.__name__ == 'ICMPGroup' -%}
@@ -59,10 +64,11 @@
 {%- else -%}
     {{ obj.__class__.__name__ }}
 {%- endif -%}
+{%- endif -%}
 {%- endmacro -%}
 
 {%- macro options(obj) -%}
-{%- for i in obj.values() -%}
+{%- for k,i in obj.items() -%}
 {%- if i.__class__.__name__ == 'ACLRuleOptionLog' -%}
 log {{ i.options|join(" ") }}
 {%- elif i.__class__.__name__ == 'TimeRange' -%}
@@ -70,7 +76,7 @@ log {{ i.options|join(" ") }}
 {%- elif i.__class__.__name__ == 'ACLRuleOptionInActive' -%}
 inactive
 {%- else -%}
-{{ i.__class__.__name__ }}
+{{ k }} &nbsp;
 {%- endif -%}
 {%- endfor -%}
 {%- endmacro -%}

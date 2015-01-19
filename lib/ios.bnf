@@ -1,0 +1,215 @@
+#include :: "ip.bnf"
+#include :: "acl.bnf"
+
+grammar
+    =
+    @:{command}+ ("line"|"end"|$)
+    ;
+
+version
+	= version:("version" ?/[^\n]*/?) NL
+	;
+
+command
+	= version
+	| hostname
+	| domain_name
+	| interface
+	| access_list
+	| ip
+	| ignored
+	;
+
+
+ip
+	= "ip" cmd:ip_command
+	;
+
+ip_command
+	= cmd:"access-list" object:ip_access_list
+	| cmd:"domain name" name:obj_name
+	| ip_ignored
+	;
+
+ip_access_list
+	(* ip access-list { { standard | extended } { access-list-name | access-list-number } | helper egress check } *)
+	= type:"standard" name:obj_name NL objects:{ip_access_list_standard}+
+	| type:"extended" name:obj_name NL objects:{ip_access_list_extended}+
+	;
+
+ip_access_list_standard_rule_option
+	= type:"log" value:[identifier]
+	;
+
+ip_access_list_standard_rule_options
+	= {ip_access_list_standard_rule_option}*
+	;
+
+ip_access_list_remark
+	= seq:[int] "remark" remark:remark NL
+	;
+
+ip_access_list_standard_rule
+	= seq:[int] mode:acl_mode source:ios_host options:ip_access_list_standard_rule_options NL
+	;
+
+ios_host
+	= address:ip4 wildcard:[ip4]
+	| "host" address:ip4
+	| address:"any"
+	;
+
+ios_node
+	= host:ios_host [port:acl_port]
+	;
+
+ip_access_list_standard
+	= seq:[int] remark:{ip_access_list_remark}+ ~ >ip_access_list_standard_rule
+	| >ip_access_list_standard_rule
+	;
+
+ip_access_list_extended_rule_option
+	= type:"precedence" value:identifier
+	| type:"dscp" value:identifier
+	| type:"tos" value:identifier
+	| type:"time-range" value:identifier
+	| type:"fragments"
+	| type:"log-input" value:[identifier]
+	| type:"log" value:[identifier]
+	| type:"established"
+	;
+
+ip_access_list_extended_rule_options
+	= {ip_access_list_extended_rule_option}*
+	;
+
+ip_access_list_extended_rule
+	= seq:[int] mode:acl_mode protocol:protocol_icmp source:ios_host dest:ios_host icmp:acl_icmp_options options:ip_access_list_extended_rule_options NL
+	| seq:[int] mode:acl_mode protocol:acl_protocol source:ios_node dest:ios_node options:ip_access_list_extended_rule_options NL
+	| seq:[int] mode:acl_mode protocol:acl_protocol source:ios_host dest:ios_host options:ip_access_list_extended_rule_options NL
+	;
+
+ip_access_list_extended
+	= seq:[int] remark:{ip_access_list_remark}+ ~ >ip_access_list_extended_rule
+	| >ip_access_list_extended_rule
+	;
+
+host_wildcard
+	= host:ip4 wildcard:[ip4]
+	;
+
+(* access-list access-list-number { deny | permit } source [source-wildcard] [ log [word] ]  *)
+access_list_ip_standard_rule
+	=  "access-list" id:access_list_ip_standard_id mode:acl_mode source:ios_host options:ip_access_list_standard_rule_options NL
+	;
+
+access_list_ip_standard
+	= remark:{access_list_remark}+ >access_list_ip_standard_rule
+	| >access_list_ip_standard_rule
+	;
+
+access_list_remark
+	= 'access-list' acl_id 'remark' remark:remark NL
+	;
+
+access_list
+	= access_list_ip_extended
+	| access_list_ip_standard
+	;
+
+(*
+	access-list access-list-number [ dynamic dynamic-name [ timeout minutes ] ] { deny | permit } protocol source source-wildcard destination destination-wildcard [ precedence precedence | dscp dscp | tos tos | time-range time-range-name | fragments | log [word] | | log-input [word] ]
+	access-list access-list-number [ dynamic dynamic-name [ timeout minutes ] ] { deny | permit } icmp source source-wildcard destination destination-wildcard [ icmp-type [icmp-code] | icmp-message ] [ precedence precedence | dscp dscp | tos tos | time-range time-range-name | fragments | log [word] | | log-input [word] ]
+	access-list access-list-number [ dynamic dynamic-name [ timeout minutes ] ] { deny | permit } igmp source source-wildcard destination destination-wildcard [igmp-type] [ precedence precedence | dscp dscp | tos tos | time-range time-range-name | fragments | log [word] | | log-input [word] ]
+	access-list access-list-number [ dynamic dynamic-name [ timeout minutes ] ] { deny | permit } tcp source source-wildcard [ operator [port] ] destination destination-wildcard [ operator [port] ] [established] [ precedence precedence | dscp dscp | tos tos | time-range time-range-name | fragments | log [word] | | log-input [word] ]
+	access-list access-list-number [ dynamic dynamic-name [ timeout minutes ] ] { deny | permit } udp source source-wildcard [ operator [port] ] destination destination-wildcard [ operator [port] ] [ precedence precedence | dscp dscp | tos tos | time-range time-range-name | fragments | log [word] | | log-input [word] ]
+*)
+
+
+access_list_ip_extended_rule
+	= "access-list" id:access_list_ip_extended_id mode:acl_mode protocol:protocol_icmp source:acl_icmp_node dest:acl_icmp_node icmp:acl_icmp_options options:ip_access_list_extended_rule_options NL
+	| "access-list" id:access_list_ip_extended_id mode:acl_mode protocol:acl_protocol source:node dest:node options:ip_access_list_extended_rule_options NL
+	;
+
+access_list_ip_extended
+	= remark:{access_list_remark}+ >access_list_ip_extended_rule
+	| >access_list_ip_extended_rule
+	;
+
+access_list_ip_standard_id
+	= /[1-9][0-9]?/
+	| /13[0-9][0-9]?/
+	;
+
+access_list_ip_extended_id
+	= /1[0-9][0-9]/
+	| /2[0-6][0-9][0-9]/
+	;
+
+
+
+ignored
+	= "!" TOEOL NL
+	| ":" TOEOL NL
+	| "service" TOEOL NL
+	| "boot" TOEOL NL
+	| ("boot-start-marker"|"boot-end-marker") NL
+	| "logging" TOEOL NL
+	| "no" TOEOL NL
+	| "clock" TOEOL NL
+	| "Current configuration" TOEOL NL
+	| "enable" TOEOL NL
+	| "resource" TOEOL NL
+	| "crypto" TOEOL NL {/^ [^\n]*/ NL}* ["!"]
+	| "dot11" TOEOL NL {/^ [^\n]*/ NL}* ["!"]
+	| "appfw" TOEOL NL {/^ [^\n]*/ NL}* ["!"]
+	| "archive" TOEOL NL {/^ [^\n]*/ NL}* ["!"]
+	| "route-map" TOEOL NL {/^ [^\n]*/ NL}* ["!"]
+	| "vpdn" TOEOL NL {/^ [^\n]*/ NL}* ["!"]
+	| "key" TOEOL NL {/^ [^\n]*/ NL}* ["!"]
+	| "redundancy" TOEOL NL {/^ [^\n]*/ NL}* ["!"]
+	| "username" TOEOL NL
+	| "bridge" TOEOL NL
+	| "encryption" TOEOL NL
+	| "control-plane" NL
+	| "banner" TOEOL NL {/^ [^\n]*/ NL}* ["!" NL]
+	| "Using" int "out of" int "bytes" NL
+	| "aaa" TOEOL NL
+	| "multilink" TOEOL NL
+	| "snmp-server" TOEOL NL
+	| "security" TOEOL NL
+	| "mmi" TOEOL NL
+	| "isdn" TOEOL NL "!" NL
+	| "dialer-list" TOEOL NL
+	| "router" TOEOL NL {/^ [^\n]*/ NL}* ["!"]
+	| "arp" TOEOL NL
+	| "snmp" TOEOL NL
+	| "rmon" TOEOL NL
+	| "dial-peer" TOEOL NL
+	| "rtr" TOEOL NL
+	| "alias" TOEOL NL
+	| NL
+	;
+
+ip_ignored
+	= "cef" NL
+	| "inspect" TOEOL NL
+	| "domain" TOEOL NL
+	| "name-server" TOEOL NL
+	| "route" TOEOL NL
+	| "http" TOEOL NL
+	| "nat" TOEOL NL
+	| "subnet-zero" NL
+	| "dhcp excluded-address" TOEOL NL
+	| "dhcp pool" {?/[^(!|\n)]*/? NL}* "!" NL
+	| "tcp" TOEOL NL
+	| "ssh" TOEOL NL
+	| "classless" NL
+	| "forward-protocol" TOEOL NL
+	| "ips" TOEOL NL
+	| "flow-cache" TOEOL NL
+	| "flow-export" TOEOL NL
+	| "vrf" TOEOL NL {/^ [^\n]*/ NL}* ["!"]
+	| "multicast-routing" TOEOL NL
+	| "accounting-threshold" TOEOL NL
+	;

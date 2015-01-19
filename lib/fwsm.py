@@ -15,38 +15,22 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 from grako.parsing import graken, Parser
 
 
-__version__ = (2014, 12, 31, 18, 19, 34, 2)
+__version__ = (2015, 1, 17, 11, 50, 54, 5)
 
 __all__ = [
-    'aclParser',
-    'aclSemantics',
+    'fwsmParser',
+    'fwsmSemantics',
     'main'
 ]
 
 
-class aclParser(Parser):
+class fwsmParser(Parser):
     def __init__(self, whitespace=None, nameguard=True, **kwargs):
-        super(aclParser, self).__init__(
+        super(fwsmParser, self).__init__(
             whitespace=whitespace,
             nameguard=nameguard,
             **kwargs
         )
-
-    @graken()
-    def _grammar_(self):
-
-        def block1():
-            self._command_()
-        self._positive_closure(block1)
-
-        self.ast['@'] = self.last_node
-        with self._group():
-            with self._choice():
-                with self._option():
-                    self._token('pager')
-                with self._option():
-                    self._check_eof()
-                self._error('expecting one of: pager')
 
     @graken()
     def _ip4_(self):
@@ -55,6 +39,10 @@ class aclParser(Parser):
     @graken()
     def _ip6_(self):
         self._pattern(r'[a-fA-F0-9]*:[a-fA-F0-9\.\:]+')
+
+    @graken()
+    def _NL_(self):
+        self._token('\n')
 
     @graken()
     def _identifier_(self):
@@ -73,53 +61,11 @@ class aclParser(Parser):
         self._pattern(r'[A-Za-z0-9_\-\.]*')
 
     @graken()
-    def _command_(self):
-        with self._choice():
-            with self._option():
-                self._hostname_()
-            with self._option():
-                self._domain_name_()
-            with self._option():
-                self._interface_()
-            with self._option():
-                self._names_()
-            with self._option():
-                self._time_range_()
-            with self._option():
-                self._object_()
-            with self._option():
-                self._object_group_()
-            with self._option():
-                self._access_list_remarks_()
-            with self._option():
-                self._access_list_()
-            with self._option():
-                self._ignored_()
-            with self._option():
-                self._unmatched_()
-            self._error('no available options')
-
-    @graken()
-    def _description_(self):
-        with self._choice():
-            with self._option():
-                self._token('description')
-                self._pattern(r'[^\n]+')
-                self.ast['description'] = self.last_node
-            with self._option():
-                pass
-            self._error('expecting one of: description')
-
-        self.ast._define(
-            ['description'],
-            []
-        )
-
-    @graken()
     def _hostname_(self):
         self._token('hostname')
         self._identifier_()
         self.ast['hostname'] = self.last_node
+        self._NL_()
 
         self.ast._define(
             ['hostname'],
@@ -138,16 +84,35 @@ class aclParser(Parser):
         )
 
     @graken()
+    def _description_(self):
+        with self._choice():
+            with self._option():
+                self._token('description')
+                self._pattern(r'[^\n]+')
+                self.ast['description'] = self.last_node
+                self._NL_()
+            with self._option():
+                pass
+            self._error('no available options')
+
+        self.ast._define(
+            ['description'],
+            []
+        )
+
+    @graken()
     def _interface_(self):
         self._token('interface')
         self._interface_alias_()
         self.ast['alias'] = self.last_node
+        self._NL_()
 
         def block2():
             self._interface_detail_()
         self._closure(block2)
         self.ast['detail'] = self.last_node
         self._token('!')
+        self._NL_()
 
         self.ast._define(
             ['alias', 'detail'],
@@ -165,6 +130,7 @@ class aclParser(Parser):
                 self._token('nameif')
                 self._identifier_()
                 self.ast['name'] = self.last_node
+                self._NL_()
             with self._option():
                 self._token('bridge-group')
                 with self._group():
@@ -175,10 +141,12 @@ class aclParser(Parser):
                             self._int_()
                         self._error('no available options')
                 self.ast['bridge_group'] = self.last_node
+                self._NL_()
             with self._option():
                 self._token('security-level')
                 self._int_()
                 self.ast['security_level'] = self.last_node
+                self._NL_()
             with self._option():
                 self._token('ip address')
                 self._ip4_()
@@ -187,10 +155,12 @@ class aclParser(Parser):
                 self.ast['netmask'] = self.last_node
                 self._pattern(r'[^\n]+')
                 self.ast['any'] = self.last_node
+                self._NL_()
             with self._option():
                 self._token('no')
                 self._pattern(r'[^\n]+')
                 self.ast['any'] = self.last_node
+                self._NL_()
             with self._option():
                 self._token('ipv6 address')
                 self._ip6_()
@@ -200,797 +170,34 @@ class aclParser(Parser):
                 self.ast['netmask'] = self.last_node
                 self._pattern(r'[^\n]+')
                 self.ast['any'] = self.last_node
+                self._NL_()
             with self._option():
                 self._token('vlan')
                 self._identifier_()
                 self.ast['vlan'] = self.last_node
+                self._NL_()
             with self._option():
                 self._token('description')
                 self._pattern(r'[^\n]+')
                 self.ast['description'] = self.last_node
+                self._NL_()
             with self._option():
                 self._token('ipv6 nd')
                 self._pattern(r'[^\n]+')
                 self.ast['any'] = self.last_node
+                self._NL_()
             with self._option():
                 self._token('ipv6 enable')
+                self._NL_()
             with self._option():
                 self._token('management-only')
+                self._NL_()
             with self._option():
                 pass
-            self._error('expecting one of: description ipv6 enable ipv6 nd management-only no')
+            self._error('no available options')
 
         self.ast._define(
             ['name', 'bridge_group', 'security_level', 'addr', 'netmask', 'any', 'vlan', 'description'],
-            []
-        )
-
-    @graken()
-    def _names_(self):
-        self._token('names')
-
-        def block1():
-            self._name_()
-        self._closure(block1)
-        self.ast['objects'] = self.last_node
-        with self._optional():
-            self._token('!')
-
-        self.ast._define(
-            ['objects'],
-            []
-        )
-
-    @graken()
-    def _name_(self):
-        self._token('name')
-        with self._group():
-            with self._choice():
-                with self._option():
-                    self._ip4_()
-                with self._option():
-                    self._ip6_()
-                self._error('no available options')
-        self.ast['address'] = self.last_node
-        self._identifier_()
-        self.ast['hostname'] = self.last_node
-        with self._choice():
-            with self._option():
-                self._token('description')
-                self._pattern(r'[^\n]+')
-                self.ast['description'] = self.last_node
-            with self._option():
-                pass
-            self._error('expecting one of: description')
-
-        self.ast._define(
-            ['address', 'hostname', 'description'],
-            []
-        )
-
-    @graken()
-    def _day_of_the_week_(self):
-        with self._choice():
-            with self._option():
-                self._token('Monday')
-            with self._option():
-                self._token('Tuesday')
-            with self._option():
-                self._token('Wednesday')
-            with self._option():
-                self._token('Thursday')
-            with self._option():
-                self._token('Friday')
-            with self._option():
-                self._token('Saturday')
-            with self._option():
-                self._token('Sunday')
-            self._error('expecting one of: Friday Monday Saturday Sunday Thursday Tuesday Wednesday')
-
-    @graken()
-    def _month_(self):
-        with self._choice():
-            with self._option():
-                self._token('January')
-            with self._option():
-                self._token('February')
-            with self._option():
-                self._token('March')
-            with self._option():
-                self._token('April')
-            with self._option():
-                self._token('May')
-            with self._option():
-                self._token('June')
-            with self._option():
-                self._token('July')
-            with self._option():
-                self._token('August')
-            with self._option():
-                self._token('September')
-            with self._option():
-                self._token('October')
-            with self._option():
-                self._token('November')
-            with self._option():
-                self._token('December')
-            self._error('expecting one of: April August December February January July June March May November October September')
-
-    @graken()
-    def _hour_(self):
-        self._pattern(r'[0-9]{1,2}')
-
-    @graken()
-    def _minute_(self):
-        self._pattern(r'[0-9]{1,2}')
-
-    @graken()
-    def _time_(self):
-        self._hour_()
-        self.ast['hour'] = self.last_node
-        self._token(':')
-        self._minute_()
-        self.ast['minute'] = self.last_node
-
-        self.ast._define(
-            ['hour', 'minute'],
-            []
-        )
-
-    @graken()
-    def _year_(self):
-        self._pattern(r'[0-9]{4}')
-
-    @graken()
-    def _day_(self):
-        self._pattern(r'[0-9]{1,2}')
-
-    @graken()
-    def _date_(self):
-        self._day_()
-        self.ast['day'] = self.last_node
-        self._month_()
-        self.ast['month'] = self.last_node
-        self._year_()
-        self.ast['year'] = self.last_node
-
-        self.ast._define(
-            ['day', 'month', 'year'],
-            []
-        )
-
-    @graken()
-    def _timedate_(self):
-        self._hour_()
-        self.ast['hour'] = self.last_node
-        self._token(':')
-        self._minute_()
-        self.ast['minute'] = self.last_node
-
-        self._day_()
-        self.ast['day'] = self.last_node
-        self._month_()
-        self.ast['month'] = self.last_node
-        self._year_()
-        self.ast['year'] = self.last_node
-
-        self.ast._define(
-            ['hour', 'minute', 'day', 'month', 'year'],
-            []
-        )
-
-    @graken()
-    def _time_range_object_(self):
-        with self._choice():
-            with self._option():
-                self._token('periodic')
-                self.ast['type'] = self.last_node
-
-                def block2():
-                    self._day_of_the_week_()
-                self._positive_closure(block2)
-
-                self.ast['days'] = self.last_node
-                self._time_()
-                self.ast['start'] = self.last_node
-                self._token('to')
-                with self._optional():
-                    self._day_of_the_week_()
-                self.ast['edays'] = self.last_node
-                self._time_()
-                self.ast['end'] = self.last_node
-            with self._option():
-                self._token('periodic')
-                self.ast['type'] = self.last_node
-                with self._group():
-                    with self._choice():
-                        with self._option():
-                            self._token('weekdays')
-                        with self._option():
-                            self._token('weekend')
-                        with self._option():
-                            self._token('daily')
-                        self._error('expecting one of: daily weekdays weekend')
-                self.ast.setlist('days', self.last_node)
-                self._time_()
-                self.ast['start'] = self.last_node
-                self._token('to')
-                self._time_()
-                self.ast['end'] = self.last_node
-            with self._option():
-                self._token('absolute')
-                self.ast['type'] = self.last_node
-                with self._optional():
-                    self._token('start')
-                    self._timedate_()
-                    self.ast['start'] = self.last_node
-                with self._optional():
-                    self._token('end')
-                    self._timedate_()
-                    self.ast['end'] = self.last_node
-            with self._option():
-                self._token('no')
-                self.ast['type'] = self.last_node
-                with self._group():
-                    with self._choice():
-                        with self._option():
-                            self._token('periodic')
-                        with self._option():
-                            self._token('absolute')
-                        self._error('expecting one of: absolute periodic')
-                self.ast['any'] = self.last_node
-            self._error('expecting one of: absolute no')
-
-        self.ast._define(
-            ['type', 'days', 'start', 'edays', 'end', 'any'],
-            ['days']
-        )
-
-    @graken()
-    def _time_range_(self):
-        self._token('time-range')
-        self._string_()
-        self.ast['name'] = self.last_node
-
-        def block2():
-            self._time_range_object_()
-        self._positive_closure(block2)
-
-        self.ast['objects'] = self.last_node
-        self._token('!')
-
-        self.ast._define(
-            ['name', 'objects'],
-            []
-        )
-
-    @graken()
-    def _object_(self):
-        self._token('object')
-        self._object_type_()
-
-    @graken()
-    def _object_type_(self):
-        with self._choice():
-            with self._option():
-                self._token('network')
-                self.ast['type'] = self.last_node
-                self._obj_name_()
-                self.ast['name'] = self.last_node
-                self._network_object_()
-                self.ast['args'] = self.last_node
-                with self._choice():
-                    with self._option():
-                        self._token('description')
-                        self._pattern(r'[^\n]+')
-                        self.ast['description'] = self.last_node
-                    with self._option():
-                        pass
-                    self._error('expecting one of: description')
-            with self._option():
-                self._token('service')
-                self.ast['type'] = self.last_node
-                self._obj_name_()
-                self.ast['name'] = self.last_node
-                self._service_object_()
-                self.ast['args'] = self.last_node
-                with self._choice():
-                    with self._option():
-                        self._token('description')
-                        self._pattern(r'[^\n]+')
-                        self.ast['description'] = self.last_node
-                    with self._option():
-                        pass
-                    self._error('expecting one of: description')
-            self._error('no available options')
-
-        self.ast._define(
-            ['type', 'name', 'args', 'description'],
-            []
-        )
-
-    @graken()
-    def _network_object_(self):
-        with self._choice():
-            with self._option():
-                self._token('host')
-                self.ast['type'] = self.last_node
-                with self._group():
-                    with self._choice():
-                        with self._option():
-                            self._ip4_()
-                        with self._option():
-                            self._ip6_()
-                        self._error('no available options')
-                self.ast['address'] = self.last_node
-            with self._option():
-                self._token('subnet')
-                self.ast['type'] = self.last_node
-                self._ip4_()
-                self.ast['address'] = self.last_node
-                self._ip4_()
-                self.ast['mask'] = self.last_node
-            with self._option():
-                self._token('subnet')
-                self.ast['type'] = self.last_node
-                self._ip6_()
-                self.ast['address'] = self.last_node
-                self._token('/')
-                self._int_()
-                self.ast['mask'] = self.last_node
-            with self._option():
-                self._token('range')
-                self.ast['type'] = self.last_node
-                self._ip4_()
-                self.ast['start'] = self.last_node
-                self._ip4_()
-                self.ast['stop'] = self.last_node
-            with self._option():
-                self._token('range')
-                self.ast['type'] = self.last_node
-                self._ip6_()
-                self.ast['start'] = self.last_node
-                self._ip6_()
-                self.ast['stop'] = self.last_node
-            with self._option():
-                self._token('fqdn')
-                self.ast['type'] = self.last_node
-                with self._optional():
-                    with self._group():
-                        with self._choice():
-                            with self._option():
-                                self._token('v4')
-                            with self._option():
-                                self._token('v6')
-                            self._error('expecting one of: v4 v6')
-                self.ast['limit'] = self.last_node
-                self._string_()
-                self.ast['fqdn'] = self.last_node
-            self._error('no available options')
-
-        self.ast._define(
-            ['type', 'address', 'mask', 'start', 'stop', 'limit', 'fqdn'],
-            []
-        )
-
-    @graken()
-    def _service_object_(self):
-        with self._choice():
-            with self._option():
-                self._token('service')
-                self.ast['type'] = self.last_node
-                self._int_()
-                self.ast['protocol'] = self.last_node
-            with self._option():
-                self._token('service')
-                self.ast['type'] = self.last_node
-                self._protocol_icmp_()
-                self.ast['protocol'] = self.last_node
-                with self._optional():
-                    with self._group():
-                        with self._choice():
-                            with self._option():
-                                self._icmp_type_()
-                            with self._option():
-                                self._int_()
-                            self._error('no available options')
-                self.ast['icmp_type'] = self.last_node
-                with self._optional():
-                    self._int_()
-                self.ast['icmp_code'] = self.last_node
-            with self._option():
-                self._token('service')
-                self.ast['type'] = self.last_node
-                self._protocol_()
-                self.ast['protocol'] = self.last_node
-                self._service_object_source_()
-                self.ast['source'] = self.last_node
-                self._service_object_destination_()
-                self.ast['destination'] = self.last_node
-            self._error('no available options')
-
-        self.ast._define(
-            ['type', 'protocol', 'icmp_type', 'icmp_code', 'source', 'destination'],
-            []
-        )
-
-    @graken()
-    def _service_object_op_(self):
-        with self._choice():
-            with self._option():
-                with self._group():
-                    with self._choice():
-                        with self._option():
-                            self._token('lt')
-                        with self._option():
-                            self._token('gt')
-                        with self._option():
-                            self._token('eq')
-                        with self._option():
-                            self._token('neq')
-                        self._error('expecting one of: eq gt lt neq')
-                self._port_()
-            with self._option():
-                self._token('range')
-                self._port_()
-                self._port_()
-            self._error('no available options')
-
-    @graken()
-    def _service_object_source_(self):
-        with self._choice():
-            with self._option():
-                self._token('source')
-                self._service_object_op_()
-                self.ast['@'] = self.last_node
-            with self._option():
-                pass
-            self._error('no available options')
-
-    @graken()
-    def _service_object_destination_(self):
-        with self._choice():
-            with self._option():
-                self._token('destination')
-                self._service_object_op_()
-                self.ast['@'] = self.last_node
-            with self._option():
-                pass
-            self._error('no available options')
-
-    @graken()
-    def _port_(self):
-        with self._group():
-            with self._choice():
-                with self._option():
-                    self._port_code_()
-                with self._option():
-                    self._int_()
-                self._error('no available options')
-
-    @graken()
-    def _object_group_(self):
-        self._token('object-group')
-        self._object_group_type_()
-
-    @graken()
-    def _protocol_icmp_(self):
-        with self._choice():
-            with self._option():
-                self._token('icmp')
-            with self._option():
-                self._token('icmp6')
-            self._error('expecting one of: icmp icmp6')
-
-    @graken()
-    def _protocol_(self):
-        self.__protocol_()
-
-    @graken()
-    def __protocol_(self):
-        with self._group():
-            with self._choice():
-                with self._option():
-                    self._token('tcp-udp')
-                with self._option():
-                    self._token('tcp')
-                with self._option():
-                    self._token('udp')
-                self._error('expecting one of: tcp tcp-udp udp')
-
-    @graken()
-    def _object_group_type_(self):
-        with self._choice():
-            with self._option():
-                self._token('network')
-                self.ast['type'] = self.last_node
-                self._obj_name_()
-                self.ast['name'] = self.last_node
-                with self._choice():
-                    with self._option():
-                        self._token('description')
-                        self._pattern(r'[^\n]+')
-                        self.ast['description'] = self.last_node
-                    with self._option():
-                        pass
-                    self._error('expecting one of: description')
-
-
-                def block5():
-                    self._network_group_object_()
-                self._closure(block5)
-                self.ast['objects'] = self.last_node
-            with self._option():
-                self._token('service')
-                self._obj_name_()
-                self.ast['name'] = self.last_node
-                self.__protocol_()
-                self.ast['type'] = self.last_node
-                with self._choice():
-                    with self._option():
-                        self._token('description')
-                        self._pattern(r'[^\n]+')
-                        self.ast['description'] = self.last_node
-                    with self._option():
-                        pass
-                    self._error('expecting one of: description')
-
-
-                def block11():
-                    self._port_group_object_()
-                self._closure(block11)
-                self.ast['objects'] = self.last_node
-            with self._option():
-                self._token('service')
-                self.ast['type'] = self.last_node
-                self._obj_name_()
-                self.ast['name'] = self.last_node
-                with self._choice():
-                    with self._option():
-                        self._token('description')
-                        self._pattern(r'[^\n]+')
-                        self.ast['description'] = self.last_node
-                    with self._option():
-                        pass
-                    self._error('expecting one of: description')
-
-
-                def block17():
-                    self._service_group_object_()
-                self._closure(block17)
-                self.ast['objects'] = self.last_node
-            with self._option():
-                self._token('icmp-type')
-                self.ast['type'] = self.last_node
-                self._obj_name_()
-                self.ast['name'] = self.last_node
-                with self._choice():
-                    with self._option():
-                        self._token('description')
-                        self._pattern(r'[^\n]+')
-                        self.ast['description'] = self.last_node
-                    with self._option():
-                        pass
-                    self._error('expecting one of: description')
-
-
-                def block23():
-                    self._icmp_group_object_()
-                self._closure(block23)
-                self.ast['objects'] = self.last_node
-            with self._option():
-                self._token('protocol')
-                self.ast['type'] = self.last_node
-                self._obj_name_()
-                self.ast['name'] = self.last_node
-                with self._choice():
-                    with self._option():
-                        self._token('description')
-                        self._pattern(r'[^\n]+')
-                        self.ast['description'] = self.last_node
-                    with self._option():
-                        pass
-                    self._error('expecting one of: description')
-
-
-                def block29():
-                    self._protocol_group_object_()
-                self._closure(block29)
-                self.ast['objects'] = self.last_node
-            self._error('no available options')
-
-        self.ast._define(
-            ['type', 'name', 'description', 'objects'],
-            []
-        )
-
-    @graken()
-    def _service_group_object_(self):
-        with self._choice():
-            with self._option():
-                self._token('service-object')
-                self.ast['type'] = self.last_node
-                self._int_()
-                self.ast['protocol'] = self.last_node
-            with self._option():
-                self._token('service-object')
-                self.ast['type'] = self.last_node
-                self._protocol_icmp_()
-                self.ast['protocol'] = self.last_node
-                with self._optional():
-                    with self._group():
-                        with self._choice():
-                            with self._option():
-                                self._icmp_type_()
-                            with self._option():
-                                self._int_()
-                            self._error('no available options')
-                self.ast['icmp_type'] = self.last_node
-                with self._optional():
-                    self._int_()
-                self.ast['icmp_code'] = self.last_node
-            with self._option():
-                self._token('service-object')
-                self.ast['type'] = self.last_node
-                self._protocol_()
-                self.ast['protocol'] = self.last_node
-                self._service_object_source_()
-                self.ast['source'] = self.last_node
-                self._service_object_destination_()
-                self.ast['destination'] = self.last_node
-            with self._option():
-                self._token('service-object')
-                self.ast['type'] = self.last_node
-                self._token('object')
-                self.ast['protocol'] = self.last_node
-                self._acl_object_service_id_()
-                self.ast['object'] = self.last_node
-            with self._option():
-                self._token('group-object')
-                self.ast['type'] = self.last_node
-                self._acl_object_group_service_id_()
-                self.ast['object'] = self.last_node
-            with self._option():
-                pass
-            self._error('no available options')
-
-        self.ast._define(
-            ['type', 'protocol', 'icmp_type', 'icmp_code', 'source', 'destination', 'object'],
-            []
-        )
-
-    @graken()
-    def _port_group_object_(self):
-        with self._choice():
-            with self._option():
-                self._token('port-object')
-                self._token('eq')
-                self._port_()
-            with self._option():
-                self._token('port-object')
-                self._token('range')
-                self._port_()
-                self._port_()
-            with self._option():
-                self._token('group-object')
-                self._acl_object_group_service_id_()
-            with self._option():
-                pass
-            self._error('no available options')
-
-    @graken()
-    def _network_group_object_(self):
-        with self._choice():
-            with self._option():
-                self._token('network-object')
-                self.ast['type'] = self.last_node
-                self._token('host')
-                self.ast['name'] = self.last_node
-                with self._group():
-                    with self._choice():
-                        with self._option():
-                            self._acl_names_id_()
-                        with self._option():
-                            self._ip4_()
-                        with self._option():
-                            self._ip6_()
-                        self._error('no available options')
-                self.ast['address'] = self.last_node
-            with self._option():
-                self._token('network-object')
-                self.ast['type'] = self.last_node
-                self._token('object')
-                self.ast['name'] = self.last_node
-                self._acl_object_network_id_()
-                self.ast['object'] = self.last_node
-            with self._option():
-                self._token('network-object')
-                self.ast['type'] = self.last_node
-                with self._group():
-                    with self._choice():
-                        with self._option():
-                            self._acl_names_id_()
-                        with self._option():
-                            self._ip4_()
-                        self._error('no available options')
-                self.ast['name'] = self.last_node
-                self._ip4_()
-                self.ast['netmask'] = self.last_node
-            with self._option():
-                self._token('network-object')
-                self.ast['type'] = self.last_node
-                with self._group():
-                    with self._choice():
-                        with self._option():
-                            self._acl_names_id_()
-                        with self._option():
-                            self._ip6_()
-                        self._error('no available options')
-                self.ast['name'] = self.last_node
-                self._token('/')
-                self._int_()
-                self.ast['netmask'] = self.last_node
-            with self._option():
-                self._token('group-object')
-                self.ast['type'] = self.last_node
-                self._acl_object_group_network_id_()
-                self.ast['object'] = self.last_node
-            with self._option():
-                pass
-            self._error('no available options')
-
-        self.ast._define(
-            ['type', 'name', 'address', 'object', 'netmask'],
-            []
-        )
-
-    @graken()
-    def _icmp_group_object_(self):
-        with self._choice():
-            with self._option():
-                self._token('icmp-object')
-                self.ast['type'] = self.last_node
-                with self._group():
-                    with self._choice():
-                        with self._option():
-                            self._icmp_type_()
-                        with self._option():
-                            self._int_()
-                        self._error('no available options')
-                self.ast['name'] = self.last_node
-            with self._option():
-                self._token('group-object')
-                self.ast['type'] = self.last_node
-                self._acl_object_group_icmp_id_()
-                self.ast['name'] = self.last_node
-            with self._option():
-                pass
-            self._error('no available options')
-
-        self.ast._define(
-            ['type', 'name'],
-            []
-        )
-
-    @graken()
-    def _protocol_group_object_(self):
-        with self._choice():
-            with self._option():
-                self._token('protocol-object')
-                self.ast['type'] = self.last_node
-                self._obj_name_()
-                self.ast['name'] = self.last_node
-            with self._option():
-                self._token('group-object')
-                self.ast['type'] = self.last_node
-                self._acl_object_group_protocol_id_()
-                self.ast['name'] = self.last_node
-            with self._option():
-                pass
-            self._error('no available options')
-
-        self.ast._define(
-            ['type', 'name'],
             []
         )
 
@@ -1058,20 +265,7 @@ class aclParser(Parser):
         )
 
     @graken()
-    def _acl_source_(self):
-        self._acl_host_()
-        self.ast['host'] = self.last_node
-        with self._optional():
-            self._acl_port_()
-            self.ast['port'] = self.last_node
-
-        self.ast._define(
-            ['host', 'port'],
-            []
-        )
-
-    @graken()
-    def _acl_dest_(self):
+    def _node_(self):
         self._acl_host_()
         self.ast['host'] = self.last_node
         with self._optional():
@@ -1327,198 +521,781 @@ class aclParser(Parser):
         self._acl_host_()
 
     @graken()
-    def _access_list_(self):
-        with self._choice():
-            with self._option():
-                self._token('access-list')
-                self._acl_id_()
-                self.ast['id'] = self.last_node
-                self._acl_line_()
-                self.ast['line'] = self.last_node
-                self._acl_extended_()
-                self.ast['extended'] = self.last_node
-                self._acl_mode_()
-                self.ast['mode'] = self.last_node
-                self._protocol_icmp_()
-                self.ast['protocol'] = self.last_node
-                self._acl_icmp_node_()
-                self.ast['source'] = self.last_node
-                self._acl_icmp_node_()
-                self.ast['dest'] = self.last_node
-                self._acl_icmp_options_()
-                self.ast['icmp'] = self.last_node
-                self._acl_options_()
-                self.ast['options'] = self.last_node
-            with self._option():
-                self._token('access-list')
-                self._acl_id_()
-                self.ast['id'] = self.last_node
-                self._acl_line_()
-                self.ast['line'] = self.last_node
-                self._acl_extended_()
-                self.ast['extended'] = self.last_node
-                self._acl_mode_()
-                self.ast['mode'] = self.last_node
-                self._acl_protocol_()
-                self.ast['protocol'] = self.last_node
-                self._acl_source_()
-                self.ast['source'] = self.last_node
-                self._acl_dest_()
-                self.ast['dest'] = self.last_node
-                self._acl_options_()
-                self.ast['options'] = self.last_node
-            with self._option():
-                self._token('access-list')
-                self._acl_id_()
-                self.ast['id'] = self.last_node
-                self._acl_line_()
-                self.ast['line'] = self.last_node
-                self._token('ethertype')
-                self.ast['protocol'] = self.last_node
-                self._token('permit')
-                self._token('bpdu')
-            self._error('no available options')
-
-        self.ast._define(
-            ['id', 'line', 'extended', 'mode', 'protocol', 'source', 'dest', 'icmp', 'options'],
-            []
-        )
-
-    @graken()
     def _remark_(self):
         with self._group():
             self._pattern(r'[^\n]*')
 
     @graken()
-    def _access_list_remarks_(self):
+    def _object_(self):
+        self._token('object')
+        self._object_type_()
 
-        def block1():
-            self._access_list_remark_()
-        self._positive_closure(block1)
-
-        self.ast['remark'] = self.last_node
-        self._cut()
+    @graken()
+    def _object_type_(self):
         with self._choice():
             with self._option():
-                self._token('access-list')
-                self._acl_id_()
-                self.ast['id'] = self.last_node
-                self._acl_line_()
-                self.ast['line'] = self.last_node
-                self._acl_extended_()
-                self.ast['extended'] = self.last_node
-                self._acl_mode_()
-                self.ast['mode'] = self.last_node
-                self._protocol_icmp_()
-                self.ast['protocol'] = self.last_node
-                self._acl_icmp_node_()
-                self.ast['source'] = self.last_node
-                self._acl_icmp_node_()
-                self.ast['dest'] = self.last_node
-                self._acl_icmp_options_()
-                self.ast['icmp'] = self.last_node
-                self._acl_options_()
-                self.ast['options'] = self.last_node
+                self._token('network')
+                self.ast['type'] = self.last_node
+                self._obj_name_()
+                self.ast['name'] = self.last_node
+                self._NL_()
+                self._network_object_()
+                self.ast['args'] = self.last_node
+                with self._choice():
+                    with self._option():
+                        self._token('description')
+                        self._pattern(r'[^\n]+')
+                        self.ast['description'] = self.last_node
+                        self._NL_()
+                    with self._option():
+                        pass
+                    self._error('no available options')
             with self._option():
-                self._token('access-list')
-                self._acl_id_()
-                self.ast['id'] = self.last_node
-                self._acl_line_()
-                self.ast['line'] = self.last_node
-                self._acl_extended_()
-                self.ast['extended'] = self.last_node
-                self._acl_mode_()
-                self.ast['mode'] = self.last_node
-                self._acl_protocol_()
-                self.ast['protocol'] = self.last_node
-                self._acl_source_()
-                self.ast['source'] = self.last_node
-                self._acl_dest_()
-                self.ast['dest'] = self.last_node
-                self._acl_options_()
-                self.ast['options'] = self.last_node
-            with self._option():
-                self._token('access-list')
-                self._acl_id_()
-                self.ast['id'] = self.last_node
-                self._acl_line_()
-                self.ast['line'] = self.last_node
-                self._token('ethertype')
-                self.ast['protocol'] = self.last_node
-                self._token('permit')
-                self._token('bpdu')
+                self._token('service')
+                self.ast['type'] = self.last_node
+                self._obj_name_()
+                self.ast['name'] = self.last_node
+                self._NL_()
+                self._service_object_()
+                self.ast['args'] = self.last_node
+                with self._choice():
+                    with self._option():
+                        self._token('description')
+                        self._pattern(r'[^\n]+')
+                        self.ast['description'] = self.last_node
+                        self._NL_()
+                    with self._option():
+                        pass
+                    self._error('no available options')
             self._error('no available options')
 
         self.ast._define(
-            ['remark', 'id', 'line', 'extended', 'mode', 'protocol', 'source', 'dest', 'icmp', 'options'],
+            ['type', 'name', 'args', 'description'],
             []
         )
 
     @graken()
-    def _access_list_remark_(self):
-        self._token('access-list')
-        self._acl_id_()
-        self._acl_line_()
-        self._token('remark')
-        self._remark_()
-        self.ast['remark'] = self.last_node
-
-        self.ast._define(
-            ['remark'],
-            []
-        )
-
-    @graken()
-    def _ignored_(self):
+    def _network_object_(self):
         with self._choice():
             with self._option():
-                self._token(':')
-                self._pattern(r'[^\n]*')
+                self._token('host')
+                self.ast['type'] = self.last_node
+                with self._group():
+                    with self._choice():
+                        with self._option():
+                            self._ip4_()
+                        with self._option():
+                            self._ip6_()
+                        self._error('no available options')
+                self.ast['address'] = self.last_node
+                self._NL_()
             with self._option():
-                self._token('ASA Version')
-                self._pattern(r'[^\n]*')
-                self._token('!')
+                self._token('subnet')
+                self.ast['type'] = self.last_node
+                self._ip4_()
+                self.ast['address'] = self.last_node
+                self._ip4_()
+                self.ast['mask'] = self.last_node
+                self._NL_()
             with self._option():
-                self._token('FWSM Version')
-                self._pattern(r'[^\n]*')
-                self._token('!')
+                self._token('subnet')
+                self.ast['type'] = self.last_node
+                self._ip6_()
+                self.ast['address'] = self.last_node
+                self._token('/')
+                self._int_()
+                self.ast['mask'] = self.last_node
+                self._NL_()
             with self._option():
-                self._token('firewall')
-                self._pattern(r'[^\n]*')
+                self._token('range')
+                self.ast['type'] = self.last_node
+                self._ip4_()
+                self.ast['start'] = self.last_node
+                self._ip4_()
+                self.ast['stop'] = self.last_node
+                self._NL_()
             with self._option():
-                self._token('enable')
-                self._pattern(r'[^\n]*')
+                self._token('range')
+                self.ast['type'] = self.last_node
+                self._ip6_()
+                self.ast['start'] = self.last_node
+                self._ip6_()
+                self.ast['stop'] = self.last_node
+                self._NL_()
             with self._option():
-                self._token('dns-guard')
-                self._pattern(r'[^\n]*')
-                self._token('!')
-            with self._option():
-                self._token('dns')
-                self._pattern(r'[^\n]*')
-            with self._option():
-                self._token('name-server')
-                self._pattern(r'[^\n]*')
-            with self._option():
-                self._token('domain-name')
-                self._pattern(r'[^\n]*')
-            with self._option():
+                self._token('fqdn')
+                self.ast['type'] = self.last_node
                 with self._optional():
-                    self._token('no')
-                self._token('logging')
-                self._pattern(r'[^\n]*')
-            with self._option():
-                self._token('passwd')
-                self._pattern(r'[^\n]*')
-            with self._option():
-                self._token('!')
-            with self._option():
-                self._token('same-security-traffic')
-                self._pattern(r'[^\n]*')
-            self._error('expecting one of: ! : ASA Version FWSM Version dns dns-guard domain-name enable firewall logging name-server no passwd same-security-traffic')
+                    with self._group():
+                        with self._choice():
+                            with self._option():
+                                self._token('v4')
+                            with self._option():
+                                self._token('v6')
+                            self._error('expecting one of: v4 v6')
+                self.ast['limit'] = self.last_node
+                self._string_()
+                self.ast['fqdn'] = self.last_node
+                self._NL_()
+            self._error('no available options')
+
+        self.ast._define(
+            ['type', 'address', 'mask', 'start', 'stop', 'limit', 'fqdn'],
+            []
+        )
 
     @graken()
-    def _unmatched_(self):
-        pass
+    def _service_object_(self):
+        with self._choice():
+            with self._option():
+                self._token('service')
+                self.ast['type'] = self.last_node
+                self._int_()
+                self.ast['protocol'] = self.last_node
+                self._NL_()
+            with self._option():
+                self._token('service')
+                self.ast['type'] = self.last_node
+                self._protocol_icmp_()
+                self.ast['protocol'] = self.last_node
+                with self._optional():
+                    with self._group():
+                        with self._choice():
+                            with self._option():
+                                self._icmp_type_()
+                            with self._option():
+                                self._int_()
+                            self._error('no available options')
+                self.ast['icmp_type'] = self.last_node
+                with self._optional():
+                    self._int_()
+                self.ast['icmp_code'] = self.last_node
+                self._NL_()
+            with self._option():
+                self._token('service')
+                self.ast['type'] = self.last_node
+                self._protocol_()
+                self.ast['protocol'] = self.last_node
+                self._service_object_source_()
+                self.ast['source'] = self.last_node
+                self._service_object_destination_()
+                self.ast['destination'] = self.last_node
+                self._NL_()
+            self._error('no available options')
+
+        self.ast._define(
+            ['type', 'protocol', 'icmp_type', 'icmp_code', 'source', 'destination'],
+            []
+        )
+
+    @graken()
+    def _service_object_op_(self):
+        with self._choice():
+            with self._option():
+                with self._group():
+                    with self._choice():
+                        with self._option():
+                            self._token('lt')
+                        with self._option():
+                            self._token('gt')
+                        with self._option():
+                            self._token('eq')
+                        with self._option():
+                            self._token('neq')
+                        self._error('expecting one of: eq gt lt neq')
+                self._port_()
+            with self._option():
+                self._token('range')
+                self._port_()
+                self._port_()
+            self._error('no available options')
+
+    @graken()
+    def _service_object_source_(self):
+        with self._choice():
+            with self._option():
+                self._token('source')
+                self._service_object_op_()
+                self.ast['@'] = self.last_node
+            with self._option():
+                pass
+            self._error('no available options')
+
+    @graken()
+    def _service_object_destination_(self):
+        with self._choice():
+            with self._option():
+                self._token('destination')
+                self._service_object_op_()
+                self.ast['@'] = self.last_node
+            with self._option():
+                pass
+            self._error('no available options')
+
+    @graken()
+    def _object_group_(self):
+        self._token('object-group')
+        self._object_group_type_()
+
+    @graken()
+    def _protocol_icmp_(self):
+        with self._choice():
+            with self._option():
+                self._token('icmp')
+            with self._option():
+                self._token('icmp6')
+            self._error('expecting one of: icmp icmp6')
+
+    @graken()
+    def _protocol_(self):
+        self._port_group_protocol_()
+
+    @graken()
+    def _port_group_protocol_(self):
+        with self._group():
+            with self._choice():
+                with self._option():
+                    self._token('tcp-udp')
+                with self._option():
+                    self._token('tcp')
+                with self._option():
+                    self._token('udp')
+                self._error('expecting one of: tcp tcp-udp udp')
+
+    @graken()
+    def _object_group_type_(self):
+        with self._choice():
+            with self._option():
+                self._token('network')
+                self.ast['type'] = self.last_node
+                self._obj_name_()
+                self.ast['name'] = self.last_node
+                self._NL_()
+                with self._choice():
+                    with self._option():
+                        self._token('description')
+                        self._pattern(r'[^\n]+')
+                        self.ast['description'] = self.last_node
+                        self._NL_()
+                    with self._option():
+                        pass
+                    self._error('no available options')
+
+
+                def block5():
+                    self._network_group_object_()
+                self._closure(block5)
+                self.ast['objects'] = self.last_node
+            with self._option():
+                self._token('service')
+                self._obj_name_()
+                self.ast['name'] = self.last_node
+                self._port_group_protocol_()
+                self.ast['type'] = self.last_node
+                self._NL_()
+                with self._choice():
+                    with self._option():
+                        self._token('description')
+                        self._pattern(r'[^\n]+')
+                        self.ast['description'] = self.last_node
+                        self._NL_()
+                    with self._option():
+                        pass
+                    self._error('no available options')
+
+
+                def block11():
+                    self._port_group_object_()
+                self._closure(block11)
+                self.ast['objects'] = self.last_node
+            with self._option():
+                self._token('service')
+                self.ast['type'] = self.last_node
+                self._obj_name_()
+                self.ast['name'] = self.last_node
+                self._NL_()
+                with self._choice():
+                    with self._option():
+                        self._token('description')
+                        self._pattern(r'[^\n]+')
+                        self.ast['description'] = self.last_node
+                        self._NL_()
+                    with self._option():
+                        pass
+                    self._error('no available options')
+
+
+                def block17():
+                    self._service_group_object_()
+                self._closure(block17)
+                self.ast['objects'] = self.last_node
+            with self._option():
+                self._token('icmp-type')
+                self.ast['type'] = self.last_node
+                self._obj_name_()
+                self.ast['name'] = self.last_node
+                self._NL_()
+                with self._choice():
+                    with self._option():
+                        self._token('description')
+                        self._pattern(r'[^\n]+')
+                        self.ast['description'] = self.last_node
+                        self._NL_()
+                    with self._option():
+                        pass
+                    self._error('no available options')
+
+
+                def block23():
+                    self._icmp_group_object_()
+                self._closure(block23)
+                self.ast['objects'] = self.last_node
+            with self._option():
+                self._token('protocol')
+                self.ast['type'] = self.last_node
+                self._obj_name_()
+                self.ast['name'] = self.last_node
+                self._NL_()
+                with self._choice():
+                    with self._option():
+                        self._token('description')
+                        self._pattern(r'[^\n]+')
+                        self.ast['description'] = self.last_node
+                        self._NL_()
+                    with self._option():
+                        pass
+                    self._error('no available options')
+
+
+                def block29():
+                    self._protocol_group_object_()
+                self._closure(block29)
+                self.ast['objects'] = self.last_node
+            self._error('no available options')
+
+        self.ast._define(
+            ['type', 'name', 'description', 'objects'],
+            []
+        )
+
+    @graken()
+    def _service_group_object_(self):
+        with self._choice():
+            with self._option():
+                self._token('service-object')
+                self.ast['type'] = self.last_node
+                self._int_()
+                self.ast['protocol'] = self.last_node
+                self._NL_()
+            with self._option():
+                self._token('service-object')
+                self.ast['type'] = self.last_node
+                self._protocol_icmp_()
+                self.ast['protocol'] = self.last_node
+                with self._optional():
+                    with self._group():
+                        with self._choice():
+                            with self._option():
+                                self._icmp_type_()
+                            with self._option():
+                                self._int_()
+                            self._error('no available options')
+                self.ast['icmp_type'] = self.last_node
+                with self._optional():
+                    self._int_()
+                self.ast['icmp_code'] = self.last_node
+                self._NL_()
+            with self._option():
+                self._token('service-object')
+                self.ast['type'] = self.last_node
+                self._protocol_()
+                self.ast['protocol'] = self.last_node
+                self._service_object_source_()
+                self.ast['source'] = self.last_node
+                self._service_object_destination_()
+                self.ast['destination'] = self.last_node
+                self._NL_()
+            with self._option():
+                self._token('service-object')
+                self.ast['type'] = self.last_node
+                self._token('object')
+                self.ast['protocol'] = self.last_node
+                self._acl_object_service_id_()
+                self.ast['object'] = self.last_node
+                self._NL_()
+            with self._option():
+                self._token('group-object')
+                self.ast['type'] = self.last_node
+                self._acl_object_group_service_id_()
+                self.ast['object'] = self.last_node
+                self._NL_()
+            with self._option():
+                pass
+            self._error('no available options')
+
+        self.ast._define(
+            ['type', 'protocol', 'icmp_type', 'icmp_code', 'source', 'destination', 'object'],
+            []
+        )
+
+    @graken()
+    def _port_group_object_(self):
+        with self._choice():
+            with self._option():
+                self._token('port-object')
+                self._token('eq')
+                self._port_()
+                self._NL_()
+            with self._option():
+                self._token('port-object')
+                self._token('range')
+                self._port_()
+                self._port_()
+                self._NL_()
+            with self._option():
+                self._token('group-object')
+                self._acl_object_group_service_id_()
+                self._NL_()
+            with self._option():
+                pass
+            self._error('no available options')
+
+    @graken()
+    def _network_group_object_(self):
+        with self._choice():
+            with self._option():
+                self._token('network-object')
+                self.ast['type'] = self.last_node
+                self._token('host')
+                self.ast['name'] = self.last_node
+                with self._group():
+                    with self._choice():
+                        with self._option():
+                            self._acl_names_id_()
+                        with self._option():
+                            self._ip4_()
+                        with self._option():
+                            self._ip6_()
+                        self._error('no available options')
+                self.ast['address'] = self.last_node
+                self._NL_()
+            with self._option():
+                self._token('network-object')
+                self.ast['type'] = self.last_node
+                self._token('object')
+                self.ast['name'] = self.last_node
+                self._acl_object_network_id_()
+                self.ast['object'] = self.last_node
+                self._NL_()
+            with self._option():
+                self._token('network-object')
+                self.ast['type'] = self.last_node
+                with self._group():
+                    with self._choice():
+                        with self._option():
+                            self._acl_names_id_()
+                        with self._option():
+                            self._ip4_()
+                        self._error('no available options')
+                self.ast['name'] = self.last_node
+                self._ip4_()
+                self.ast['netmask'] = self.last_node
+                self._NL_()
+            with self._option():
+                self._token('network-object')
+                self.ast['type'] = self.last_node
+                with self._group():
+                    with self._choice():
+                        with self._option():
+                            self._acl_names_id_()
+                        with self._option():
+                            self._ip6_()
+                        self._error('no available options')
+                self.ast['name'] = self.last_node
+                self._token('/')
+                self._int_()
+                self.ast['netmask'] = self.last_node
+                self._NL_()
+            with self._option():
+                self._token('group-object')
+                self.ast['type'] = self.last_node
+                self._acl_object_group_network_id_()
+                self.ast['object'] = self.last_node
+                self._NL_()
+            with self._option():
+                pass
+            self._error('no available options')
+
+        self.ast._define(
+            ['type', 'name', 'address', 'object', 'netmask'],
+            []
+        )
+
+    @graken()
+    def _icmp_group_object_(self):
+        with self._choice():
+            with self._option():
+                self._token('icmp-object')
+                self.ast['type'] = self.last_node
+                with self._group():
+                    with self._choice():
+                        with self._option():
+                            self._icmp_type_()
+                        with self._option():
+                            self._int_()
+                        self._error('no available options')
+                self.ast['name'] = self.last_node
+                self._NL_()
+            with self._option():
+                self._token('group-object')
+                self.ast['type'] = self.last_node
+                self._acl_object_group_icmp_id_()
+                self.ast['name'] = self.last_node
+                self._NL_()
+            with self._option():
+                pass
+            self._error('no available options')
+
+        self.ast._define(
+            ['type', 'name'],
+            []
+        )
+
+    @graken()
+    def _protocol_group_object_(self):
+        with self._choice():
+            with self._option():
+                self._token('protocol-object')
+                self.ast['type'] = self.last_node
+                self._obj_name_()
+                self.ast['name'] = self.last_node
+                self._NL_()
+            with self._option():
+                self._token('group-object')
+                self.ast['type'] = self.last_node
+                self._acl_object_group_protocol_id_()
+                self.ast['name'] = self.last_node
+                self._NL_()
+            with self._option():
+                pass
+            self._error('no available options')
+
+        self.ast._define(
+            ['type', 'name'],
+            []
+        )
+
+    @graken()
+    def _port_(self):
+        with self._group():
+            with self._choice():
+                with self._option():
+                    self._port_code_()
+                with self._option():
+                    self._int_()
+                self._error('no available options')
+
+    @graken()
+    def _hour_(self):
+        self._pattern(r'[0-9]{1,2}')
+
+    @graken()
+    def _minute_(self):
+        self._pattern(r'[0-9]{1,2}')
+
+    @graken()
+    def _time_(self):
+        self._hour_()
+        self.ast['hour'] = self.last_node
+        self._token(':')
+        self._minute_()
+        self.ast['minute'] = self.last_node
+
+        self.ast._define(
+            ['hour', 'minute'],
+            []
+        )
+
+    @graken()
+    def _year_(self):
+        self._pattern(r'[0-9]{4}')
+
+    @graken()
+    def _day_(self):
+        self._pattern(r'[0-9]{1,2}')
+
+    @graken()
+    def _date_(self):
+        self._day_()
+        self.ast['day'] = self.last_node
+        self._month_()
+        self.ast['month'] = self.last_node
+        self._year_()
+        self.ast['year'] = self.last_node
+
+        self.ast._define(
+            ['day', 'month', 'year'],
+            []
+        )
+
+    @graken()
+    def _timedate_(self):
+        self._hour_()
+        self.ast['hour'] = self.last_node
+        self._token(':')
+        self._minute_()
+        self.ast['minute'] = self.last_node
+
+        self._day_()
+        self.ast['day'] = self.last_node
+        self._month_()
+        self.ast['month'] = self.last_node
+        self._year_()
+        self.ast['year'] = self.last_node
+
+        self.ast._define(
+            ['hour', 'minute', 'day', 'month', 'year'],
+            []
+        )
+
+    @graken()
+    def _time_range_object_(self):
+        with self._choice():
+            with self._option():
+                self._token('periodic')
+                self.ast['type'] = self.last_node
+
+                def block2():
+                    self._day_of_the_week_()
+                self._positive_closure(block2)
+
+                self.ast['days'] = self.last_node
+                self._time_()
+                self.ast['start'] = self.last_node
+                self._token('to')
+                with self._optional():
+                    self._day_of_the_week_()
+                self.ast['edays'] = self.last_node
+                self._time_()
+                self.ast['end'] = self.last_node
+                self._NL_()
+            with self._option():
+                self._token('periodic')
+                self.ast['type'] = self.last_node
+                with self._group():
+                    with self._choice():
+                        with self._option():
+                            self._token('weekdays')
+                        with self._option():
+                            self._token('weekend')
+                        with self._option():
+                            self._token('daily')
+                        self._error('expecting one of: daily weekdays weekend')
+                self.ast.setlist('days', self.last_node)
+                self._time_()
+                self.ast['start'] = self.last_node
+                self._token('to')
+                self._time_()
+                self.ast['end'] = self.last_node
+                self._NL_()
+            with self._option():
+                self._token('absolute')
+                self.ast['type'] = self.last_node
+                with self._optional():
+                    self._token('start')
+                    self._timedate_()
+                    self.ast['start'] = self.last_node
+                with self._optional():
+                    self._token('end')
+                    self._timedate_()
+                    self.ast['end'] = self.last_node
+                self._NL_()
+            with self._option():
+                self._token('no')
+                self.ast['type'] = self.last_node
+                with self._group():
+                    with self._choice():
+                        with self._option():
+                            self._token('periodic')
+                        with self._option():
+                            self._token('absolute')
+                        self._error('expecting one of: absolute periodic')
+                self.ast['any'] = self.last_node
+                self._NL_()
+            self._error('no available options')
+
+        self.ast._define(
+            ['type', 'days', 'start', 'edays', 'end', 'any'],
+            ['days']
+        )
+
+    @graken()
+    def _time_range_(self):
+        self._token('time-range')
+        self._string_()
+        self.ast['name'] = self.last_node
+        self._NL_()
+
+        def block2():
+            self._time_range_object_()
+        self._positive_closure(block2)
+
+        self.ast['objects'] = self.last_node
+        self._token('!')
+        self._NL_()
+
+        self.ast._define(
+            ['name', 'objects'],
+            []
+        )
+
+    @graken()
+    def _day_of_the_week_(self):
+        with self._choice():
+            with self._option():
+                self._token('Monday')
+            with self._option():
+                self._token('Tuesday')
+            with self._option():
+                self._token('Wednesday')
+            with self._option():
+                self._token('Thursday')
+            with self._option():
+                self._token('Friday')
+            with self._option():
+                self._token('Saturday')
+            with self._option():
+                self._token('Sunday')
+            self._error('expecting one of: Friday Monday Saturday Sunday Thursday Tuesday Wednesday')
+
+    @graken()
+    def _month_(self):
+        with self._choice():
+            with self._option():
+                self._token('January')
+            with self._option():
+                self._token('February')
+            with self._option():
+                self._token('March')
+            with self._option():
+                self._token('April')
+            with self._option():
+                self._token('May')
+            with self._option():
+                self._token('June')
+            with self._option():
+                self._token('July')
+            with self._option():
+                self._token('August')
+            with self._option():
+                self._token('September')
+            with self._option():
+                self._token('October')
+            with self._option():
+                self._token('November')
+            with self._option():
+                self._token('December')
+            self._error('expecting one of: April August December February January July June March May November October September')
 
     @graken()
     def _icmp_type_(self):
@@ -1751,15 +1528,374 @@ class aclParser(Parser):
                 self._token('xdmcp')
             self._error('expecting one of: aol bgp biff bootpc bootps chargen citrix-ica cmd ctiqbe daytime discard dnsix domain echo exec finger ftp ftp-data gopher h323 hostname https ident imap4 irc isakmp kerberos klogin kshell ldap ldaps login lotusnotes lpd mobile-ip nameserver netbios-dgm netbios-ns netbios-ssn nntp ntp pcanywhere-data pcanywhere-status pim-auto-rp pop2 pop3 pptp radius radius-acct rip rpc rsh rtsp secureid-udp sip smtp snmp snmptrap sqlnet ssh sunrpc syslog tacacs talk telnet tftp time uucp who whois www xdmcp')
 
+    @graken()
+    def _grammar_(self):
 
-class aclSemantics(object):
-    def grammar(self, ast):
-        return ast
+        def block1():
+            self._command_()
+        self._positive_closure(block1)
 
+        self.ast['@'] = self.last_node
+        with self._group():
+            with self._choice():
+                with self._option():
+                    self._token('pager')
+                with self._option():
+                    self._check_eof()
+                self._error('expecting one of: pager')
+
+    @graken()
+    def _version_(self):
+        with self._choice():
+            with self._option():
+                with self._group():
+                    self._token('ASA Version')
+                    self._pattern(r'[^\n]*')
+                self.ast['version'] = self.last_node
+                self._NL_()
+                self._token('!')
+                self._NL_()
+            with self._option():
+                with self._group():
+                    self._token('FWSM Version')
+                    self._pattern(r'[^\n]*')
+                self.ast['version'] = self.last_node
+                self._NL_()
+                self._token('!')
+                self._NL_()
+            self._error('no available options')
+
+        self.ast._define(
+            ['version'],
+            []
+        )
+
+    @graken()
+    def _command_(self):
+        with self._choice():
+            with self._option():
+                self._version_()
+            with self._option():
+                self._hostname_()
+            with self._option():
+                self._domain_name_()
+            with self._option():
+                self._interface_()
+            with self._option():
+                self._names_()
+            with self._option():
+                self._time_range_()
+            with self._option():
+                self._object_()
+            with self._option():
+                self._object_group_()
+            with self._option():
+                self._access_list_()
+            with self._option():
+                self._ignored_()
+                self._NL_()
+            with self._option():
+                self._unmatched_()
+                self._NL_()
+            self._error('no available options')
+
+    @graken()
+    def _names_(self):
+        self._token('names')
+        self._NL_()
+
+        def block1():
+            self._name_()
+        self._closure(block1)
+        self.ast['objects'] = self.last_node
+        with self._optional():
+            self._token('!')
+            self._NL_()
+
+        self.ast._define(
+            ['objects'],
+            []
+        )
+
+    @graken()
+    def _name_(self):
+        self._token('name')
+        with self._group():
+            with self._choice():
+                with self._option():
+                    self._ip4_()
+                with self._option():
+                    self._ip6_()
+                self._error('no available options')
+        self.ast['address'] = self.last_node
+        self._identifier_()
+        self.ast['hostname'] = self.last_node
+        with self._optional():
+            self._token('description')
+            self._pattern(r'[^\n]+')
+            self.ast['description'] = self.last_node
+        self._NL_()
+
+        self.ast._define(
+            ['address', 'hostname', 'description'],
+            []
+        )
+
+    @graken()
+    def _access_list_rule_(self):
+        with self._choice():
+            with self._option():
+                self._token('access-list')
+                self._acl_id_()
+                self.ast['id'] = self.last_node
+                self._acl_line_()
+                self.ast['line'] = self.last_node
+                self._acl_extended_()
+                self.ast['extended'] = self.last_node
+                self._acl_mode_()
+                self.ast['mode'] = self.last_node
+                self._protocol_icmp_()
+                self.ast['protocol'] = self.last_node
+                self._acl_icmp_node_()
+                self.ast['source'] = self.last_node
+                self._acl_icmp_node_()
+                self.ast['dest'] = self.last_node
+                self._acl_icmp_options_()
+                self.ast['icmp'] = self.last_node
+                self._acl_options_()
+                self.ast['options'] = self.last_node
+                self._NL_()
+            with self._option():
+                self._token('access-list')
+                self._acl_id_()
+                self.ast['id'] = self.last_node
+                self._acl_line_()
+                self.ast['line'] = self.last_node
+                self._acl_extended_()
+                self.ast['extended'] = self.last_node
+                self._acl_mode_()
+                self.ast['mode'] = self.last_node
+                self._acl_protocol_()
+                self.ast['protocol'] = self.last_node
+                self._node_()
+                self.ast['source'] = self.last_node
+                self._node_()
+                self.ast['dest'] = self.last_node
+                self._acl_options_()
+                self.ast['options'] = self.last_node
+                self._NL_()
+            with self._option():
+                self._token('access-list')
+                self._acl_id_()
+                self.ast['id'] = self.last_node
+                self._acl_line_()
+                self.ast['line'] = self.last_node
+                self._token('ethertype')
+                self.ast['protocol'] = self.last_node
+                self._token('permit')
+                self._token('bpdu')
+                self._NL_()
+            self._error('no available options')
+
+        self.ast._define(
+            ['id', 'line', 'extended', 'mode', 'protocol', 'source', 'dest', 'icmp', 'options'],
+            []
+        )
+
+    @graken()
+    def _access_list_(self):
+        with self._choice():
+            with self._option():
+
+                def block1():
+                    self._access_list_remark_()
+                self._positive_closure(block1)
+
+                self.ast['remark'] = self.last_node
+                self._cut()
+                with self._choice():
+                    with self._option():
+                        self._token('access-list')
+                        self._acl_id_()
+                        self.ast['id'] = self.last_node
+                        self._acl_line_()
+                        self.ast['line'] = self.last_node
+                        self._acl_extended_()
+                        self.ast['extended'] = self.last_node
+                        self._acl_mode_()
+                        self.ast['mode'] = self.last_node
+                        self._protocol_icmp_()
+                        self.ast['protocol'] = self.last_node
+                        self._acl_icmp_node_()
+                        self.ast['source'] = self.last_node
+                        self._acl_icmp_node_()
+                        self.ast['dest'] = self.last_node
+                        self._acl_icmp_options_()
+                        self.ast['icmp'] = self.last_node
+                        self._acl_options_()
+                        self.ast['options'] = self.last_node
+                        self._NL_()
+                    with self._option():
+                        self._token('access-list')
+                        self._acl_id_()
+                        self.ast['id'] = self.last_node
+                        self._acl_line_()
+                        self.ast['line'] = self.last_node
+                        self._acl_extended_()
+                        self.ast['extended'] = self.last_node
+                        self._acl_mode_()
+                        self.ast['mode'] = self.last_node
+                        self._acl_protocol_()
+                        self.ast['protocol'] = self.last_node
+                        self._node_()
+                        self.ast['source'] = self.last_node
+                        self._node_()
+                        self.ast['dest'] = self.last_node
+                        self._acl_options_()
+                        self.ast['options'] = self.last_node
+                        self._NL_()
+                    with self._option():
+                        self._token('access-list')
+                        self._acl_id_()
+                        self.ast['id'] = self.last_node
+                        self._acl_line_()
+                        self.ast['line'] = self.last_node
+                        self._token('ethertype')
+                        self.ast['protocol'] = self.last_node
+                        self._token('permit')
+                        self._token('bpdu')
+                        self._NL_()
+                    self._error('no available options')
+            with self._option():
+                with self._choice():
+                    with self._option():
+                        self._token('access-list')
+                        self._acl_id_()
+                        self.ast['id'] = self.last_node
+                        self._acl_line_()
+                        self.ast['line'] = self.last_node
+                        self._acl_extended_()
+                        self.ast['extended'] = self.last_node
+                        self._acl_mode_()
+                        self.ast['mode'] = self.last_node
+                        self._protocol_icmp_()
+                        self.ast['protocol'] = self.last_node
+                        self._acl_icmp_node_()
+                        self.ast['source'] = self.last_node
+                        self._acl_icmp_node_()
+                        self.ast['dest'] = self.last_node
+                        self._acl_icmp_options_()
+                        self.ast['icmp'] = self.last_node
+                        self._acl_options_()
+                        self.ast['options'] = self.last_node
+                        self._NL_()
+                    with self._option():
+                        self._token('access-list')
+                        self._acl_id_()
+                        self.ast['id'] = self.last_node
+                        self._acl_line_()
+                        self.ast['line'] = self.last_node
+                        self._acl_extended_()
+                        self.ast['extended'] = self.last_node
+                        self._acl_mode_()
+                        self.ast['mode'] = self.last_node
+                        self._acl_protocol_()
+                        self.ast['protocol'] = self.last_node
+                        self._node_()
+                        self.ast['source'] = self.last_node
+                        self._node_()
+                        self.ast['dest'] = self.last_node
+                        self._acl_options_()
+                        self.ast['options'] = self.last_node
+                        self._NL_()
+                    with self._option():
+                        self._token('access-list')
+                        self._acl_id_()
+                        self.ast['id'] = self.last_node
+                        self._acl_line_()
+                        self.ast['line'] = self.last_node
+                        self._token('ethertype')
+                        self.ast['protocol'] = self.last_node
+                        self._token('permit')
+                        self._token('bpdu')
+                        self._NL_()
+                    self._error('no available options')
+            self._error('no available options')
+
+        self.ast._define(
+            ['remark', 'id', 'line', 'extended', 'mode', 'protocol', 'source', 'dest', 'icmp', 'options'],
+            []
+        )
+
+    @graken()
+    def _access_list_remark_(self):
+        self._token('access-list')
+        self._acl_id_()
+        self._acl_line_()
+        self._token('remark')
+        self._remark_()
+        self.ast['remark'] = self.last_node
+        self._NL_()
+
+        self.ast._define(
+            ['remark'],
+            []
+        )
+
+    @graken()
+    def _ignored_(self):
+        with self._choice():
+            with self._option():
+                self._token(':')
+                self._pattern(r'[^\n]*')
+            with self._option():
+                self._token('firewall')
+                self._pattern(r'[^\n]*')
+            with self._option():
+                self._token('enable')
+                self._pattern(r'[^\n]*')
+            with self._option():
+                self._token('dns-guard')
+                self._pattern(r'[^\n]*')
+                self._NL_()
+                self._token('!')
+            with self._option():
+                self._token('dns')
+                self._pattern(r'[^\n]*')
+            with self._option():
+                self._token('name-server')
+                self._pattern(r'[^\n]*')
+            with self._option():
+                self._token('domain-name')
+                self._pattern(r'[^\n]*')
+            with self._option():
+                with self._optional():
+                    self._token('no')
+                self._token('logging')
+                self._pattern(r'[^\n]*')
+            with self._option():
+                self._token('passwd')
+                self._pattern(r'[^\n]*')
+            with self._option():
+                self._token('!')
+            with self._option():
+                self._token('same-security-traffic')
+                self._pattern(r'[^\n]*')
+            self._error('expecting one of: ! : dns domain-name enable firewall logging name-server no passwd same-security-traffic')
+
+    @graken()
+    def _unmatched_(self):
+        pass
+
+
+class fwsmSemantics(object):
     def ip4(self, ast):
         return ast
 
     def ip6(self, ast):
+        return ast
+
+    def NL(self, ast):
         return ast
 
     def identifier(self, ast):
@@ -1774,16 +1910,13 @@ class aclSemantics(object):
     def obj_name(self, ast):
         return ast
 
-    def command(self, ast):
-        return ast
-
-    def description(self, ast):
-        return ast
-
     def hostname(self, ast):
         return ast
 
     def domain_name(self, ast):
+        return ast
+
+    def description(self, ast):
         return ast
 
     def interface(self, ast):
@@ -1793,99 +1926,6 @@ class aclSemantics(object):
         return ast
 
     def interface_detail(self, ast):
-        return ast
-
-    def names(self, ast):
-        return ast
-
-    def name(self, ast):
-        return ast
-
-    def day_of_the_week(self, ast):
-        return ast
-
-    def month(self, ast):
-        return ast
-
-    def hour(self, ast):
-        return ast
-
-    def minute(self, ast):
-        return ast
-
-    def time(self, ast):
-        return ast
-
-    def year(self, ast):
-        return ast
-
-    def day(self, ast):
-        return ast
-
-    def date(self, ast):
-        return ast
-
-    def timedate(self, ast):
-        return ast
-
-    def time_range_object(self, ast):
-        return ast
-
-    def time_range(self, ast):
-        return ast
-
-    def object(self, ast):
-        return ast
-
-    def object_type(self, ast):
-        return ast
-
-    def network_object(self, ast):
-        return ast
-
-    def service_object(self, ast):
-        return ast
-
-    def service_object_op(self, ast):
-        return ast
-
-    def service_object_source(self, ast):
-        return ast
-
-    def service_object_destination(self, ast):
-        return ast
-
-    def port(self, ast):
-        return ast
-
-    def object_group(self, ast):
-        return ast
-
-    def protocol_icmp(self, ast):
-        return ast
-
-    def protocol(self, ast):
-        return ast
-
-    def _protocol(self, ast):
-        return ast
-
-    def object_group_type(self, ast):
-        return ast
-
-    def service_group_object(self, ast):
-        return ast
-
-    def port_group_object(self, ast):
-        return ast
-
-    def network_group_object(self, ast):
-        return ast
-
-    def icmp_group_object(self, ast):
-        return ast
-
-    def protocol_group_object(self, ast):
         return ast
 
     def acl_id(self, ast):
@@ -1903,10 +1943,7 @@ class aclSemantics(object):
     def acl_protocol(self, ast):
         return ast
 
-    def acl_source(self, ast):
-        return ast
-
-    def acl_dest(self, ast):
+    def node(self, ast):
         return ast
 
     def acl_object_group_network_id(self, ast):
@@ -1954,22 +1991,94 @@ class aclSemantics(object):
     def acl_icmp_node(self, ast):
         return ast
 
-    def access_list(self, ast):
-        return ast
-
     def remark(self, ast):
         return ast
 
-    def access_list_remarks(self, ast):
+    def object(self, ast):
         return ast
 
-    def access_list_remark(self, ast):
+    def object_type(self, ast):
         return ast
 
-    def ignored(self, ast):
+    def network_object(self, ast):
         return ast
 
-    def unmatched(self, ast):
+    def service_object(self, ast):
+        return ast
+
+    def service_object_op(self, ast):
+        return ast
+
+    def service_object_source(self, ast):
+        return ast
+
+    def service_object_destination(self, ast):
+        return ast
+
+    def object_group(self, ast):
+        return ast
+
+    def protocol_icmp(self, ast):
+        return ast
+
+    def protocol(self, ast):
+        return ast
+
+    def port_group_protocol(self, ast):
+        return ast
+
+    def object_group_type(self, ast):
+        return ast
+
+    def service_group_object(self, ast):
+        return ast
+
+    def port_group_object(self, ast):
+        return ast
+
+    def network_group_object(self, ast):
+        return ast
+
+    def icmp_group_object(self, ast):
+        return ast
+
+    def protocol_group_object(self, ast):
+        return ast
+
+    def port(self, ast):
+        return ast
+
+    def hour(self, ast):
+        return ast
+
+    def minute(self, ast):
+        return ast
+
+    def time(self, ast):
+        return ast
+
+    def year(self, ast):
+        return ast
+
+    def day(self, ast):
+        return ast
+
+    def date(self, ast):
+        return ast
+
+    def timedate(self, ast):
+        return ast
+
+    def time_range_object(self, ast):
+        return ast
+
+    def time_range(self, ast):
+        return ast
+
+    def day_of_the_week(self, ast):
+        return ast
+
+    def month(self, ast):
         return ast
 
     def icmp_type(self, ast):
@@ -1981,12 +2090,42 @@ class aclSemantics(object):
     def port_code(self, ast):
         return ast
 
+    def grammar(self, ast):
+        return ast
+
+    def version(self, ast):
+        return ast
+
+    def command(self, ast):
+        return ast
+
+    def names(self, ast):
+        return ast
+
+    def name(self, ast):
+        return ast
+
+    def access_list_rule(self, ast):
+        return ast
+
+    def access_list(self, ast):
+        return ast
+
+    def access_list_remark(self, ast):
+        return ast
+
+    def ignored(self, ast):
+        return ast
+
+    def unmatched(self, ast):
+        return ast
+
 
 def main(filename, startrule, trace=False, whitespace=None, nameguard=None):
     import json
     with open(filename) as f:
         text = f.read()
-    parser = aclParser(parseinfo=False)
+    parser = fwsmParser(parseinfo=False)
     ast = parser.parse(
         text,
         startrule,
@@ -2009,12 +2148,12 @@ if __name__ == '__main__':
     class ListRules(argparse.Action):
         def __call__(self, parser, namespace, values, option_string):
             print('Rules:')
-            for r in aclParser.rule_list():
+            for r in fwsmParser.rule_list():
                 print(r)
             print()
             sys.exit(0)
 
-    parser = argparse.ArgumentParser(description="Simple parser for acl.")
+    parser = argparse.ArgumentParser(description="Simple parser for fwsm.")
     parser.add_argument('-l', '--list', action=ListRules, nargs=0,
                         help="list all rules and exit")
     parser.add_argument('-n', '--no-nameguard', action='store_true',

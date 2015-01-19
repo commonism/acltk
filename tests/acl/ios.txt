@@ -1,0 +1,51 @@
+hostname ios
+ip domain name example.org
+
+ip access-list extended example_out
+ permit tcp host 127.0.0.1 host 127.0.0.2
+ permit tcp host 127.0.0.1 127.0.0.0 0.0.0.255
+ permit tcp host 127.0.0.1 host 127.0.0.1 eq 80
+ permit tcp any any log-input
+ permit tcp any any established log B
+ permit tcp any any log-input PREFIX
+ permit tcp any any established log PREFIX
+
+!
+
+ip access-list extended BLOCK_PRIV_ADDRS
+ deny   ip any 10.0.0.0 0.255.255.255
+ deny   ip any 172.16.0.0 0.15.255.255
+ deny   ip any 192.168.0.0 0.0.255.255
+ deny   ip 10.0.0.0 0.255.255.255 any
+ deny   ip 172.16.0.0 0.15.255.255 any
+ deny   ip 192.168.0.0 0.0.255.255 any
+ permit ip any any
+
+ip access-list extended INTERNET_IN
+ remark *** Allowed Traffic ***
+ remark *** Deny Traffic Not Permited By IOS Stateful-Firewall ***
+ deny   ip any any
+
+ip access-list extended MGMT
+ permit ip 0.0.0.24 255.255.255.224 any
+ deny   ip any any
+
+ip access-list extended NAT_ACL
+ deny   ip 192.168.0.0 0.0.0.255 192.168.0.0 0.0.0.255
+ permit ip 192.168.0.0 0.0.0.255 any
+ deny   ip any any
+
+ip access-list standard 2
+ 25 permit 172.16.1.7
+ 15 permit 172.16.1.16
+
+access-list 1 remark SDM_ACL Category=1
+access-list 1 permit 192.168.0.0 0.0.0.255
+access-list 1 deny 192.168.0.1
+access-list 102 remark SDM_ACL Category=20
+access-list 102 permit ip host 192.168.0.30 any log A
+access-list 102 permit ip any any log A
+access-list 102 permit tcp any any eq www log A
+access-list 102 permit tcp any any eq domain log
+access-list 102 permit udp any any eq domain log
+

@@ -1,19 +1,16 @@
 import datetime
 import ipaddress
-from grako.exceptions import FailedToken, FailedSemantics
 
 from grako.parsing import graken
 
-from acltk.acl import aclParser, aclSemantics
-from acltk.aclObjects import ACLConfig, Names, Name, TimeRangeObjectAbsolute, TimeRangeObjectPeriodic, TimeRange, \
+from acltk.aclObjects import TimeRangeObjectAbsolute, TimeRangeObjectPeriodic, TimeRange, \
 	NetworkObject, ServiceObject, NetworkGroup, PortGroup, ServiceGroup, ProtocolGroup, ICMPGroup, Protocol, ICMP, \
-	NetworkHost, Network, Service, PortRange, Port, ACLNode, NetworkAny, ACLRule, Interface, NetworkAny4, NetworkAny6, \
-	ACLRuleOptionInActive, ACLRuleOptionLog, NetworkInterface
+	NetworkHost, Network, Service, PortRange, Port, ACLNode, NetworkAny, Interface, NetworkAny4, NetworkAny6, \
+	ACLRuleOptionInActive, ACLRuleOptionLog, NetworkInterface, Name
 
 
-class CiscoACLSemantics(aclSemantics):
+class aclSemantics:
 	def __init__(self, parser):
-		aclSemantics.__init__(self)
 		self.parser = parser
 
 	def interface(self, ast):
@@ -24,16 +21,8 @@ class CiscoACLSemantics(aclSemantics):
 					setattr(iface, k, v)
 		return iface
 
-	def names(self, ast):
-		n = Names()
-		for i in ast.objects:
-			n.add(i)
-		return n
-
-	def name(self, ast):
-		n = Name(**ast)
-		self.parser.names[ast.hostname] = n
-		return n
+	def interface_detail(self, ast):
+		return None
 
 	def hour(self, ast):
 		return int(ast)
@@ -127,6 +116,7 @@ class CiscoACLSemantics(aclSemantics):
 		except ValueError:
 			target = self.parser.names[addr]
 			addr = str(self.parser.names[addr].address)
+			return addr, target
 		return addr, target
 
 	def protocol_icmp(self, ast):
@@ -257,10 +247,7 @@ class CiscoACLSemantics(aclSemantics):
 		else:
 			return ICMP(ast.type, ast.code)
 
-	def acl_source(self, ast):
-		return ACLNode(ast.host, ast.port)
-
-	def acl_dest(self, ast):
+	def node(self, ast):
 		return ACLNode(ast.host, ast.port)
 
 	def acl_options(self, ast):
@@ -277,33 +264,9 @@ class CiscoACLSemantics(aclSemantics):
 				r[i.type] = ACLRuleOptionInActive()
 		return r
 
-	def access_list_remarks(self, ast):
-		# pdb.set_trace()
-		remark = ""
-		for i in ast['remark']:
-			remark += i['remark']
-		del ast['remark']
-		ast['remark'] = remark
-		# return ast
-		return self.access_list(ast)
 
-	def access_list(self, ast):
-		if ast.protocol == 'ethertype':
-			return None
-		return ACLRule(**ast)
-
-	def grammar(self, ast):
-		# pdb.set_trace()
-		return ACLConfig(ast)
-
-	def ignored(self, ast):
-		ast = None
-		return None
-
-
-class ExtendedAclParser(aclParser):
-	def __init__(self, parseinfo=False):
-		aclParser.__init__(self, parseinfo=parseinfo)
+class aclParser:
+	def __init__(self):
 		self.network_groups = dict()
 		self.network_objects = dict()
 		self.service_groups = dict()

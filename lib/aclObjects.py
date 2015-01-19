@@ -1,6 +1,28 @@
 import datetime
 import ipaddress
+import math
 
+
+class Names:
+	def __init__(self):
+		self.objects = []
+
+	def add(self, obj):
+		assert isinstance(obj, Name)
+		self.objects.append(obj)
+
+	def __repr__(self):
+		return "names ({})".format(", ".join([repr(i) for i in self.objects]))
+
+
+class Name:
+	def __init__(self, hostname=None, address=None, description=None):
+		self.hostname = hostname
+		self.address = ipaddress.ip_address(address)
+		self.description = description
+
+	def __repr__(self):
+		return "Name {self.hostname} -> {self.address}".format(self=self)
 
 class Interface:
 	def __init__(self, alias):
@@ -118,6 +140,56 @@ class Network:
 		return "Network {}".format(str(self.network))
 
 
+class NetworkWildcard:
+	def __init__(self, address, wildcard):
+		self.address = ipaddress.ip_address(address)
+		self.wildcard = ipaddress.ip_address(wildcard)
+
+	def _addresses(self):
+		l = set()
+		start = int(self.address) & ~int(self.wildcard)
+		bits = int(self.wildcard)
+
+		if start & ~bits == start:
+			l.add(ipaddress.ip_address(start))
+
+		todo = [(start, bits)]
+
+		while len(todo):
+			addr, bits = todo[0]
+			if bits > 0:
+				bit = math.floor(math.log(bits, 2))
+
+				if bits == (2**(bit+1)) -1:
+					m = ipaddress.ip_network("{}/{}".format(ipaddress.ip_address(addr), 31-bit))
+					l.add(m)
+				else:
+					e = (addr, bits & ~(1 << bit) )
+					if bits != e[1]:
+						todo.append( e )
+
+					x = addr | (1 << bit)
+					e = (x, bits & ~(1 << bit))
+					if addr != x or bits != e[1]:
+						todo.append( e )
+						l.add(ipaddress.ip_address(addr))
+						l.add(ipaddress.ip_address(x))
+			todo = todo[1:]
+		return l
+
+	def __and__(self, other):
+		if isinstance(other, NetworkHost):
+			return int(other.address) & ~int(self.wildcard) == int(self.address) & ~int(self.wildcard)
+		elif isinstance(other, Network):
+			return int(other.network.network_address) & ~int(self.wildcard) == \
+				   int(self.address) & int(other.network.netmask) & ~int(self.wildcard)
+		else:
+			return other & self
+
+	def __repr__(self):
+		return "NetworkWildcard {}/{}".format(self.address, self.wildcard)
+
+
 class NetworkAny:
 	def __init__(self):
 		pass
@@ -163,6 +235,7 @@ class NetworkAny4:
 
 class NetworkAny6:
 	version = 6
+
 	def __and__(self, other):
 		if isinstance(other, NetworkHost):
 			if self.version == other.address.version:
@@ -296,28 +369,6 @@ class PortGroup:
 												  self.description)
 
 
-class Names:
-	def __init__(self):
-		self.objects = []
-
-	def add(self, obj):
-		assert isinstance(obj, Name)
-		self.objects.append(obj)
-
-	def __repr__(self):
-		return "names ({})".format(", ".join([repr(i) for i in self.objects]))
-
-
-class Name:
-	def __init__(self, hostname=None, address=None, description=None):
-		self.hostname = hostname
-		self.address = ipaddress.ip_address(address)
-		self.description = description
-
-	def __repr__(self):
-		return "Name {self.hostname} -> {self.address}".format(self=self)
-
-
 class TimeRange:
 	def __init__(self, name):
 		self.name = name
@@ -366,7 +417,7 @@ class TimeRangeObjectPeriodic:
 
 class ACLNode:
 	def __init__(self, host=None, port=None):
-		assert isinstance(host, (Network, NetworkAny, NetworkAny4, NetworkAny6, NetworkGroup, NetworkHost, NetworkObject))
+		assert isinstance(host, (Network, NetworkWildcard, NetworkAny, NetworkAny4, NetworkAny6, NetworkGroup, NetworkHost, NetworkObject)), "type {}".format(host)
 		self.host = host
 		assert port is None or isinstance(port, (Port, PortGroup, PortRange))
 		self.port = port
@@ -403,7 +454,10 @@ class ACLRule:
 		assert isinstance(dest, ACLNode)
 		self.dst = dest
 		self.remark = remark
-		self.options = options
+		if options is None:
+			self.options = {}
+		else:
+			self.options = options
 		self.icmp = icmp
 
 	def __and__(self, other):
@@ -447,6 +501,7 @@ class ACLRules:
 
 
 import grako.ast
+#from acltk.fwsmObjects import Names
 
 
 class ACLConfig:
@@ -459,12 +514,11 @@ class ACLConfig:
 		self.objects = ACLObjects()
 		self.groups = ACLObjects()
 		self.rules = ACLRules()
-		for i in ast:
-			if isinstance(i, grako.ast.AST):
-				if 'hostname' in i:
-					self.hostname = i.hostname
-				elif 'domain_name' in i:
-					self.domainname = i.domain_name
+		for i in list(ast):
+			if isinstance(i, grako.ast.AST) and 'hostname' in i:
+				self.hostname = i.hostname
+			elif isinstance(i, grako.ast.AST) and 'domain_name' in i:
+				self.domainname = i.domain_name
 			elif isinstance(i, ACLRule):
 				self.rules.add(i)
 			elif isinstance(i, Names):
@@ -487,6 +541,9 @@ class ACLConfig:
 				self.groups.icmp[i.name] = i
 			elif isinstance(i, NetworkGroup):
 				self.groups.network[i.name] = i
+			else:
+				continue
+			ast.remove(i)
 
 	@property
 	def name(self):
@@ -494,26 +551,17 @@ class ACLConfig:
 
 	@classmethod
 	def parse(cls, filename, text=None, trace=False):
-		"""
+		from acltk.fwsmObjects import fwsmConfig
+		from acltk.iosObjects import iosConfig
 
-		:rtype : ACLConfig
-		"""
-		from acltk.aclSemantics import ExtendedAclParser, CiscoACLSemantics
+		for i in [fwsmConfig, iosConfig]:
+			try:
+				return i.parse(filename, text, trace)
+			except Exception:
+				print(i)
+		raise ValueError("Invalid Config?")
 
-		if not text:
-			with open(filename) as f:
-				text = f.read()
-		parser = ExtendedAclParser(parseinfo=False)
-		semantics = CiscoACLSemantics(parser)
-		config = parser.parse(
-			text,
-			"grammar",
-			filename=filename,
-			trace=trace,
-			whitespace=None,
-			nameguard=True,
-			semantics=semantics)
-		return config
+
 
 	@classmethod
 	def resolve(cls, r):

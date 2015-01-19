@@ -1,9 +1,5 @@
-grammar
-    =
-    @:{command}+ ("pager"|$)
-    ;
-
-#include :: "ip.bnf"
+NL = "\n";
+TOEOL = ?/[^\n]*/?;
 
 identifier = ?/[a-zA-Z_][A-Za-z0-9_\-\.]*/?;
 int = ?/[0-9]+/?;
@@ -11,34 +7,24 @@ string = ?/[\S]+/?;
 
 obj_name = ?/[A-Za-z0-9_\-\.]*/?;
 
-command 
-	= hostname
-	| domain_name
-	| interface
-	| names
-	| time_range
-	| object
-	| object_group
-	| access_list_remarks
-	| access_list
-	| ignored
-	| unmatched
-	;
-
-description
-	= "description" description:?/[^\n]+/?
-	| ()
-	;
 
 hostname
-	= "hostname" hostname:identifier;
+	= "hostname" hostname:identifier NL
+	;
 
 domain_name
 	= "domain-name" domain_name:identifier
 	;
 
+
+description
+	= "description" description:?/[^\n]+/? NL
+	| ()
+	;
+
+
 interface
-	= "interface" alias:interface_alias detail:{interface_detail} "!"
+	= "interface" alias:interface_alias NL detail:{interface_detail} "!" NL
 	;
 
 interface_alias
@@ -46,200 +32,13 @@ interface_alias
 	;
 
 interface_detail
-	= "nameif" name:identifier
-	| "bridge-group" bridge_group:(identifier|int)
-	| "security-level" security_level:int
-	| "ip address" addr:ip4 netmask:ip4 any:?/[^\n]+/?
-	| "no" any:?/[^\n]+/?
-	| "ipv6 address" addr:ip6 "/" netmask:int any:?/[^\n]+/?
-	| "vlan" vlan:identifier
-	| "description" description:?/[^\n]+/?
-	| "ipv6 nd" any:?/[^\n]+/?
-	| "ipv6 enable"
-	| "management-only"
-	| ()
-	;
-
-names
-	= "names" objects:{name}* ["!"]
-	;
-
-name 
-	= "name" address:(ip4|ip6) hostname:identifier >description
-	;
-
-day_of_the_week
-	= "Monday"
-	| "Tuesday"
-	| "Wednesday"
-	| "Thursday"
-	| "Friday"
-	| "Saturday"
-	| "Sunday"
-	;
-
-month
-	= "January"
-	| "February"
-	| "March"
-	| "April"
-	| "May"
-	| "June"
-	| "July"
-	| "August"
-	| "September"
-	| "October"
-	| "November"
-	| "December"
-	;
-
-
-hour
-	= ?/[0-9]{1,2}/?
-	;
-
-minute
-	= ?/[0-9]{1,2}/?
-	;
-
-time
-	= hour:hour ":" minute:minute
-	;
-
-year
-	= ?/[0-9]{4}/?
-	;
-
-day = 
-	?/[0-9]{1,2}/?
-	;
-
-
-date
-	= day:day month:month year:year
-	;
-
-timedate
-	= >time >date
-	;
-
-time_range_object
-	= type:"periodic" days:{day_of_the_week}+ start:time "to" edays:[day_of_the_week] end:time
-	| type:"periodic" days+:("weekdays"|"weekend"|"daily") start:time "to" end:time
-	| type:"absolute" ["start" start:timedate] ["end" end:timedate]
-	| type:"no" any:("periodic"|"absolute")
-	;
-
-time_range
-	= 'time-range' name:string objects:{time_range_object}+ "!"
-	;
-
-object
-	= "object" object_type
-	;
-
-object_type
-	= type:"network" name:obj_name args:network_object >description
-	| type:"service" name:obj_name args:service_object >description
-	;
-
-network_object
-	= type:"host" address:(ip4|ip6)
-	| type:"subnet" address:ip4 mask:ip4
-	| type:"subnet" address:ip6 "/" mask:int
-	| type:"range" start:ip4 stop:ip4
-	| type:"range" start:ip6 stop:ip6
-	| type:"fqdn" limit:[("v4"|"v6")] fqdn:string
-	;
-
-service_object
-	= type:"service" protocol:int
-	| type:"service" protocol:protocol_icmp icmp_type:[(icmp_type|int)] icmp_code:[int]
-	| type:"service" protocol:protocol source:service_object_source destination:service_object_destination
-	;
-
-service_object_op
-	= ("lt"|"gt"|"eq"|"neq") port
-	| "range" port port
-	;
-
-service_object_source
-	= "source" @:service_object_op
-	| ()
-	;
-
-service_object_destination
-	= "destination" @:service_object_op
-	| ()
-	;
-
-port
-	= (port_code|int)
-	;
-
-object_group
-	= "object-group" object_group_type
-	;
-
-protocol_icmp
-	= "icmp"
-	| "icmp6"
-	;
-
-protocol
-	= _protocol
-	;
-
-_protocol
-	= ("tcp-udp"|"tcp"|"udp")
-	;
-
-object_group_type
-	= type:"network" name:obj_name >description objects:{network_group_object}
-	(* PR 8.3 *)
-	| "service" name:obj_name type:_protocol >description objects:{port_group_object}
-	(* PR 9.3 *)
-	| type:"service" name:obj_name >description objects:{service_group_object}
-	| type:"icmp-type" name:obj_name >description objects:{icmp_group_object}
-	| type:"protocol" name:obj_name >description objects:{protocol_group_object}
-	;
-
-service_group_object
-	= type:"service-object" protocol:int
-	| type:"service-object" protocol:protocol_icmp icmp_type:[(icmp_type|int)] icmp_code:[int]
-	| type:"service-object" protocol:protocol source:service_object_source destination:service_object_destination
-	| type:"service-object" protocol:"object" object:acl_object_service_id
-    | type:"group-object" object:acl_object_group_service_id
-	| ()
-	;
-
-port_group_object
-	= "port-object" "eq" port
-	| "port-object" "range" port port
-	| "group-object" acl_object_group_service_id 
-	| ()
-	;
-
-network_group_object
-	= type:"network-object" name:"host" address:(acl_names_id|ip4|ip6)
-	| type:"network-object" name:"object" object:acl_object_network_id
-	| type:"network-object" name:(acl_names_id|ip4) netmask:ip4
-	| type:"network-object" name:(acl_names_id|ip6) "/" netmask:int
-	| type:"group-object" object:acl_object_group_network_id
-	| ()
-	;
-
-icmp_group_object
-	= type:"icmp-object" name:(icmp_type|int)
-	| type:"group-object" name:acl_object_group_icmp_id
-	| ()
-	;
-
-
-
-protocol_group_object
-	= type:"protocol-object" name:obj_name
-	| type:"group-object" name:acl_object_group_protocol_id
+	= type:"nameif" name:identifier NL
+	| type:"description" description:?/[^\n]+/? NL
+	| type:"ip nat" name:obj_name NL
+	| "no ip address" ?/[^!]*/? "!" NL
+	| "encryption mode" ?/[^!]*/? "!" NL
+	| "ssid" ?/[^!]*/? "!" NL
+	| ?/[^(^!|\n)]*/? NL
 	| ()
 	;
 
@@ -266,11 +65,7 @@ acl_protocol
 	| name:(protocol_code|int)
 	;
 
-acl_source
-	= host:acl_host [port:acl_port]
-	;
-
-acl_dest
+node
 	= host:acl_host [port:acl_port]
 	;
 
@@ -348,45 +143,186 @@ acl_option_log_option
 acl_icmp_node
 	= acl_host
 	;
-	
-access_list
-	= "access-list" id:acl_id line:acl_line extended:acl_extended mode:acl_mode protocol:protocol_icmp source:acl_icmp_node dest:acl_icmp_node icmp:acl_icmp_options options:acl_options
-	| "access-list" id:acl_id line:acl_line extended:acl_extended mode:acl_mode protocol:acl_protocol source:acl_source dest:acl_dest options:acl_options
-	| "access-list" id:acl_id line:acl_line protocol:"ethertype" "permit" "bpdu"
-	;
 
 remark
 	= (?/[^\n]*/?)
 	;
 
-access_list_remarks
-	= remark:{access_list_remark}+ ~ >access_list
+object
+	= "object" object_type
 	;
 
-access_list_remark
-	= 'access-list' acl_id acl_line 'remark' remark:remark
+object_type
+	= type:"network" name:obj_name NL args:network_object >description
+	| type:"service" name:obj_name NL args:service_object >description
+	;
+
+network_object
+	= type:"host" address:(ip4|ip6) NL
+	| type:"subnet" address:ip4 mask:ip4 NL
+	| type:"subnet" address:ip6 "/" mask:int NL
+	| type:"range" start:ip4 stop:ip4 NL
+	| type:"range" start:ip6 stop:ip6 NL
+	| type:"fqdn" limit:[("v4"|"v6")] fqdn:string NL
+	;
+
+service_object
+	= type:"service" protocol:int NL
+	| type:"service" protocol:protocol_icmp icmp_type:[(icmp_type|int)] icmp_code:[int] NL
+	| type:"service" protocol:protocol source:service_object_source destination:service_object_destination NL
+	;
+
+service_object_op
+	= ("lt"|"gt"|"eq"|"neq") port
+	| "range" port port
+	;
+
+service_object_source
+	= "source" @:service_object_op
+	| ()
+	;
+
+service_object_destination
+	= "destination" @:service_object_op
+	| ()
+	;
+
+object_group
+	= "object-group" object_group_type
+	;
+
+protocol_icmp
+	= "icmp"
+	| "icmp6"
+	;
+
+protocol
+	= port_group_protocol
+	;
+
+port_group_protocol
+	= ("tcp-udp"|"tcp"|"udp")
+	;
+
+object_group_type
+	= type:"network" name:obj_name NL >description objects:{network_group_object}
+	(* PR 8.3 *)
+	| "service" name:obj_name type:port_group_protocol NL >description objects:{port_group_object}
+	(* PR 9.3 *)
+	| type:"service" name:obj_name NL >description objects:{service_group_object}
+	| type:"icmp-type" name:obj_name NL >description objects:{icmp_group_object}
+	| type:"protocol" name:obj_name NL >description objects:{protocol_group_object}
+	;
+
+service_group_object
+	= type:"service-object" protocol:int NL
+	| type:"service-object" protocol:protocol_icmp icmp_type:[(icmp_type|int)] icmp_code:[int] NL
+	| type:"service-object" protocol:protocol source:service_object_source destination:service_object_destination NL
+	| type:"service-object" protocol:"object" object:acl_object_service_id NL
+    | type:"group-object" object:acl_object_group_service_id NL
+	| ()
+	;
+
+port_group_object
+	= "port-object" "eq" port NL
+	| "port-object" "range" port port NL
+	| "group-object" acl_object_group_service_id NL
+	| ()
+	;
+
+network_group_object
+	= type:"network-object" name:"host" address:(acl_names_id|ip4|ip6) NL
+	| type:"network-object" name:"object" object:acl_object_network_id NL
+	| type:"network-object" name:(acl_names_id|ip4) netmask:ip4 NL
+	| type:"network-object" name:(acl_names_id|ip6) "/" netmask:int NL
+	| type:"group-object" object:acl_object_group_network_id NL
+	| ()
+	;
+
+icmp_group_object
+	= type:"icmp-object" name:(icmp_type|int) NL
+	| type:"group-object" name:acl_object_group_icmp_id NL
+	| ()
 	;
 
 
-ignored
-	= ":" ?/[^\n]*/?
-	| "ASA Version" ?/[^\n]*/? "!"
-	| "FWSM Version" ?/[^\n]*/? "!"
-	| "firewall" ?/[^\n]*/?
-	| "enable"  ?/[^\n]*/?
-	| "dns-guard" ?/[^\n]*/? "!"
-	| "dns" ?/[^\n]*/?
-	| "name-server" ?/[^\n]*/?
-	| "domain-name" ?/[^\n]*/?
-	| ["no"] "logging" ?/[^\n]*/?
-	| "passwd" ?/[^\n]*/?
-	| "!"
-	| "same-security-traffic"  ?/[^\n]*/?
+
+protocol_group_object
+	= type:"protocol-object" name:obj_name NL
+	| type:"group-object" name:acl_object_group_protocol_id NL
+	| ()
 	;
 
-unmatched
-	= ()
+port
+	= (port_code|int)
 	;
+
+hour
+	= ?/[0-9]{1,2}/?
+	;
+
+minute
+	= ?/[0-9]{1,2}/?
+	;
+
+time
+	= hour:hour ":" minute:minute
+	;
+
+year
+	= ?/[0-9]{4}/?
+	;
+
+day =
+	?/[0-9]{1,2}/?
+	;
+
+
+date
+	= day:day month:month year:year
+	;
+
+timedate
+	= >time >date
+	;
+
+time_range_object
+	= type:"periodic" days:{day_of_the_week}+ start:time "to" edays:[day_of_the_week] end:time NL
+	| type:"periodic" days+:("weekdays"|"weekend"|"daily") start:time "to" end:time NL
+	| type:"absolute" ["start" start:timedate] ["end" end:timedate] NL
+	| type:"no" any:("periodic"|"absolute") NL
+	;
+
+time_range
+	= 'time-range' name:string NL objects:{time_range_object}+ "!" NL
+	;
+
+
+day_of_the_week
+	= "Monday"
+	| "Tuesday"
+	| "Wednesday"
+	| "Thursday"
+	| "Friday"
+	| "Saturday"
+	| "Sunday"
+	;
+
+month
+	= "January"
+	| "February"
+	| "March"
+	| "April"
+	| "May"
+	| "June"
+	| "July"
+	| "August"
+	| "September"
+	| "October"
+	| "November"
+	| "December"
+	;
+
 
 icmp_type
 	= "unreachable"
@@ -406,28 +342,30 @@ icmp_type
 	| "information-reply"
 	| "echo-reply"
 	| "echo"
+	| "ttl-exceeded"
 	;
 
 protocol_code
-    = "ip"  
-    | "icmp" 
-    | "igmp" 
-    | "ipinip"
-    | "tcp" 
-    | "igrp" 
-    | "udp" 
-    | "gre" 
-    | "pptp" 
-    | "esp" 
-    | "ipsec"
-    | "ah"  
-    | "icmp6"
-    | "eigrp"
-    | "ospf" 
-    | "nos" 
-    | "pim" 
-    | "pcp" 
-    | "snp" 
+	= "ip"
+	| "icmp"
+	| "igmp"
+	| "ipinip"
+	| "tcp"
+	| "igrp"
+	| "udp"
+	| "gre"
+	| "pptp"
+	| "esp"
+	| "ipsec"
+	| "ahp"
+	| "ah"
+	| "icmp6"
+	| "eigrp"
+	| "ospf"
+	| "nos"
+	| "pim"
+	| "pcp"
+	| "snp"
 	;
 
 port_code
@@ -470,7 +408,9 @@ port_code
 	| "netbios-ns"
 	| "netbios-dgm"
 	| "netbios-ssn"
+	| "netbios-ss"
 	| "nntp"
+	| "non500-isakmp"
 	| "ntp"
 	| "pcanywhere-status"
 	| "pcanywhere-data"
@@ -504,4 +444,3 @@ port_code
 	| "www"
 	| "xdmcp"
 	;
-
