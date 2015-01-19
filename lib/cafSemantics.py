@@ -1,4 +1,3 @@
-from grako.exceptions import FailedSemantics
 from acltk.aclObjects import ACLRule, Network, NetworkHost, NetworkAny, NetworkGroup, ACLNode, NetworkAny4, NetworkAny6
 from acltk.cafObjects import cafOpUnion, cafBlock, cafNetworkAny, cafNetworkAny4, cafNetworkAny6, cafOpIntersect, \
     cafOpExcept

@@ -15,7 +15,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 from grako.parsing import graken, Parser
 
 
-__version__ = (2015, 1, 6, 5, 50, 28, 1)
+__version__ = (2015, 1, 19, 8, 19, 4, 0)
 
 __all__ = [
     'cafParser',
@@ -37,6 +37,10 @@ class cafParser(Parser):
         self._pattern(r'((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])')
 
     @graken()
+    def _ipX_(self):
+        self._pattern(r'\w+\.\w+\.\w+\.\w+')
+
+    @graken()
     def _ip6_(self):
         self._pattern(r'[a-fA-F0-9]*:[a-fA-F0-9\.\:]+')
 
@@ -48,7 +52,7 @@ class cafParser(Parser):
 
     @graken()
     def _string_(self):
-        self._pattern(r'[A-Za-z_\-]+')
+        self._pattern(r'[A-Za-z0-9_\-\.]*')
 
     @graken()
     def _int_(self):
@@ -215,6 +219,9 @@ class cafParser(Parser):
 
 class cafSemantics(object):
     def ip4(self, ast):
+        return ast
+
+    def ipX(self, ast):
         return ast
 
     def ip6(self, ast):

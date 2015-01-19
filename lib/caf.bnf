@@ -4,14 +4,13 @@ grammar
     = @:expr $
     ;
 
-string = ?/[A-Za-z_\-]+/?;
+string = ?/[A-Za-z0-9_\-\.]*/?;
 
 int = ?/[0-9]+/?;
 
 comment
 	= "/*" ?/([^*]|(\*[^/]))*/? "*/"
 	;
-
 
 op	= "union"
 	| "intersect"
