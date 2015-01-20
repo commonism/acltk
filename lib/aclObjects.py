@@ -135,6 +135,8 @@ class Network:
 			return other & self
 		if isinstance(other, NetworkObject):
 			return other & self
+		if isinstance(other, NetworkWildcard):
+			return other & self
 
 	def __repr__(self):
 		return "Network {}".format(str(self.network))
