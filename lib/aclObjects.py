@@ -120,7 +120,7 @@ class Network:
 		self.target = target
 
 	def __and__(self, other):
-		assert isinstance(other, (Network, NetworkHost, NetworkObject, NetworkGroup, NetworkAny, NetworkAny4, NetworkAny6))
+		assert isinstance(other, (Network, NetworkWildcard, NetworkHost, NetworkObject, NetworkGroup, NetworkAny, NetworkAny4, NetworkAny6))
 		if isinstance(other, NetworkHost):
 			return other.address in self.network
 		if isinstance(other, NetworkAny):
