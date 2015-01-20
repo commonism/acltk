@@ -8,9 +8,9 @@
 
 <h1>Choose</h1>
 
-<form action="/show" method="get">
+<form action="{{url_for("show")}}" method="get">
     <select name="config">
-{% for i in db %}
+{% for i in db|sort %}
         <option>{{ i }}</option>
 {% endfor %}
     </select>
@@ -18,7 +18,7 @@
 </form>
 
 
-<form action="/add" method=post enctype=multipart/form-data>
+<form action="{{url_for("add")}}" method=post enctype=multipart/form-data>
     <p>
     <input type=file name=file>
     <input type=submit value=Upload>

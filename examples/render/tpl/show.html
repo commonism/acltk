@@ -1,7 +1,13 @@
 {% extends "static.html" %}
 
 {% block caf %}
-<form action="/show" method="get">
+{% if args.warning %}
+<p style="padding:10px; border:7px solid #FF0000">
+{{ args.warning }}
+</p>
+{% endif %}
+
+<form action="{{url_for("show")}}" method="get">
     <pre><textarea name="caf" cols="120" rows="10">{{ caf }}</textarea></pre>
     <input type="hidden" name="config" value="{{ aclconfig.name }}"> </br>
     <input type="checkbox" name="sns" value="1" {% if args.show_not_selected %} checked {% endif %}> Show not selected <br>

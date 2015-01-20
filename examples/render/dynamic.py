@@ -46,13 +46,17 @@ def show():
 		selection = None
 		sns = request.args.get('sns', False)
 		cafString=request.args.get('caf')
+		warning = None
 		if cafString and len(cafString) > 0:
-			caf = cafBlock.parse(None, text=cafString)
-			selection = caf.run(acls.rules)
-			selection = acls.resolve(selection)
+			try:
+				caf = cafBlock.parse(None, text=cafString)
+				selection = caf.run(acls.rules)
+				selection = acls.resolve(selection)
+			except:
+				warning = "Filter ungültig"
 		else:
 			cafString = ""
-		return render_template('show.html', aclconfig=acls, args = {'show_not_selected':sns, 'expand_groups':exp}, selection=selection, caf=cafString)
+		return render_template('show.html', aclconfig=acls, args = {'show_not_selected':sns, 'expand_groups':exp, 'warning':warning}, selection=selection, caf=cafString)
 
 if __name__ == "__main__":
 	app.run(debug=True)
