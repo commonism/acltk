@@ -74,7 +74,7 @@ class iosSemantics(aclSemantics, _iosSemantics):
 					src = ACLNode(host=obj.source)
 				else:
 					src = src
-				r.add(ACLRule(extended=ast.type, id=ast.name, protocol=Protocol("ip"), mode=obj.mode, source=src, dest=ACLNode(NetworkAny()), options=obj.options))
+				r.add(ACLRule(extended=ast.type, id=ast.name, protocol=Protocol("ip"), mode=obj.mode, source=src, dest=ACLNode(NetworkAny()), options=obj.options, remark=obj.remark))
 		return r
 
 	def access_list_ip_standard(self, ast):
