@@ -15,7 +15,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 from grako.parsing import graken, Parser
 
 
-__version__ = (2015, 1, 19, 12, 45, 51, 0)
+__version__ = (2015, 1, 20, 13, 48, 32, 1)
 
 __all__ = [
     'iosParser',
@@ -53,6 +53,14 @@ class iosParser(Parser):
         self._pattern(r'[^\n]*')
 
     @graken()
+    def _SP_(self):
+        self._token(' ')
+
+    @graken()
+    def _WS_(self):
+        self._pattern(r'[ \t]+')
+
+    @graken()
     def _identifier_(self):
         self._pattern(r'[a-zA-Z_][A-Za-z0-9_\-\.]*')
 
@@ -71,6 +79,7 @@ class iosParser(Parser):
     @graken()
     def _hostname_(self):
         self._token('hostname')
+        self._WS_()
         self._identifier_()
         self.ast['hostname'] = self.last_node
         self._NL_()
@@ -83,6 +92,7 @@ class iosParser(Parser):
     @graken()
     def _domain_name_(self):
         self._token('domain-name')
+        self._WS_()
         self._identifier_()
         self.ast['domain_name'] = self.last_node
 
@@ -96,6 +106,7 @@ class iosParser(Parser):
         with self._choice():
             with self._option():
                 self._token('description')
+                self._WS_()
                 self._pattern(r'[^\n]+')
                 self.ast['description'] = self.last_node
                 self._NL_()
@@ -111,16 +122,16 @@ class iosParser(Parser):
     @graken()
     def _interface_(self):
         self._token('interface')
+        self._WS_()
         self._interface_alias_()
         self.ast['alias'] = self.last_node
         self._NL_()
 
         def block2():
+            self._WS_()
             self._interface_detail_()
         self._closure(block2)
         self.ast['detail'] = self.last_node
-        self._token('!')
-        self._NL_()
 
         self.ast._define(
             ['alias', 'detail'],
@@ -153,22 +164,7 @@ class iosParser(Parser):
                 self.ast['name'] = self.last_node
                 self._NL_()
             with self._option():
-                self._token('no ip address')
-                self._pattern(r'[^!]*')
-                self._token('!')
-                self._NL_()
-            with self._option():
-                self._token('encryption mode')
-                self._pattern(r'[^!]*')
-                self._token('!')
-                self._NL_()
-            with self._option():
-                self._token('ssid')
-                self._pattern(r'[^!]*')
-                self._token('!')
-                self._NL_()
-            with self._option():
-                self._pattern(r'[^(^!|\n)]*')
+                self._TOEOL_()
                 self._NL_()
             with self._option():
                 pass
@@ -247,6 +243,7 @@ class iosParser(Parser):
         self._acl_host_()
         self.ast['host'] = self.last_node
         with self._optional():
+            self._WS_()
             self._acl_port_()
             self.ast['port'] = self.last_node
 
@@ -307,6 +304,7 @@ class iosParser(Parser):
                             self._token('ip')
                         self._error('expecting one of: host ip')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 with self._group():
                     with self._choice():
                         with self._option():
@@ -320,6 +318,7 @@ class iosParser(Parser):
             with self._option():
                 self._token('interface')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._identifier_()
                 self.ast['name'] = self.last_node
             with self._option():
@@ -336,11 +335,13 @@ class iosParser(Parser):
             with self._option():
                 self._token('object')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._acl_object_network_id_()
                 self.ast['name'] = self.last_node
             with self._option():
                 self._token('object-group')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._acl_object_group_network_id_()
                 self.ast['name'] = self.last_node
             with self._option():
@@ -352,6 +353,7 @@ class iosParser(Parser):
                             self._ip4_()
                         self._error('no available options')
                 self.ast['address'] = self.last_node
+                self._WS_()
                 self._ip4_()
                 self.ast['netmask'] = self.last_node
             with self._option():
@@ -379,6 +381,7 @@ class iosParser(Parser):
             with self._option():
                 self._token('object-group')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._acl_object_group_service_id_()
                 self.ast['name'] = self.last_node
             with self._option():
@@ -392,13 +395,16 @@ class iosParser(Parser):
                             self._token('eq')
                         self._error('expecting one of: eq gt lt')
                 self.ast['op'] = self.last_node
+                self._WS_()
                 self._port_()
                 self.ast['port'] = self.last_node
             with self._option():
                 self._token('range')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._port_()
                 self.ast['start'] = self.last_node
+                self._WS_()
                 self._port_()
                 self.ast['stop'] = self.last_node
             self._error('no available options')
@@ -412,11 +418,14 @@ class iosParser(Parser):
     def _acl_icmp_options_(self):
         with self._choice():
             with self._option():
+                self._WS_()
                 self._token('object-group')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._acl_object_group_icmp_id_()
                 self.ast['object'] = self.last_node
             with self._option():
+                self._WS_()
                 with self._group():
                     with self._choice():
                         with self._option():
@@ -426,8 +435,9 @@ class iosParser(Parser):
                         self._error('no available options')
                 self.ast['type'] = self.last_node
                 with self._optional():
+                    self._WS_()
                     self._int_()
-                self.ast['code'] = self.last_node
+                    self.ast['code'] = self.last_node
             with self._option():
                 pass
             self._error('no available options')
@@ -522,6 +532,7 @@ class iosParser(Parser):
                 with self._choice():
                     with self._option():
                         self._token('description')
+                        self._WS_()
                         self._pattern(r'[^\n]+')
                         self.ast['description'] = self.last_node
                         self._NL_()
@@ -539,6 +550,7 @@ class iosParser(Parser):
                 with self._choice():
                     with self._option():
                         self._token('description')
+                        self._WS_()
                         self._pattern(r'[^\n]+')
                         self.ast['description'] = self.last_node
                         self._NL_()
@@ -752,6 +764,7 @@ class iosParser(Parser):
                 with self._choice():
                     with self._option():
                         self._token('description')
+                        self._WS_()
                         self._pattern(r'[^\n]+')
                         self.ast['description'] = self.last_node
                         self._NL_()
@@ -774,6 +787,7 @@ class iosParser(Parser):
                 with self._choice():
                     with self._option():
                         self._token('description')
+                        self._WS_()
                         self._pattern(r'[^\n]+')
                         self.ast['description'] = self.last_node
                         self._NL_()
@@ -795,6 +809,7 @@ class iosParser(Parser):
                 with self._choice():
                     with self._option():
                         self._token('description')
+                        self._WS_()
                         self._pattern(r'[^\n]+')
                         self.ast['description'] = self.last_node
                         self._NL_()
@@ -816,6 +831,7 @@ class iosParser(Parser):
                 with self._choice():
                     with self._option():
                         self._token('description')
+                        self._WS_()
                         self._pattern(r'[^\n]+')
                         self.ast['description'] = self.last_node
                         self._NL_()
@@ -837,6 +853,7 @@ class iosParser(Parser):
                 with self._choice():
                     with self._option():
                         self._token('description')
+                        self._WS_()
                         self._pattern(r'[^\n]+')
                         self.ast['description'] = self.last_node
                         self._NL_()
@@ -1567,6 +1584,7 @@ class iosParser(Parser):
     @graken()
     def _ip_(self):
         self._token('ip')
+        self._WS_()
         self._ip_command_()
         self.ast['cmd'] = self.last_node
 
@@ -1581,11 +1599,13 @@ class iosParser(Parser):
             with self._option():
                 self._token('access-list')
                 self.ast['cmd'] = self.last_node
+                self._WS_()
                 self._ip_access_list_()
                 self.ast['object'] = self.last_node
             with self._option():
                 self._token('domain name')
                 self.ast['cmd'] = self.last_node
+                self._WS_()
                 self._obj_name_()
                 self.ast['name'] = self.last_node
             with self._option():
@@ -1603,6 +1623,7 @@ class iosParser(Parser):
             with self._option():
                 self._token('standard')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._obj_name_()
                 self.ast['name'] = self.last_node
                 self._NL_()
@@ -1615,6 +1636,7 @@ class iosParser(Parser):
             with self._option():
                 self._token('extended')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._obj_name_()
                 self.ast['name'] = self.last_node
                 self._NL_()
@@ -1636,8 +1658,9 @@ class iosParser(Parser):
         self._token('log')
         self.ast['type'] = self.last_node
         with self._optional():
+            self._WS_()
             self._identifier_()
-        self.ast['value'] = self.last_node
+            self.ast['value'] = self.last_node
 
         self.ast._define(
             ['type', 'value'],
@@ -1648,6 +1671,7 @@ class iosParser(Parser):
     def _ip_access_list_standard_rule_options_(self):
 
         def block0():
+            self._WS_()
             self._ip_access_list_standard_rule_option_()
         self._closure(block0)
 
@@ -1655,8 +1679,10 @@ class iosParser(Parser):
     def _ip_access_list_remark_(self):
         with self._optional():
             self._int_()
-        self.ast['seq'] = self.last_node
+            self.ast['seq'] = self.last_node
+            self._WS_()
         self._token('remark')
+        self._SP_()
         self._remark_()
         self.ast['remark'] = self.last_node
         self._NL_()
@@ -1670,9 +1696,11 @@ class iosParser(Parser):
     def _ip_access_list_standard_rule_(self):
         with self._optional():
             self._int_()
-        self.ast['seq'] = self.last_node
+            self.ast['seq'] = self.last_node
+            self._WS_()
         self._acl_mode_()
         self.ast['mode'] = self.last_node
+        self._WS_()
         self._ios_host_()
         self.ast['source'] = self.last_node
         self._ip_access_list_standard_rule_options_()
@@ -1691,10 +1719,12 @@ class iosParser(Parser):
                 self._ip4_()
                 self.ast['address'] = self.last_node
                 with self._optional():
+                    self._WS_()
                     self._ip4_()
-                self.ast['wildcard'] = self.last_node
+                    self.ast['wildcard'] = self.last_node
             with self._option():
                 self._token('host')
+                self._WS_()
                 self._ip4_()
                 self.ast['address'] = self.last_node
             with self._option():
@@ -1712,6 +1742,7 @@ class iosParser(Parser):
         self._ios_host_()
         self.ast['host'] = self.last_node
         with self._optional():
+            self._WS_()
             self._acl_port_()
             self.ast['port'] = self.last_node
 
@@ -1724,32 +1755,35 @@ class iosParser(Parser):
     def _ip_access_list_standard_(self):
         with self._choice():
             with self._option():
-                with self._optional():
-                    self._int_()
-                self.ast['seq'] = self.last_node
 
-                def block2():
+                def block1():
+                    self._SP_()
                     self._ip_access_list_remark_()
-                self._positive_closure(block2)
+                self._positive_closure(block1)
 
                 self.ast['remark'] = self.last_node
-                self._cut()
+                self._SP_()
                 with self._optional():
                     self._int_()
-                self.ast['seq'] = self.last_node
+                    self.ast['seq'] = self.last_node
+                    self._WS_()
                 self._acl_mode_()
                 self.ast['mode'] = self.last_node
+                self._WS_()
                 self._ios_host_()
                 self.ast['source'] = self.last_node
                 self._ip_access_list_standard_rule_options_()
                 self.ast['options'] = self.last_node
                 self._NL_()
             with self._option():
+                self._SP_()
                 with self._optional():
                     self._int_()
-                self.ast['seq'] = self.last_node
+                    self.ast['seq'] = self.last_node
+                    self._WS_()
                 self._acl_mode_()
                 self.ast['mode'] = self.last_node
+                self._WS_()
                 self._ios_host_()
                 self.ast['source'] = self.last_node
                 self._ip_access_list_standard_rule_options_()
@@ -1758,7 +1792,7 @@ class iosParser(Parser):
             self._error('no available options')
 
         self.ast._define(
-            ['seq', 'remark', 'mode', 'source', 'options'],
+            ['remark', 'seq', 'mode', 'source', 'options'],
             []
         )
 
@@ -1768,21 +1802,25 @@ class iosParser(Parser):
             with self._option():
                 self._token('precedence')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._identifier_()
                 self.ast['value'] = self.last_node
             with self._option():
                 self._token('dscp')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._identifier_()
                 self.ast['value'] = self.last_node
             with self._option():
                 self._token('tos')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._identifier_()
                 self.ast['value'] = self.last_node
             with self._option():
                 self._token('time-range')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._identifier_()
                 self.ast['value'] = self.last_node
             with self._option():
@@ -1792,14 +1830,16 @@ class iosParser(Parser):
                 self._token('log-input')
                 self.ast['type'] = self.last_node
                 with self._optional():
+                    self._WS_()
                     self._identifier_()
-                self.ast['value'] = self.last_node
+                    self.ast['value'] = self.last_node
             with self._option():
                 self._token('log')
                 self.ast['type'] = self.last_node
                 with self._optional():
+                    self._WS_()
                     self._identifier_()
-                self.ast['value'] = self.last_node
+                    self.ast['value'] = self.last_node
             with self._option():
                 self._token('established')
                 self.ast['type'] = self.last_node
@@ -1814,6 +1854,7 @@ class iosParser(Parser):
     def _ip_access_list_extended_rule_options_(self):
 
         def block0():
+            self._WS_()
             self._ip_access_list_extended_rule_option_()
         self._closure(block0)
 
@@ -1823,13 +1864,17 @@ class iosParser(Parser):
             with self._option():
                 with self._optional():
                     self._int_()
-                self.ast['seq'] = self.last_node
+                    self.ast['seq'] = self.last_node
+                    self._WS_()
                 self._acl_mode_()
                 self.ast['mode'] = self.last_node
+                self._WS_()
                 self._protocol_icmp_()
                 self.ast['protocol'] = self.last_node
+                self._WS_()
                 self._ios_host_()
                 self.ast['source'] = self.last_node
+                self._WS_()
                 self._ios_host_()
                 self.ast['dest'] = self.last_node
                 self._acl_icmp_options_()
@@ -1840,13 +1885,17 @@ class iosParser(Parser):
             with self._option():
                 with self._optional():
                     self._int_()
-                self.ast['seq'] = self.last_node
+                    self.ast['seq'] = self.last_node
+                    self._WS_()
                 self._acl_mode_()
                 self.ast['mode'] = self.last_node
+                self._WS_()
                 self._acl_protocol_()
                 self.ast['protocol'] = self.last_node
+                self._WS_()
                 self._ios_node_()
                 self.ast['source'] = self.last_node
+                self._WS_()
                 self._ios_node_()
                 self.ast['dest'] = self.last_node
                 self._ip_access_list_extended_rule_options_()
@@ -1855,13 +1904,17 @@ class iosParser(Parser):
             with self._option():
                 with self._optional():
                     self._int_()
-                self.ast['seq'] = self.last_node
+                    self.ast['seq'] = self.last_node
+                    self._WS_()
                 self._acl_mode_()
                 self.ast['mode'] = self.last_node
+                self._WS_()
                 self._acl_protocol_()
                 self.ast['protocol'] = self.last_node
+                self._WS_()
                 self._ios_host_()
                 self.ast['source'] = self.last_node
+                self._WS_()
                 self._ios_host_()
                 self.ast['dest'] = self.last_node
                 self._ip_access_list_extended_rule_options_()
@@ -1878,27 +1931,29 @@ class iosParser(Parser):
     def _ip_access_list_extended_(self):
         with self._choice():
             with self._option():
-                with self._optional():
-                    self._int_()
-                self.ast['seq'] = self.last_node
 
-                def block2():
+                def block1():
+                    self._SP_()
                     self._ip_access_list_remark_()
-                self._positive_closure(block2)
+                self._positive_closure(block1)
 
                 self.ast['remark'] = self.last_node
-                self._cut()
+                self._SP_()
                 with self._choice():
                     with self._option():
                         with self._optional():
                             self._int_()
-                        self.ast['seq'] = self.last_node
+                            self.ast['seq'] = self.last_node
+                            self._WS_()
                         self._acl_mode_()
                         self.ast['mode'] = self.last_node
+                        self._WS_()
                         self._protocol_icmp_()
                         self.ast['protocol'] = self.last_node
+                        self._WS_()
                         self._ios_host_()
                         self.ast['source'] = self.last_node
+                        self._WS_()
                         self._ios_host_()
                         self.ast['dest'] = self.last_node
                         self._acl_icmp_options_()
@@ -1909,13 +1964,17 @@ class iosParser(Parser):
                     with self._option():
                         with self._optional():
                             self._int_()
-                        self.ast['seq'] = self.last_node
+                            self.ast['seq'] = self.last_node
+                            self._WS_()
                         self._acl_mode_()
                         self.ast['mode'] = self.last_node
+                        self._WS_()
                         self._acl_protocol_()
                         self.ast['protocol'] = self.last_node
+                        self._WS_()
                         self._ios_node_()
                         self.ast['source'] = self.last_node
+                        self._WS_()
                         self._ios_node_()
                         self.ast['dest'] = self.last_node
                         self._ip_access_list_extended_rule_options_()
@@ -1924,13 +1983,17 @@ class iosParser(Parser):
                     with self._option():
                         with self._optional():
                             self._int_()
-                        self.ast['seq'] = self.last_node
+                            self.ast['seq'] = self.last_node
+                            self._WS_()
                         self._acl_mode_()
                         self.ast['mode'] = self.last_node
+                        self._WS_()
                         self._acl_protocol_()
                         self.ast['protocol'] = self.last_node
+                        self._WS_()
                         self._ios_host_()
                         self.ast['source'] = self.last_node
+                        self._WS_()
                         self._ios_host_()
                         self.ast['dest'] = self.last_node
                         self._ip_access_list_extended_rule_options_()
@@ -1938,17 +2001,22 @@ class iosParser(Parser):
                         self._NL_()
                     self._error('no available options')
             with self._option():
+                self._SP_()
                 with self._choice():
                     with self._option():
                         with self._optional():
                             self._int_()
-                        self.ast['seq'] = self.last_node
+                            self.ast['seq'] = self.last_node
+                            self._WS_()
                         self._acl_mode_()
                         self.ast['mode'] = self.last_node
+                        self._WS_()
                         self._protocol_icmp_()
                         self.ast['protocol'] = self.last_node
+                        self._WS_()
                         self._ios_host_()
                         self.ast['source'] = self.last_node
+                        self._WS_()
                         self._ios_host_()
                         self.ast['dest'] = self.last_node
                         self._acl_icmp_options_()
@@ -1959,13 +2027,17 @@ class iosParser(Parser):
                     with self._option():
                         with self._optional():
                             self._int_()
-                        self.ast['seq'] = self.last_node
+                            self.ast['seq'] = self.last_node
+                            self._WS_()
                         self._acl_mode_()
                         self.ast['mode'] = self.last_node
+                        self._WS_()
                         self._acl_protocol_()
                         self.ast['protocol'] = self.last_node
+                        self._WS_()
                         self._ios_node_()
                         self.ast['source'] = self.last_node
+                        self._WS_()
                         self._ios_node_()
                         self.ast['dest'] = self.last_node
                         self._ip_access_list_extended_rule_options_()
@@ -1974,13 +2046,17 @@ class iosParser(Parser):
                     with self._option():
                         with self._optional():
                             self._int_()
-                        self.ast['seq'] = self.last_node
+                            self.ast['seq'] = self.last_node
+                            self._WS_()
                         self._acl_mode_()
                         self.ast['mode'] = self.last_node
+                        self._WS_()
                         self._acl_protocol_()
                         self.ast['protocol'] = self.last_node
+                        self._WS_()
                         self._ios_host_()
                         self.ast['source'] = self.last_node
+                        self._WS_()
                         self._ios_host_()
                         self.ast['dest'] = self.last_node
                         self._ip_access_list_extended_rule_options_()
@@ -1990,7 +2066,7 @@ class iosParser(Parser):
             self._error('no available options')
 
         self.ast._define(
-            ['seq', 'remark', 'mode', 'protocol', 'source', 'dest', 'icmp', 'options'],
+            ['remark', 'seq', 'mode', 'protocol', 'source', 'dest', 'icmp', 'options'],
             []
         )
 
@@ -1999,8 +2075,9 @@ class iosParser(Parser):
         self._ip4_()
         self.ast['host'] = self.last_node
         with self._optional():
+            self._WS_()
             self._ip4_()
-        self.ast['wildcard'] = self.last_node
+            self.ast['wildcard'] = self.last_node
 
         self.ast._define(
             ['host', 'wildcard'],
@@ -2010,10 +2087,13 @@ class iosParser(Parser):
     @graken()
     def _access_list_ip_standard_rule_(self):
         self._token('access-list')
+        self._WS_()
         self._access_list_ip_standard_id_()
         self.ast['id'] = self.last_node
+        self._WS_()
         self._acl_mode_()
         self.ast['mode'] = self.last_node
+        self._WS_()
         self._ios_host_()
         self.ast['source'] = self.last_node
         self._ip_access_list_standard_rule_options_()
@@ -2036,10 +2116,13 @@ class iosParser(Parser):
 
                 self.ast['remark'] = self.last_node
                 self._token('access-list')
+                self._WS_()
                 self._access_list_ip_standard_id_()
                 self.ast['id'] = self.last_node
+                self._WS_()
                 self._acl_mode_()
                 self.ast['mode'] = self.last_node
+                self._WS_()
                 self._ios_host_()
                 self.ast['source'] = self.last_node
                 self._ip_access_list_standard_rule_options_()
@@ -2047,10 +2130,13 @@ class iosParser(Parser):
                 self._NL_()
             with self._option():
                 self._token('access-list')
+                self._WS_()
                 self._access_list_ip_standard_id_()
                 self.ast['id'] = self.last_node
+                self._WS_()
                 self._acl_mode_()
                 self.ast['mode'] = self.last_node
+                self._WS_()
                 self._ios_host_()
                 self.ast['source'] = self.last_node
                 self._ip_access_list_standard_rule_options_()
@@ -2066,8 +2152,11 @@ class iosParser(Parser):
     @graken()
     def _access_list_remark_(self):
         self._token('access-list')
+        self._WS_()
         self._acl_id_()
+        self._WS_()
         self._token('remark')
+        self._WS_()
         self._remark_()
         self.ast['remark'] = self.last_node
         self._NL_()
@@ -2091,14 +2180,19 @@ class iosParser(Parser):
         with self._choice():
             with self._option():
                 self._token('access-list')
+                self._WS_()
                 self._access_list_ip_extended_id_()
                 self.ast['id'] = self.last_node
+                self._WS_()
                 self._acl_mode_()
                 self.ast['mode'] = self.last_node
+                self._WS_()
                 self._protocol_icmp_()
                 self.ast['protocol'] = self.last_node
+                self._WS_()
                 self._acl_icmp_node_()
                 self.ast['source'] = self.last_node
+                self._WS_()
                 self._acl_icmp_node_()
                 self.ast['dest'] = self.last_node
                 self._acl_icmp_options_()
@@ -2108,14 +2202,19 @@ class iosParser(Parser):
                 self._NL_()
             with self._option():
                 self._token('access-list')
+                self._WS_()
                 self._access_list_ip_extended_id_()
                 self.ast['id'] = self.last_node
+                self._WS_()
                 self._acl_mode_()
                 self.ast['mode'] = self.last_node
+                self._WS_()
                 self._acl_protocol_()
                 self.ast['protocol'] = self.last_node
+                self._WS_()
                 self._node_()
                 self.ast['source'] = self.last_node
+                self._WS_()
                 self._node_()
                 self.ast['dest'] = self.last_node
                 self._ip_access_list_extended_rule_options_()
@@ -2141,14 +2240,19 @@ class iosParser(Parser):
                 with self._choice():
                     with self._option():
                         self._token('access-list')
+                        self._WS_()
                         self._access_list_ip_extended_id_()
                         self.ast['id'] = self.last_node
+                        self._WS_()
                         self._acl_mode_()
                         self.ast['mode'] = self.last_node
+                        self._WS_()
                         self._protocol_icmp_()
                         self.ast['protocol'] = self.last_node
+                        self._WS_()
                         self._acl_icmp_node_()
                         self.ast['source'] = self.last_node
+                        self._WS_()
                         self._acl_icmp_node_()
                         self.ast['dest'] = self.last_node
                         self._acl_icmp_options_()
@@ -2158,14 +2262,19 @@ class iosParser(Parser):
                         self._NL_()
                     with self._option():
                         self._token('access-list')
+                        self._WS_()
                         self._access_list_ip_extended_id_()
                         self.ast['id'] = self.last_node
+                        self._WS_()
                         self._acl_mode_()
                         self.ast['mode'] = self.last_node
+                        self._WS_()
                         self._acl_protocol_()
                         self.ast['protocol'] = self.last_node
+                        self._WS_()
                         self._node_()
                         self.ast['source'] = self.last_node
+                        self._WS_()
                         self._node_()
                         self.ast['dest'] = self.last_node
                         self._ip_access_list_extended_rule_options_()
@@ -2176,14 +2285,19 @@ class iosParser(Parser):
                 with self._choice():
                     with self._option():
                         self._token('access-list')
+                        self._WS_()
                         self._access_list_ip_extended_id_()
                         self.ast['id'] = self.last_node
+                        self._WS_()
                         self._acl_mode_()
                         self.ast['mode'] = self.last_node
+                        self._WS_()
                         self._protocol_icmp_()
                         self.ast['protocol'] = self.last_node
+                        self._WS_()
                         self._acl_icmp_node_()
                         self.ast['source'] = self.last_node
+                        self._WS_()
                         self._acl_icmp_node_()
                         self.ast['dest'] = self.last_node
                         self._acl_icmp_options_()
@@ -2193,14 +2307,19 @@ class iosParser(Parser):
                         self._NL_()
                     with self._option():
                         self._token('access-list')
+                        self._WS_()
                         self._access_list_ip_extended_id_()
                         self.ast['id'] = self.last_node
+                        self._WS_()
                         self._acl_mode_()
                         self.ast['mode'] = self.last_node
+                        self._WS_()
                         self._acl_protocol_()
                         self.ast['protocol'] = self.last_node
+                        self._WS_()
                         self._node_()
                         self.ast['source'] = self.last_node
+                        self._WS_()
                         self._node_()
                         self.ast['dest'] = self.last_node
                         self._ip_access_list_extended_rule_options_()
@@ -2219,18 +2338,26 @@ class iosParser(Parser):
         with self._choice():
             with self._option():
                 self._pattern(r'[1-9][0-9]?')
+                with self._if():
+                    self._WS_()
             with self._option():
-                self._pattern(r'13[0-9][0-9]?')
-            self._error('expecting one of: 13[0-9][0-9]? [1-9][0-9]?')
+                self._pattern(r'13[0-9][0-9]')
+                with self._if():
+                    self._WS_()
+            self._error('no available options')
 
     @graken()
     def _access_list_ip_extended_id_(self):
         with self._choice():
             with self._option():
                 self._pattern(r'1[0-9][0-9]')
+                with self._if():
+                    self._WS_()
             with self._option():
                 self._pattern(r'2[0-6][0-9][0-9]')
-            self._error('expecting one of: 1[0-9][0-9] 2[0-6][0-9][0-9]')
+                with self._if():
+                    self._WS_()
+            self._error('no available options')
 
     @graken()
     def _ignored_(self):
@@ -2584,6 +2711,12 @@ class iosSemantics(object):
         return ast
 
     def TOEOL(self, ast):
+        return ast
+
+    def SP(self, ast):
+        return ast
+
+    def WS(self, ast):
         return ast
 
     def identifier(self, ast):

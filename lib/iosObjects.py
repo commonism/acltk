@@ -35,7 +35,7 @@ class iosConfig(ACLConfig):
 			"grammar",
 			filename=filename,
 			trace=trace,
-			whitespace=' \t',
+			whitespace='',
 			nameguard=True,
 			semantics=semantics,
 			)

@@ -15,7 +15,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 from grako.parsing import graken, Parser
 
 
-__version__ = (2015, 1, 17, 11, 50, 54, 5)
+__version__ = (2015, 1, 20, 15, 39, 35, 1)
 
 __all__ = [
     'fwsmParser',
@@ -37,12 +37,28 @@ class fwsmParser(Parser):
         self._pattern(r'((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])')
 
     @graken()
+    def _ipX_(self):
+        self._pattern(r'\w+\.\w+\.\w+\.\w+')
+
+    @graken()
     def _ip6_(self):
         self._pattern(r'[a-fA-F0-9]*:[a-fA-F0-9\.\:]+')
 
     @graken()
     def _NL_(self):
         self._token('\n')
+
+    @graken()
+    def _TOEOL_(self):
+        self._pattern(r'[^\n]*')
+
+    @graken()
+    def _SP_(self):
+        self._token(' ')
+
+    @graken()
+    def _WS_(self):
+        self._pattern(r'[ \t]+')
 
     @graken()
     def _identifier_(self):
@@ -63,6 +79,7 @@ class fwsmParser(Parser):
     @graken()
     def _hostname_(self):
         self._token('hostname')
+        self._WS_()
         self._identifier_()
         self.ast['hostname'] = self.last_node
         self._NL_()
@@ -75,6 +92,7 @@ class fwsmParser(Parser):
     @graken()
     def _domain_name_(self):
         self._token('domain-name')
+        self._WS_()
         self._identifier_()
         self.ast['domain_name'] = self.last_node
 
@@ -85,15 +103,11 @@ class fwsmParser(Parser):
 
     @graken()
     def _description_(self):
-        with self._choice():
-            with self._option():
-                self._token('description')
-                self._pattern(r'[^\n]+')
-                self.ast['description'] = self.last_node
-                self._NL_()
-            with self._option():
-                pass
-            self._error('no available options')
+        self._token('description')
+        self._WS_()
+        self._pattern(r'[^\n]+')
+        self.ast['description'] = self.last_node
+        self._NL_()
 
         self.ast._define(
             ['description'],
@@ -103,16 +117,16 @@ class fwsmParser(Parser):
     @graken()
     def _interface_(self):
         self._token('interface')
+        self._WS_()
         self._interface_alias_()
         self.ast['alias'] = self.last_node
         self._NL_()
 
         def block2():
+            self._WS_()
             self._interface_detail_()
         self._closure(block2)
         self.ast['detail'] = self.last_node
-        self._token('!')
-        self._NL_()
 
         self.ast._define(
             ['alias', 'detail'],
@@ -128,76 +142,31 @@ class fwsmParser(Parser):
         with self._choice():
             with self._option():
                 self._token('nameif')
+                self.ast['type'] = self.last_node
                 self._identifier_()
                 self.ast['name'] = self.last_node
                 self._NL_()
             with self._option():
-                self._token('bridge-group')
-                with self._group():
-                    with self._choice():
-                        with self._option():
-                            self._identifier_()
-                        with self._option():
-                            self._int_()
-                        self._error('no available options')
-                self.ast['bridge_group'] = self.last_node
-                self._NL_()
-            with self._option():
-                self._token('security-level')
-                self._int_()
-                self.ast['security_level'] = self.last_node
-                self._NL_()
-            with self._option():
-                self._token('ip address')
-                self._ip4_()
-                self.ast['addr'] = self.last_node
-                self._ip4_()
-                self.ast['netmask'] = self.last_node
-                self._pattern(r'[^\n]+')
-                self.ast['any'] = self.last_node
-                self._NL_()
-            with self._option():
-                self._token('no')
-                self._pattern(r'[^\n]+')
-                self.ast['any'] = self.last_node
-                self._NL_()
-            with self._option():
-                self._token('ipv6 address')
-                self._ip6_()
-                self.ast['addr'] = self.last_node
-                self._token('/')
-                self._int_()
-                self.ast['netmask'] = self.last_node
-                self._pattern(r'[^\n]+')
-                self.ast['any'] = self.last_node
-                self._NL_()
-            with self._option():
-                self._token('vlan')
-                self._identifier_()
-                self.ast['vlan'] = self.last_node
-                self._NL_()
-            with self._option():
                 self._token('description')
+                self.ast['type'] = self.last_node
                 self._pattern(r'[^\n]+')
                 self.ast['description'] = self.last_node
                 self._NL_()
             with self._option():
-                self._token('ipv6 nd')
-                self._pattern(r'[^\n]+')
-                self.ast['any'] = self.last_node
+                self._token('ip nat')
+                self.ast['type'] = self.last_node
+                self._obj_name_()
+                self.ast['name'] = self.last_node
                 self._NL_()
             with self._option():
-                self._token('ipv6 enable')
-                self._NL_()
-            with self._option():
-                self._token('management-only')
+                self._TOEOL_()
                 self._NL_()
             with self._option():
                 pass
             self._error('no available options')
 
         self.ast._define(
-            ['name', 'bridge_group', 'security_level', 'addr', 'netmask', 'any', 'vlan', 'description'],
+            ['type', 'name', 'description'],
             []
         )
 
@@ -235,6 +204,7 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('object-group')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 with self._group():
                     with self._choice():
                         with self._option():
@@ -246,6 +216,7 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('object')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._acl_object_service_id_()
                 self.ast['name'] = self.last_node
             with self._option():
@@ -269,6 +240,7 @@ class fwsmParser(Parser):
         self._acl_host_()
         self.ast['host'] = self.last_node
         with self._optional():
+            self._WS_()
             self._acl_port_()
             self.ast['port'] = self.last_node
 
@@ -329,6 +301,7 @@ class fwsmParser(Parser):
                             self._token('ip')
                         self._error('expecting one of: host ip')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 with self._group():
                     with self._choice():
                         with self._option():
@@ -342,6 +315,7 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('interface')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._identifier_()
                 self.ast['name'] = self.last_node
             with self._option():
@@ -358,11 +332,13 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('object')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._acl_object_network_id_()
                 self.ast['name'] = self.last_node
             with self._option():
                 self._token('object-group')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._acl_object_group_network_id_()
                 self.ast['name'] = self.last_node
             with self._option():
@@ -374,6 +350,7 @@ class fwsmParser(Parser):
                             self._ip4_()
                         self._error('no available options')
                 self.ast['address'] = self.last_node
+                self._WS_()
                 self._ip4_()
                 self.ast['netmask'] = self.last_node
             with self._option():
@@ -401,6 +378,7 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('object-group')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._acl_object_group_service_id_()
                 self.ast['name'] = self.last_node
             with self._option():
@@ -414,13 +392,16 @@ class fwsmParser(Parser):
                             self._token('eq')
                         self._error('expecting one of: eq gt lt')
                 self.ast['op'] = self.last_node
+                self._WS_()
                 self._port_()
                 self.ast['port'] = self.last_node
             with self._option():
                 self._token('range')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._port_()
                 self.ast['start'] = self.last_node
+                self._WS_()
                 self._port_()
                 self.ast['stop'] = self.last_node
             self._error('no available options')
@@ -434,11 +415,14 @@ class fwsmParser(Parser):
     def _acl_icmp_options_(self):
         with self._choice():
             with self._option():
+                self._WS_()
                 self._token('object-group')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._acl_object_group_icmp_id_()
                 self.ast['object'] = self.last_node
             with self._option():
+                self._WS_()
                 with self._group():
                     with self._choice():
                         with self._option():
@@ -448,8 +432,9 @@ class fwsmParser(Parser):
                         self._error('no available options')
                 self.ast['type'] = self.last_node
                 with self._optional():
+                    self._WS_()
                     self._int_()
-                self.ast['code'] = self.last_node
+                    self.ast['code'] = self.last_node
             with self._option():
                 pass
             self._error('no available options')
@@ -474,12 +459,14 @@ class fwsmParser(Parser):
                 self.ast['type'] = self.last_node
 
                 def block2():
+                    self._WS_()
                     self._acl_option_log_option_()
                 self._closure(block2)
                 self.ast['options'] = self.last_node
             with self._option():
                 self._token('time-range')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._acl_time_range_id_()
                 self.ast['option'] = self.last_node
             with self._option():
@@ -511,6 +498,7 @@ class fwsmParser(Parser):
                         self._error('expecting one of: default disable notifications warnings')
             with self._option():
                 self._token('interval')
+                self._WS_()
                 self._int_()
             with self._option():
                 pass
@@ -528,6 +516,7 @@ class fwsmParser(Parser):
     @graken()
     def _object_(self):
         self._token('object')
+        self._WS_()
         self._object_type_()
 
     @graken()
@@ -536,37 +525,37 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('network')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._obj_name_()
                 self.ast['name'] = self.last_node
                 self._NL_()
+                self._SP_()
                 self._network_object_()
                 self.ast['args'] = self.last_node
-                with self._choice():
-                    with self._option():
-                        self._token('description')
-                        self._pattern(r'[^\n]+')
-                        self.ast['description'] = self.last_node
-                        self._NL_()
-                    with self._option():
-                        pass
-                    self._error('no available options')
+                with self._optional():
+                    self._SP_()
+                    self._token('description')
+                    self._WS_()
+                    self._pattern(r'[^\n]+')
+                    self.ast['description'] = self.last_node
+                    self._NL_()
             with self._option():
                 self._token('service')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._obj_name_()
                 self.ast['name'] = self.last_node
                 self._NL_()
+                self._SP_()
                 self._service_object_()
                 self.ast['args'] = self.last_node
-                with self._choice():
-                    with self._option():
-                        self._token('description')
-                        self._pattern(r'[^\n]+')
-                        self.ast['description'] = self.last_node
-                        self._NL_()
-                    with self._option():
-                        pass
-                    self._error('no available options')
+                with self._optional():
+                    self._SP_()
+                    self._token('description')
+                    self._WS_()
+                    self._pattern(r'[^\n]+')
+                    self.ast['description'] = self.last_node
+                    self._NL_()
             self._error('no available options')
 
         self.ast._define(
@@ -580,6 +569,7 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('host')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 with self._group():
                     with self._choice():
                         with self._option():
@@ -592,14 +582,17 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('subnet')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._ip4_()
                 self.ast['address'] = self.last_node
+                self._WS_()
                 self._ip4_()
                 self.ast['mask'] = self.last_node
                 self._NL_()
             with self._option():
                 self._token('subnet')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._ip6_()
                 self.ast['address'] = self.last_node
                 self._token('/')
@@ -609,22 +602,27 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('range')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._ip4_()
                 self.ast['start'] = self.last_node
+                self._WS_()
                 self._ip4_()
                 self.ast['stop'] = self.last_node
                 self._NL_()
             with self._option():
                 self._token('range')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._ip6_()
                 self.ast['start'] = self.last_node
+                self._WS_()
                 self._ip6_()
                 self.ast['stop'] = self.last_node
                 self._NL_()
             with self._option():
                 self._token('fqdn')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 with self._optional():
                     with self._group():
                         with self._choice():
@@ -633,7 +631,8 @@ class fwsmParser(Parser):
                             with self._option():
                                 self._token('v6')
                             self._error('expecting one of: v4 v6')
-                self.ast['limit'] = self.last_node
+                    self.ast['limit'] = self.last_node
+                    self._WS_()
                 self._string_()
                 self.ast['fqdn'] = self.last_node
                 self._NL_()
@@ -650,15 +649,18 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('service')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._int_()
                 self.ast['protocol'] = self.last_node
                 self._NL_()
             with self._option():
                 self._token('service')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._protocol_icmp_()
                 self.ast['protocol'] = self.last_node
                 with self._optional():
+                    self._WS_()
                     with self._group():
                         with self._choice():
                             with self._option():
@@ -666,18 +668,24 @@ class fwsmParser(Parser):
                             with self._option():
                                 self._int_()
                             self._error('no available options')
-                self.ast['icmp_type'] = self.last_node
-                with self._optional():
-                    self._int_()
-                self.ast['icmp_code'] = self.last_node
+                    self.ast['icmp_type'] = self.last_node
+                    with self._optional():
+                        self._WS_()
+                        self._int_()
+                        self.ast['icmp_code'] = self.last_node
                 self._NL_()
             with self._option():
                 self._token('service')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._protocol_()
                 self.ast['protocol'] = self.last_node
+                with self._optional():
+                    self._WS_()
                 self._service_object_source_()
                 self.ast['source'] = self.last_node
+                with self._optional():
+                    self._WS_()
                 self._service_object_destination_()
                 self.ast['destination'] = self.last_node
                 self._NL_()
@@ -703,10 +711,13 @@ class fwsmParser(Parser):
                         with self._option():
                             self._token('neq')
                         self._error('expecting one of: eq gt lt neq')
+                self._WS_()
                 self._port_()
             with self._option():
                 self._token('range')
+                self._WS_()
                 self._port_()
+                self._WS_()
                 self._port_()
             self._error('no available options')
 
@@ -715,6 +726,7 @@ class fwsmParser(Parser):
         with self._choice():
             with self._option():
                 self._token('source')
+                self._WS_()
                 self._service_object_op_()
                 self.ast['@'] = self.last_node
             with self._option():
@@ -726,6 +738,7 @@ class fwsmParser(Parser):
         with self._choice():
             with self._option():
                 self._token('destination')
+                self._WS_()
                 self._service_object_op_()
                 self.ast['@'] = self.last_node
             with self._option():
@@ -735,6 +748,7 @@ class fwsmParser(Parser):
     @graken()
     def _object_group_(self):
         self._token('object-group')
+        self._WS_()
         self._object_group_type_()
 
     @graken()
@@ -768,108 +782,104 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('network')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._obj_name_()
                 self.ast['name'] = self.last_node
                 self._NL_()
-                with self._choice():
-                    with self._option():
-                        self._token('description')
-                        self._pattern(r'[^\n]+')
-                        self.ast['description'] = self.last_node
-                        self._NL_()
-                    with self._option():
-                        pass
-                    self._error('no available options')
+                with self._optional():
+                    self._SP_()
+                    self._token('description')
+                    self._WS_()
+                    self._pattern(r'[^\n]+')
+                    self.ast['description'] = self.last_node
+                    self._NL_()
 
-
-                def block5():
+                def block4():
+                    self._SP_()
                     self._network_group_object_()
-                self._closure(block5)
+                self._closure(block4)
                 self.ast['objects'] = self.last_node
             with self._option():
                 self._token('service')
+                self._WS_()
                 self._obj_name_()
                 self.ast['name'] = self.last_node
+                self._WS_()
                 self._port_group_protocol_()
                 self.ast['type'] = self.last_node
                 self._NL_()
-                with self._choice():
-                    with self._option():
-                        self._token('description')
-                        self._pattern(r'[^\n]+')
-                        self.ast['description'] = self.last_node
-                        self._NL_()
-                    with self._option():
-                        pass
-                    self._error('no available options')
+                with self._optional():
+                    self._SP_()
+                    self._token('description')
+                    self._WS_()
+                    self._pattern(r'[^\n]+')
+                    self.ast['description'] = self.last_node
+                    self._NL_()
 
-
-                def block11():
+                def block9():
+                    self._SP_()
                     self._port_group_object_()
-                self._closure(block11)
+                self._closure(block9)
                 self.ast['objects'] = self.last_node
             with self._option():
                 self._token('service')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._obj_name_()
                 self.ast['name'] = self.last_node
                 self._NL_()
-                with self._choice():
-                    with self._option():
-                        self._token('description')
-                        self._pattern(r'[^\n]+')
-                        self.ast['description'] = self.last_node
-                        self._NL_()
-                    with self._option():
-                        pass
-                    self._error('no available options')
+                with self._optional():
+                    self._SP_()
+                    self._token('description')
+                    self._WS_()
+                    self._pattern(r'[^\n]+')
+                    self.ast['description'] = self.last_node
+                    self._NL_()
 
-
-                def block17():
+                def block14():
+                    self._SP_()
                     self._service_group_object_()
-                self._closure(block17)
+                self._closure(block14)
                 self.ast['objects'] = self.last_node
             with self._option():
                 self._token('icmp-type')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._obj_name_()
                 self.ast['name'] = self.last_node
                 self._NL_()
-                with self._choice():
-                    with self._option():
-                        self._token('description')
-                        self._pattern(r'[^\n]+')
-                        self.ast['description'] = self.last_node
-                        self._NL_()
-                    with self._option():
-                        pass
-                    self._error('no available options')
+                with self._optional():
+                    self._SP_()
+                    self._token('description')
+                    self._WS_()
+                    self._pattern(r'[^\n]+')
+                    self.ast['description'] = self.last_node
+                    self._NL_()
 
-
-                def block23():
+                def block19():
+                    self._SP_()
                     self._icmp_group_object_()
-                self._closure(block23)
+                self._closure(block19)
                 self.ast['objects'] = self.last_node
             with self._option():
                 self._token('protocol')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._obj_name_()
                 self.ast['name'] = self.last_node
                 self._NL_()
-                with self._choice():
-                    with self._option():
-                        self._token('description')
-                        self._pattern(r'[^\n]+')
-                        self.ast['description'] = self.last_node
-                        self._NL_()
-                    with self._option():
-                        pass
-                    self._error('no available options')
+                with self._optional():
+                    self._SP_()
+                    self._token('description')
+                    self._WS_()
+                    self._pattern(r'[^\n]+')
+                    self.ast['description'] = self.last_node
+                    self._NL_()
 
-
-                def block29():
+                def block24():
+                    self._SP_()
                     self._protocol_group_object_()
-                self._closure(block29)
+                self._closure(block24)
                 self.ast['objects'] = self.last_node
             self._error('no available options')
 
@@ -884,15 +894,18 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('service-object')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._int_()
                 self.ast['protocol'] = self.last_node
                 self._NL_()
             with self._option():
                 self._token('service-object')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._protocol_icmp_()
                 self.ast['protocol'] = self.last_node
                 with self._optional():
+                    self._WS_()
                     with self._group():
                         with self._choice():
                             with self._option():
@@ -900,32 +913,41 @@ class fwsmParser(Parser):
                             with self._option():
                                 self._int_()
                             self._error('no available options')
-                self.ast['icmp_type'] = self.last_node
-                with self._optional():
-                    self._int_()
-                self.ast['icmp_code'] = self.last_node
+                    self.ast['icmp_type'] = self.last_node
+                    with self._optional():
+                        self._WS_()
+                        self._int_()
+                        self.ast['icmp_code'] = self.last_node
                 self._NL_()
             with self._option():
                 self._token('service-object')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._protocol_()
                 self.ast['protocol'] = self.last_node
+                with self._optional():
+                    self._WS_()
                 self._service_object_source_()
                 self.ast['source'] = self.last_node
+                with self._optional():
+                    self._WS_()
                 self._service_object_destination_()
                 self.ast['destination'] = self.last_node
                 self._NL_()
             with self._option():
                 self._token('service-object')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._token('object')
                 self.ast['protocol'] = self.last_node
+                self._WS_()
                 self._acl_object_service_id_()
                 self.ast['object'] = self.last_node
                 self._NL_()
             with self._option():
                 self._token('group-object')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._acl_object_group_service_id_()
                 self.ast['object'] = self.last_node
                 self._NL_()
@@ -943,17 +965,23 @@ class fwsmParser(Parser):
         with self._choice():
             with self._option():
                 self._token('port-object')
+                self._WS_()
                 self._token('eq')
+                self._WS_()
                 self._port_()
                 self._NL_()
             with self._option():
                 self._token('port-object')
+                self._WS_()
                 self._token('range')
+                self._WS_()
                 self._port_()
+                self._WS_()
                 self._port_()
                 self._NL_()
             with self._option():
                 self._token('group-object')
+                self._WS_()
                 self._acl_object_group_service_id_()
                 self._NL_()
             with self._option():
@@ -966,8 +994,10 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('network-object')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._token('host')
                 self.ast['name'] = self.last_node
+                self._WS_()
                 with self._group():
                     with self._choice():
                         with self._option():
@@ -982,14 +1012,17 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('network-object')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._token('object')
                 self.ast['name'] = self.last_node
+                self._WS_()
                 self._acl_object_network_id_()
                 self.ast['object'] = self.last_node
                 self._NL_()
             with self._option():
                 self._token('network-object')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 with self._group():
                     with self._choice():
                         with self._option():
@@ -998,12 +1031,14 @@ class fwsmParser(Parser):
                             self._ip4_()
                         self._error('no available options')
                 self.ast['name'] = self.last_node
+                self._WS_()
                 self._ip4_()
                 self.ast['netmask'] = self.last_node
                 self._NL_()
             with self._option():
                 self._token('network-object')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 with self._group():
                     with self._choice():
                         with self._option():
@@ -1019,6 +1054,7 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('group-object')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._acl_object_group_network_id_()
                 self.ast['object'] = self.last_node
                 self._NL_()
@@ -1037,6 +1073,7 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('icmp-object')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 with self._group():
                     with self._choice():
                         with self._option():
@@ -1049,6 +1086,7 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('group-object')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._acl_object_group_icmp_id_()
                 self.ast['name'] = self.last_node
                 self._NL_()
@@ -1067,12 +1105,14 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('protocol-object')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._obj_name_()
                 self.ast['name'] = self.last_node
                 self._NL_()
             with self._option():
                 self._token('group-object')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 self._acl_object_group_protocol_id_()
                 self.ast['name'] = self.last_node
                 self._NL_()
@@ -1128,8 +1168,10 @@ class fwsmParser(Parser):
     def _date_(self):
         self._day_()
         self.ast['day'] = self.last_node
+        self._WS_()
         self._month_()
         self.ast['month'] = self.last_node
+        self._WS_()
         self._year_()
         self.ast['year'] = self.last_node
 
@@ -1146,10 +1188,13 @@ class fwsmParser(Parser):
         self._minute_()
         self.ast['minute'] = self.last_node
 
+        self._WS_()
         self._day_()
         self.ast['day'] = self.last_node
+        self._WS_()
         self._month_()
         self.ast['month'] = self.last_node
+        self._WS_()
         self._year_()
         self.ast['year'] = self.last_node
 
@@ -1164,24 +1209,30 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('periodic')
                 self.ast['type'] = self.last_node
+                self._WS_()
 
                 def block2():
                     self._day_of_the_week_()
                 self._positive_closure(block2)
 
                 self.ast['days'] = self.last_node
+                self._WS_()
                 self._time_()
                 self.ast['start'] = self.last_node
+                self._WS_()
                 self._token('to')
+                self._WS_()
                 with self._optional():
                     self._day_of_the_week_()
                 self.ast['edays'] = self.last_node
+                self._WS_()
                 self._time_()
                 self.ast['end'] = self.last_node
                 self._NL_()
             with self._option():
                 self._token('periodic')
                 self.ast['type'] = self.last_node
+                self._WS_()
                 with self._group():
                     with self._choice():
                         with self._option():
@@ -1192,9 +1243,12 @@ class fwsmParser(Parser):
                             self._token('daily')
                         self._error('expecting one of: daily weekdays weekend')
                 self.ast.setlist('days', self.last_node)
+                self._WS_()
                 self._time_()
                 self.ast['start'] = self.last_node
+                self._WS_()
                 self._token('to')
+                self._WS_()
                 self._time_()
                 self.ast['end'] = self.last_node
                 self._NL_()
@@ -1202,47 +1256,45 @@ class fwsmParser(Parser):
                 self._token('absolute')
                 self.ast['type'] = self.last_node
                 with self._optional():
+                    self._WS_()
                     self._token('start')
+                    self._WS_()
                     self._timedate_()
                     self.ast['start'] = self.last_node
                 with self._optional():
+                    self._WS_()
                     self._token('end')
+                    self._WS_()
                     self._timedate_()
                     self.ast['end'] = self.last_node
                 self._NL_()
             with self._option():
                 self._token('no')
                 self.ast['type'] = self.last_node
-                with self._group():
-                    with self._choice():
-                        with self._option():
-                            self._token('periodic')
-                        with self._option():
-                            self._token('absolute')
-                        self._error('expecting one of: absolute periodic')
-                self.ast['any'] = self.last_node
+                self._WS_()
+                self._TOEOL_()
                 self._NL_()
             self._error('no available options')
 
         self.ast._define(
-            ['type', 'days', 'start', 'edays', 'end', 'any'],
+            ['type', 'days', 'start', 'edays', 'end'],
             ['days']
         )
 
     @graken()
     def _time_range_(self):
         self._token('time-range')
+        self._WS_()
         self._string_()
         self.ast['name'] = self.last_node
         self._NL_()
 
         def block2():
+            self._SP_()
             self._time_range_object_()
         self._positive_closure(block2)
 
         self.ast['objects'] = self.last_node
-        self._token('!')
-        self._NL_()
 
         self.ast._define(
             ['name', 'objects'],
@@ -1334,7 +1386,9 @@ class fwsmParser(Parser):
                 self._token('echo-reply')
             with self._option():
                 self._token('echo')
-            self._error('expecting one of: echo echo-reply information-reply information-request mask-reply mask-request mobile-redirect parameter-problem redirect router-advertisement router-solicitation source-quench time-exceeded timestamp-reply timestamp-request traceroute unreachable')
+            with self._option():
+                self._token('ttl-exceeded')
+            self._error('expecting one of: echo echo-reply information-reply information-request mask-reply mask-request mobile-redirect parameter-problem redirect router-advertisement router-solicitation source-quench time-exceeded timestamp-reply timestamp-request traceroute ttl-exceeded unreachable')
 
     @graken()
     def _protocol_code_(self):
@@ -1362,6 +1416,8 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('ipsec')
             with self._option():
+                self._token('ahp')
+            with self._option():
                 self._token('ah')
             with self._option():
                 self._token('icmp6')
@@ -1377,7 +1433,7 @@ class fwsmParser(Parser):
                 self._token('pcp')
             with self._option():
                 self._token('snp')
-            self._error('expecting one of: ah eigrp esp gre icmp icmp6 igmp igrp ip ipinip ipsec nos ospf pcp pim pptp snp tcp udp')
+            self._error('expecting one of: ah ahp eigrp esp gre icmp icmp6 igmp igrp ip ipinip ipsec nos ospf pcp pim pptp snp tcp udp')
 
     @graken()
     def _port_code_(self):
@@ -1461,7 +1517,11 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('netbios-ssn')
             with self._option():
+                self._token('netbios-ss')
+            with self._option():
                 self._token('nntp')
+            with self._option():
+                self._token('non500-isakmp')
             with self._option():
                 self._token('ntp')
             with self._option():
@@ -1526,7 +1586,7 @@ class fwsmParser(Parser):
                 self._token('www')
             with self._option():
                 self._token('xdmcp')
-            self._error('expecting one of: aol bgp biff bootpc bootps chargen citrix-ica cmd ctiqbe daytime discard dnsix domain echo exec finger ftp ftp-data gopher h323 hostname https ident imap4 irc isakmp kerberos klogin kshell ldap ldaps login lotusnotes lpd mobile-ip nameserver netbios-dgm netbios-ns netbios-ssn nntp ntp pcanywhere-data pcanywhere-status pim-auto-rp pop2 pop3 pptp radius radius-acct rip rpc rsh rtsp secureid-udp sip smtp snmp snmptrap sqlnet ssh sunrpc syslog tacacs talk telnet tftp time uucp who whois www xdmcp')
+            self._error('expecting one of: aol bgp biff bootpc bootps chargen citrix-ica cmd ctiqbe daytime discard dnsix domain echo exec finger ftp ftp-data gopher h323 hostname https ident imap4 irc isakmp kerberos klogin kshell ldap ldaps login lotusnotes lpd mobile-ip nameserver netbios-dgm netbios-ns netbios-ss netbios-ssn nntp non500-isakmp ntp pcanywhere-data pcanywhere-status pim-auto-rp pop2 pop3 pptp radius radius-acct rip rpc rsh rtsp secureid-udp sip smtp snmp snmptrap sqlnet ssh sunrpc syslog tacacs talk telnet tftp time uucp who whois www xdmcp')
 
     @graken()
     def _grammar_(self):
@@ -1620,6 +1680,7 @@ class fwsmParser(Parser):
     @graken()
     def _name_(self):
         self._token('name')
+        self._WS_()
         with self._group():
             with self._choice():
                 with self._option():
@@ -1628,9 +1689,11 @@ class fwsmParser(Parser):
                     self._ip6_()
                 self._error('no available options')
         self.ast['address'] = self.last_node
+        self._WS_()
         self._identifier_()
         self.ast['hostname'] = self.last_node
         with self._optional():
+            self._WS_()
             self._token('description')
             self._pattern(r'[^\n]+')
             self.ast['description'] = self.last_node
@@ -1646,50 +1709,62 @@ class fwsmParser(Parser):
         with self._choice():
             with self._option():
                 self._token('access-list')
+                self._WS_()
                 self._acl_id_()
                 self.ast['id'] = self.last_node
-                self._acl_line_()
-                self.ast['line'] = self.last_node
+                self._WS_()
                 self._acl_extended_()
                 self.ast['extended'] = self.last_node
+                self._WS_()
                 self._acl_mode_()
                 self.ast['mode'] = self.last_node
+                self._WS_()
                 self._protocol_icmp_()
                 self.ast['protocol'] = self.last_node
+                self._WS_()
                 self._acl_icmp_node_()
                 self.ast['source'] = self.last_node
+                self._WS_()
                 self._acl_icmp_node_()
                 self.ast['dest'] = self.last_node
                 self._acl_icmp_options_()
                 self.ast['icmp'] = self.last_node
-                self._acl_options_()
-                self.ast['options'] = self.last_node
+                with self._optional():
+                    self._WS_()
+                    self._acl_options_()
+                    self.ast['options'] = self.last_node
                 self._NL_()
             with self._option():
                 self._token('access-list')
+                self._WS_()
                 self._acl_id_()
                 self.ast['id'] = self.last_node
-                self._acl_line_()
-                self.ast['line'] = self.last_node
+                self._WS_()
                 self._acl_extended_()
                 self.ast['extended'] = self.last_node
+                self._WS_()
                 self._acl_mode_()
                 self.ast['mode'] = self.last_node
+                self._WS_()
                 self._acl_protocol_()
                 self.ast['protocol'] = self.last_node
+                self._WS_()
                 self._node_()
                 self.ast['source'] = self.last_node
+                self._WS_()
                 self._node_()
                 self.ast['dest'] = self.last_node
-                self._acl_options_()
-                self.ast['options'] = self.last_node
+                with self._optional():
+                    self._WS_()
+                    self._acl_options_()
+                    self.ast['options'] = self.last_node
                 self._NL_()
             with self._option():
                 self._token('access-list')
+                self._WS_()
                 self._acl_id_()
                 self.ast['id'] = self.last_node
-                self._acl_line_()
-                self.ast['line'] = self.last_node
+                self._WS_()
                 self._token('ethertype')
                 self.ast['protocol'] = self.last_node
                 self._token('permit')
@@ -1698,7 +1773,7 @@ class fwsmParser(Parser):
             self._error('no available options')
 
         self.ast._define(
-            ['id', 'line', 'extended', 'mode', 'protocol', 'source', 'dest', 'icmp', 'options'],
+            ['id', 'extended', 'mode', 'protocol', 'source', 'dest', 'icmp', 'options'],
             []
         )
 
@@ -1712,54 +1787,65 @@ class fwsmParser(Parser):
                 self._positive_closure(block1)
 
                 self.ast['remark'] = self.last_node
-                self._cut()
                 with self._choice():
                     with self._option():
                         self._token('access-list')
+                        self._WS_()
                         self._acl_id_()
                         self.ast['id'] = self.last_node
-                        self._acl_line_()
-                        self.ast['line'] = self.last_node
+                        self._WS_()
                         self._acl_extended_()
                         self.ast['extended'] = self.last_node
+                        self._WS_()
                         self._acl_mode_()
                         self.ast['mode'] = self.last_node
+                        self._WS_()
                         self._protocol_icmp_()
                         self.ast['protocol'] = self.last_node
+                        self._WS_()
                         self._acl_icmp_node_()
                         self.ast['source'] = self.last_node
+                        self._WS_()
                         self._acl_icmp_node_()
                         self.ast['dest'] = self.last_node
                         self._acl_icmp_options_()
                         self.ast['icmp'] = self.last_node
-                        self._acl_options_()
-                        self.ast['options'] = self.last_node
+                        with self._optional():
+                            self._WS_()
+                            self._acl_options_()
+                            self.ast['options'] = self.last_node
                         self._NL_()
                     with self._option():
                         self._token('access-list')
+                        self._WS_()
                         self._acl_id_()
                         self.ast['id'] = self.last_node
-                        self._acl_line_()
-                        self.ast['line'] = self.last_node
+                        self._WS_()
                         self._acl_extended_()
                         self.ast['extended'] = self.last_node
+                        self._WS_()
                         self._acl_mode_()
                         self.ast['mode'] = self.last_node
+                        self._WS_()
                         self._acl_protocol_()
                         self.ast['protocol'] = self.last_node
+                        self._WS_()
                         self._node_()
                         self.ast['source'] = self.last_node
+                        self._WS_()
                         self._node_()
                         self.ast['dest'] = self.last_node
-                        self._acl_options_()
-                        self.ast['options'] = self.last_node
+                        with self._optional():
+                            self._WS_()
+                            self._acl_options_()
+                            self.ast['options'] = self.last_node
                         self._NL_()
                     with self._option():
                         self._token('access-list')
+                        self._WS_()
                         self._acl_id_()
                         self.ast['id'] = self.last_node
-                        self._acl_line_()
-                        self.ast['line'] = self.last_node
+                        self._WS_()
                         self._token('ethertype')
                         self.ast['protocol'] = self.last_node
                         self._token('permit')
@@ -1770,50 +1856,62 @@ class fwsmParser(Parser):
                 with self._choice():
                     with self._option():
                         self._token('access-list')
+                        self._WS_()
                         self._acl_id_()
                         self.ast['id'] = self.last_node
-                        self._acl_line_()
-                        self.ast['line'] = self.last_node
+                        self._WS_()
                         self._acl_extended_()
                         self.ast['extended'] = self.last_node
+                        self._WS_()
                         self._acl_mode_()
                         self.ast['mode'] = self.last_node
+                        self._WS_()
                         self._protocol_icmp_()
                         self.ast['protocol'] = self.last_node
+                        self._WS_()
                         self._acl_icmp_node_()
                         self.ast['source'] = self.last_node
+                        self._WS_()
                         self._acl_icmp_node_()
                         self.ast['dest'] = self.last_node
                         self._acl_icmp_options_()
                         self.ast['icmp'] = self.last_node
-                        self._acl_options_()
-                        self.ast['options'] = self.last_node
+                        with self._optional():
+                            self._WS_()
+                            self._acl_options_()
+                            self.ast['options'] = self.last_node
                         self._NL_()
                     with self._option():
                         self._token('access-list')
+                        self._WS_()
                         self._acl_id_()
                         self.ast['id'] = self.last_node
-                        self._acl_line_()
-                        self.ast['line'] = self.last_node
+                        self._WS_()
                         self._acl_extended_()
                         self.ast['extended'] = self.last_node
+                        self._WS_()
                         self._acl_mode_()
                         self.ast['mode'] = self.last_node
+                        self._WS_()
                         self._acl_protocol_()
                         self.ast['protocol'] = self.last_node
+                        self._WS_()
                         self._node_()
                         self.ast['source'] = self.last_node
+                        self._WS_()
                         self._node_()
                         self.ast['dest'] = self.last_node
-                        self._acl_options_()
-                        self.ast['options'] = self.last_node
+                        with self._optional():
+                            self._WS_()
+                            self._acl_options_()
+                            self.ast['options'] = self.last_node
                         self._NL_()
                     with self._option():
                         self._token('access-list')
+                        self._WS_()
                         self._acl_id_()
                         self.ast['id'] = self.last_node
-                        self._acl_line_()
-                        self.ast['line'] = self.last_node
+                        self._WS_()
                         self._token('ethertype')
                         self.ast['protocol'] = self.last_node
                         self._token('permit')
@@ -1823,16 +1921,18 @@ class fwsmParser(Parser):
             self._error('no available options')
 
         self.ast._define(
-            ['remark', 'id', 'line', 'extended', 'mode', 'protocol', 'source', 'dest', 'icmp', 'options'],
+            ['remark', 'id', 'extended', 'mode', 'protocol', 'source', 'dest', 'icmp', 'options'],
             []
         )
 
     @graken()
     def _access_list_remark_(self):
         self._token('access-list')
+        self._WS_()
         self._acl_id_()
-        self._acl_line_()
+        self._WS_()
         self._token('remark')
+        self._SP_()
         self._remark_()
         self.ast['remark'] = self.last_node
         self._NL_()
@@ -1892,10 +1992,22 @@ class fwsmSemantics(object):
     def ip4(self, ast):
         return ast
 
+    def ipX(self, ast):
+        return ast
+
     def ip6(self, ast):
         return ast
 
     def NL(self, ast):
+        return ast
+
+    def TOEOL(self, ast):
+        return ast
+
+    def SP(self, ast):
+        return ast
+
+    def WS(self, ast):
         return ast
 
     def identifier(self, ast):

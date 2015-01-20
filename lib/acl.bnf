@@ -1,5 +1,7 @@
 NL = "\n";
 TOEOL = ?/[^\n]*/?;
+SP = " ";
+WS = /[ \t]+/;
 
 identifier = ?/[a-zA-Z_][A-Za-z0-9_\-\.]*/?;
 int = ?/[0-9]+/?;
@@ -9,22 +11,21 @@ obj_name = ?/[A-Za-z0-9_\-\.]*/?;
 
 
 hostname
-	= "hostname" hostname:identifier NL
+	= "hostname" WS hostname:identifier NL
 	;
 
 domain_name
-	= "domain-name" domain_name:identifier
+	= "domain-name" WS domain_name:identifier
 	;
 
 
 description
-	= "description" description:?/[^\n]+/? NL
-	| ()
+	= "description" WS description:?/[^\n]+/? NL
 	;
 
 
 interface
-	= "interface" alias:interface_alias NL detail:{interface_detail} "!" NL
+	= "interface" WS alias:interface_alias NL detail:{WS interface_detail}
 	;
 
 interface_alias
@@ -35,10 +36,7 @@ interface_detail
 	= type:"nameif" name:identifier NL
 	| type:"description" description:?/[^\n]+/? NL
 	| type:"ip nat" name:obj_name NL
-	| "no ip address" ?/[^!]*/? "!" NL
-	| "encryption mode" ?/[^!]*/? "!" NL
-	| "ssid" ?/[^!]*/? "!" NL
-	| ?/[^(^!|\n)]*/? NL
+	| TOEOL NL
 	| ()
 	;
 
@@ -60,13 +58,13 @@ acl_mode
 	;
 
 acl_protocol
-	= type:"object-group" name:(acl_object_group_service_id|acl_object_group_protocol_id)
-	| type:"object" name:acl_object_service_id
+	= type:"object-group" WS name:(acl_object_group_service_id|acl_object_group_protocol_id)
+	| type:"object" WS name:acl_object_service_id
 	| name:(protocol_code|int)
 	;
 
 node
-	= host:acl_host [port:acl_port]
+	= host:acl_host [WS port:acl_port]
 	;
 
 acl_object_group_network_id
@@ -102,24 +100,24 @@ acl_time_range_id
 	;
 
 acl_host
-	= type:("host"|"ip") address:(acl_names_id|ip4|ip6)
-	| type:"interface" name:identifier
+	= type:("host"|"ip") WS address:(acl_names_id|ip4|ip6)
+	| type:"interface" WS name:identifier
 	| type:("any"|"any4"|"any6")
-	| type:"object" name:acl_object_network_id
-	| type:"object-group" name:acl_object_group_network_id
-	| address:(acl_names_id|ip4) netmask:ip4
+	| type:"object" WS name:acl_object_network_id
+	| type:"object-group" WS name:acl_object_group_network_id
+	| address:(acl_names_id|ip4) WS netmask:ip4
 	| address:(acl_names_id|ip6) "/" netmask:int
 	;
 
 acl_port
-	= type:"object-group" name:acl_object_group_service_id
-	| op:("gt"|"lt"|"eq") port:port
-	| type:"range" start:port stop:port
+	= type:"object-group" WS name:acl_object_group_service_id
+	| op:("gt"|"lt"|"eq") WS port:port
+	| type:"range" WS start:port WS stop:port
 	;
 
 acl_icmp_options
-	= type:"object-group" object:acl_object_group_icmp_id
-	| type:(icmp_type|int) code:[int]
+	= WS type:"object-group" WS object:acl_object_group_icmp_id
+	| WS type:(icmp_type|int) [WS code:int]
 	| ()
 	;
 
@@ -128,15 +126,15 @@ acl_options
 	;
 
 acl_option
-	= type:"log" options:{acl_option_log_option}*
-	| type:"time-range" option:acl_time_range_id
+	= type:"log" options:{WS acl_option_log_option}*
+	| type:"time-range" WS option:acl_time_range_id
 	| type:"inactive"
 	| ()
 	;
 
 acl_option_log_option
 	= ("disable"|"default"|"notifications"|"warnings")
-	| "interval" int
+	| "interval" WS int
 	| ()
 	;
 
@@ -149,46 +147,46 @@ remark
 	;
 
 object
-	= "object" object_type
+	= "object" WS object_type
 	;
 
 object_type
-	= type:"network" name:obj_name NL args:network_object >description
-	| type:"service" name:obj_name NL args:service_object >description
+	= type:"network" WS name:obj_name NL SP args:network_object [SP >description]
+	| type:"service" WS name:obj_name NL SP args:service_object [SP >description]
 	;
 
 network_object
-	= type:"host" address:(ip4|ip6) NL
-	| type:"subnet" address:ip4 mask:ip4 NL
-	| type:"subnet" address:ip6 "/" mask:int NL
-	| type:"range" start:ip4 stop:ip4 NL
-	| type:"range" start:ip6 stop:ip6 NL
-	| type:"fqdn" limit:[("v4"|"v6")] fqdn:string NL
+	= type:"host" WS address:(ip4|ip6) NL
+	| type:"subnet" WS address:ip4 WS mask:ip4 NL
+	| type:"subnet" WS address:ip6 "/" mask:int NL
+	| type:"range" WS start:ip4 WS stop:ip4 NL
+	| type:"range" WS start:ip6 WS stop:ip6 NL
+	| type:"fqdn" WS [limit:("v4"|"v6") WS] fqdn:string NL
 	;
 
 service_object
-	= type:"service" protocol:int NL
-	| type:"service" protocol:protocol_icmp icmp_type:[(icmp_type|int)] icmp_code:[int] NL
-	| type:"service" protocol:protocol source:service_object_source destination:service_object_destination NL
+	= type:"service" WS protocol:int NL
+	| type:"service" WS protocol:protocol_icmp [WS icmp_type:(icmp_type|int) [WS icmp_code:int]] NL
+	| type:"service" WS protocol:protocol [WS] source:service_object_source [WS] destination:service_object_destination NL
 	;
 
 service_object_op
-	= ("lt"|"gt"|"eq"|"neq") port
-	| "range" port port
+	= ("lt"|"gt"|"eq"|"neq") WS port
+	| "range" WS port WS port
 	;
 
 service_object_source
-	= "source" @:service_object_op
+	= "source" WS @:service_object_op
 	| ()
 	;
 
 service_object_destination
-	= "destination" @:service_object_op
+	= "destination" WS @:service_object_op
 	| ()
 	;
 
 object_group
-	= "object-group" object_group_type
+	= "object-group" WS object_group_type
 	;
 
 protocol_icmp
@@ -205,51 +203,51 @@ port_group_protocol
 	;
 
 object_group_type
-	= type:"network" name:obj_name NL >description objects:{network_group_object}
+	= type:"network" WS name:obj_name NL [SP >description] objects:{SP network_group_object}
 	(* PR 8.3 *)
-	| "service" name:obj_name type:port_group_protocol NL >description objects:{port_group_object}
+	| "service" WS name:obj_name WS type:port_group_protocol NL [SP >description] objects:{SP port_group_object}
 	(* PR 9.3 *)
-	| type:"service" name:obj_name NL >description objects:{service_group_object}
-	| type:"icmp-type" name:obj_name NL >description objects:{icmp_group_object}
-	| type:"protocol" name:obj_name NL >description objects:{protocol_group_object}
+	| type:"service" WS name:obj_name NL [SP >description] objects:{SP service_group_object}
+	| type:"icmp-type" WS name:obj_name NL [SP >description] objects:{SP icmp_group_object}
+	| type:"protocol" WS name:obj_name NL [SP >description] objects:{SP protocol_group_object}
 	;
 
 service_group_object
-	= type:"service-object" protocol:int NL
-	| type:"service-object" protocol:protocol_icmp icmp_type:[(icmp_type|int)] icmp_code:[int] NL
-	| type:"service-object" protocol:protocol source:service_object_source destination:service_object_destination NL
-	| type:"service-object" protocol:"object" object:acl_object_service_id NL
-    | type:"group-object" object:acl_object_group_service_id NL
+	= type:"service-object" WS protocol:int NL
+	| type:"service-object" WS protocol:protocol_icmp [WS icmp_type:(icmp_type|int) [WS icmp_code:int]] NL
+	| type:"service-object" WS protocol:protocol [WS] source:service_object_source [WS] destination:service_object_destination NL
+	| type:"service-object" WS protocol:"object" WS object:acl_object_service_id NL
+    | type:"group-object" WS object:acl_object_group_service_id NL
 	| ()
 	;
 
 port_group_object
-	= "port-object" "eq" port NL
-	| "port-object" "range" port port NL
-	| "group-object" acl_object_group_service_id NL
+	= "port-object" WS "eq" WS port NL
+	| "port-object" WS "range" WS port WS port NL
+	| "group-object" WS acl_object_group_service_id NL
 	| ()
 	;
 
 network_group_object
-	= type:"network-object" name:"host" address:(acl_names_id|ip4|ip6) NL
-	| type:"network-object" name:"object" object:acl_object_network_id NL
-	| type:"network-object" name:(acl_names_id|ip4) netmask:ip4 NL
-	| type:"network-object" name:(acl_names_id|ip6) "/" netmask:int NL
-	| type:"group-object" object:acl_object_group_network_id NL
+	= type:"network-object" WS name:"host" WS address:(acl_names_id|ip4|ip6) NL
+	| type:"network-object" WS name:"object" WS object:acl_object_network_id NL
+	| type:"network-object" WS name:(acl_names_id|ip4) WS netmask:ip4 NL
+	| type:"network-object" WS name:(acl_names_id|ip6) "/" netmask:int NL
+	| type:"group-object" WS object:acl_object_group_network_id NL
 	| ()
 	;
 
 icmp_group_object
-	= type:"icmp-object" name:(icmp_type|int) NL
-	| type:"group-object" name:acl_object_group_icmp_id NL
+	= type:"icmp-object" WS name:(icmp_type|int) NL
+	| type:"group-object" WS name:acl_object_group_icmp_id NL
 	| ()
 	;
 
 
 
 protocol_group_object
-	= type:"protocol-object" name:obj_name NL
-	| type:"group-object" name:acl_object_group_protocol_id NL
+	= type:"protocol-object" WS name:obj_name NL
+	| type:"group-object" WS name:acl_object_group_protocol_id NL
 	| ()
 	;
 
@@ -279,22 +277,22 @@ day =
 
 
 date
-	= day:day month:month year:year
+	= day:day WS month:month WS year:year
 	;
 
 timedate
-	= >time >date
+	= >time WS >date
 	;
 
 time_range_object
-	= type:"periodic" days:{day_of_the_week}+ start:time "to" edays:[day_of_the_week] end:time NL
-	| type:"periodic" days+:("weekdays"|"weekend"|"daily") start:time "to" end:time NL
-	| type:"absolute" ["start" start:timedate] ["end" end:timedate] NL
-	| type:"no" any:("periodic"|"absolute") NL
+	= type:"periodic" WS days:{day_of_the_week}+ WS start:time WS "to" WS edays:[day_of_the_week] WS end:time NL
+	| type:"periodic" WS days+:("weekdays"|"weekend"|"daily") WS start:time WS "to" WS end:time NL
+	| type:"absolute" [WS "start" WS start:timedate] [WS "end" WS end:timedate] NL
+	| type:"no" WS TOEOL NL
 	;
 
 time_range
-	= 'time-range' name:string NL objects:{time_range_object}+ "!" NL
+	= 'time-range' WS name:string NL objects:{SP time_range_object}+
 	;
 
 

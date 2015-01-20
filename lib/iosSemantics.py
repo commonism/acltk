@@ -60,8 +60,8 @@ class iosSemantics(aclSemantics, _iosSemantics):
 		r = ACLRules()
 		if ast.type == 'extended':
 			for obj in ast.objects:
-				if obj.protocol.name == "icmp":
-					print(ast)
+#				if obj.protocol.name == "icmp":
+#					print(ast)
 				for i in ["source","dest"]:
 					if not isinstance(obj[i], ACLNode):
 						x = obj[i]

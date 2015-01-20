@@ -13,6 +13,12 @@ class aclSemantics:
 	def __init__(self, parser):
 		self.parser = parser
 
+	def SP(self, ast):
+		return None
+
+	def WS(self, ast):
+		return None
+
 	def interface(self, ast):
 		iface = Interface(ast['alias'])
 		for i in ast['detail']:

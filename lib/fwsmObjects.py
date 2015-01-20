@@ -23,7 +23,7 @@ class fwsmConfig(ACLConfig):
 			"grammar",
 			filename=filename,
 			trace=trace,
-			whitespace=' \t',
+			whitespace='',
 			nameguard=True,
 			semantics=semantics)
 		return config

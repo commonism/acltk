@@ -30,22 +30,22 @@ names
 	;
 
 name
-	= "name" address:(ip4|ip6) hostname:identifier ["description" description:?/[^\n]+/?] NL
+	= "name" WS address:(ip4|ip6) WS hostname:identifier [WS "description" description:?/[^\n]+/?] NL
 	;
 
 access_list_rule
-	= "access-list" id:acl_id line:acl_line extended:acl_extended mode:acl_mode protocol:protocol_icmp source:acl_icmp_node dest:acl_icmp_node icmp:acl_icmp_options options:acl_options NL
-	| "access-list" id:acl_id line:acl_line extended:acl_extended mode:acl_mode protocol:acl_protocol source:node dest:node options:acl_options NL
-	| "access-list" id:acl_id line:acl_line protocol:"ethertype" "permit" "bpdu" NL
+	= "access-list" WS id:acl_id WS extended:acl_extended WS mode:acl_mode WS protocol:protocol_icmp WS source:acl_icmp_node WS dest:acl_icmp_node icmp:acl_icmp_options [WS options:acl_options] NL
+	| "access-list" WS id:acl_id WS extended:acl_extended WS mode:acl_mode WS protocol:acl_protocol WS source:node WS dest:node [WS options:acl_options] NL
+	| "access-list" WS id:acl_id WS protocol:"ethertype" "permit" "bpdu" NL
 	;
 
 access_list
-	= remark:{access_list_remark}+ ~ >access_list_rule
+	= remark:{access_list_remark}+ >access_list_rule
 	| >access_list_rule
 	;
 
 access_list_remark
-	= 'access-list' acl_id acl_line 'remark' remark:remark NL
+	= 'access-list' WS acl_id WS 'remark' SP remark:remark NL
 	;
 
 
