@@ -1,26 +1,26 @@
 {%- macro host(obj) -%}
 {%- if obj.__class__.__name__ == 'NetworkHost' -%}
 {%- if obj.target -%}
-    <a href="#name_alias_{{ obj.target.hostname }}">{{ obj.address }}</a>
+	<a href="#name_alias_{{ obj.target.hostname }}">{{ obj.address }}</a>
 {%- else -%}
-    {{ obj.address }}
+	{{ obj.address }}
 {%- endif -%}
 {%- elif obj.__class__.__name__ == 'NetworkGroup' -%}
-    <a href="#network_group_{{ obj.name}}">{{ obj.name }}</a>
+	<a href="#network_group_{{ obj.name}}">{{ obj.name }}</a>
 {%- elif obj.__class__.__name__ == 'Network' -%}
 {%- if obj.target -%}
-    <a href="#name_alias_{{ obj.target.hostname }}">{{ obj.network }}</a>
+	<a href="#name_alias_{{ obj.target.hostname }}">{{ obj.network }}</a>
 {%- else -%}
-    {{ obj.network }}
+	{{ obj.network }}
 {%- endif -%}
 {%- elif obj.__class__.__name__ == 'NetworkObject' -%}
-    <a href="#network_object_{{ obj.name}}">{{ obj.name }}</a>
+	<a href="#network_object_{{ obj.name}}">{{ obj.name }}</a>
 {%- elif obj.__class__.__name__ == 'NetworkAny' -%}
-    any
+	any
 {%- elif obj.__class__.__name__ == 'NetworkAny4' -%}
-    any4
+	any4
 {%- elif obj.__class__.__name__ == 'NetworkAny6' -%}
-    any6
+	any6
 {%  elif obj.__class__.__name__ == 'NetworkWildcard' %}
 VERIFY {{ obj.address }}/{{ obj.wildcard }}
 {%  else %}
@@ -31,38 +31,38 @@ FIXME {{ obj.__class__.__name__ }}
 {%- macro port(obj) -%}
 {%- if obj == None -%}
 {%- elif obj.__class__.__name__ == 'Port'%}
-    {{ obj.op }} {{ obj.num }}
+	{{ obj.op }} {{ obj.num }}
 {%- elif obj.__class__.__name__ == 'PortRange'%}
-    {{ obj.start}}-{{ obj.stop }}
+	{{ obj.start}}-{{ obj.stop }}
 {%- elif obj.__class__.__name__ == 'PortGroup'%}
-     <a href="#port_group_{{ obj.name}}">{{ obj.name }}</a>
+	 <a href="#port_group_{{ obj.name}}">{{ obj.name }}</a>
 {%- else -%}
-    {{ obj }}
+	{{ obj }}
 {%- endif -%}
 {%- endmacro -%}
 
 {%- macro protocol(obj) -%}
 {%- if obj.__class__.__name__ == 'Protocol' -%}
-    {{ obj.name }}
+	{{ obj.name }}
 {%- elif obj.__class__.__name__ == 'ProtocolGroup' -%}
-    <a href="#protocol_group_{{ obj.name }}">{{ obj.name }}</a>
+	<a href="#protocol_group_{{ obj.name }}">{{ obj.name }}</a>
 {%- elif obj.__class__.__name__ == 'ServiceGroup' -%}
-    <a href="#service_group_{{ obj.name }}">{{ obj.name }}</a>
+	<a href="#service_group_{{ obj.name }}">{{ obj.name }}</a>
 {%- elif obj.__class__.__name__ == 'ServiceObject' -%}
-    <a href="#service_object_{{ obj.name }}">{{ obj.name }}</a>
+	<a href="#service_object_{{ obj.name }}">{{ obj.name }}</a>
 {%- else -%}
-    {{ obj.__class__.__name__ }}
+	{{ obj.__class__.__name__ }}
 {%- endif -%}
 {%- endmacro -%}
 
 {%- macro icmp(obj) -%}
 {%- if  obj -%}
 {%- if obj.__class__.__name__ == 'ICMP' -%}
-    {{ obj.type }}
+	{{ obj.type }}
 {%- elif obj.__class__.__name__ == 'ICMPGroup' -%}
 	<a href="#icmp_group_{{ obj.name }}">{{ obj.name }}</a>
 {%- else -%}
-    {{ obj.__class__.__name__ }}
+	{{ obj.__class__.__name__ }}
 {%- endif -%}
 {%- endif -%}
 {%- endmacro -%}
@@ -107,7 +107,7 @@ class="filterd_by_the_filter"
 a.href			{ color:#0000FF;
   				  text-decoration:none; }
 caption			{ font-size: 200%;
-                  font-weight: bold; }
+	              font-weight: bold; }
 thead			{ font-style: italic; }
 
 .new_network_group{ font-weight: bold;
@@ -115,7 +115,7 @@ thead			{ font-style: italic; }
 .new_service_group{ font-weight: bold;
 					font-size: 110%; }
 .new_time_range{ font-weight: bold;
-                 font-size: 110%; }
+	             font-size: 110%; }
 .network_group_description{
 					font-size: 80%;
 					font-style: italic; }
@@ -144,8 +144,9 @@ thead			{ font-style: italic; }
 </head>
 <body>
 <div align="center">
-    <h2>Hostname: {{ aclconfig.name }}</h2>
-    <h3>Erstellt am: {{ aclconfig.timestamp }}</h3>
+	<h2>Hostname: {{ aclconfig.name }}</h2>
+	<h3>Version: {{ aclconfig.version }}</h3>
+	<h3>Erstellt am: {{ aclconfig.timestamp }}</h3>
 </div>
 <h2>Filter</h2>
 
@@ -212,6 +213,7 @@ thead			{ font-style: italic; }
 </table>
 {% endif %}
 
+{%- if selection is none or 'Names' in selection or args.show_not_selected %}
 <h2>Name Aliases</h2>
 <table>
 {%- for obj in aclconfig.names.objects %}
@@ -233,6 +235,7 @@ thead			{ font-style: italic; }
 	</tr>
 {%- endfor %}
 </table>
+{% endif %}
 
 {%- if selection is none or 'NetworkObject' in selection or args.show_not_selected %}
 <h2>Network Objects</h2>
@@ -253,7 +256,7 @@ thead			{ font-style: italic; }
 
 <tr {{ visible(obj) }}>
 <td>
-    <a name="network_object_{{ name }}" id="network_object_{{ name }}">
+	<a name="network_object_{{ name }}" id="network_object_{{ name }}">
 		{{ name }}
 	</a>
 </td>
@@ -269,11 +272,11 @@ thead			{ font-style: italic; }
 <table>
 	<tr>
 		<td></td>
-        <td style="width:16%;"></td>
-        <td style="width:16%;"></td>
-        <td style="width:16%;"></td>
-        <td style="width:16%;"></td>
-        <td style="width:16%;"></td>
+	    <td style="width:16%;"></td>
+	    <td style="width:16%;"></td>
+	    <td style="width:16%;"></td>
+	    <td style="width:16%;"></td>
+	    <td style="width:16%;"></td>
 		<td style="width:16%;"></td>
 	</tr>
 {%- for name in aclconfig.groups.network.keys()|sort %}
@@ -302,7 +305,7 @@ thead			{ font-style: italic; }
 
 {%- for items in obj.objects|batch(6) %}
 <tr {{ visible(obj) }}>
-    <td></td>
+	<td></td>
 {%- for item in items %}
 	<td> {{ host(item) }}</td>
 {%- endfor %}
@@ -325,7 +328,7 @@ thead			{ font-style: italic; }
 		<td style="width:19%;">Protocol</td>
 		<td style="width:19%;">Source</td>
 		<td style="width:19%;">Destination</td>
-        <td style="width:19%;">Description</td>
+	    <td style="width:19%;">Description</td>
 	</tr>
 {%- endif %}
 
@@ -337,7 +340,7 @@ thead			{ font-style: italic; }
 <tr {{ visible(obj) }}>
 <td></td>
 <td>
-    <a name="service_object_{{ name }}" id="service_object_{{ name }}">
+	<a name="service_object_{{ name }}" id="service_object_{{ name }}">
 		{{ name }}
 	</a>
 </td>
@@ -388,8 +391,8 @@ thead			{ font-style: italic; }
 {%- for item in obj.objects %}
 <tr {{ visible(obj) }}>
 {%- if item.__class__.__name__ == 'Service' %}
-    <td></td>
-    <td></td>
+	<td></td>
+	<td></td>
 	<td>{{ protocol(item.protocol) }}</td>
 {%- if item.protocol.name in ('icmp','icmp6') %}
 	<td>{{ item.icmp_type }}</td>
@@ -400,15 +403,15 @@ thead			{ font-style: italic; }
 {%- endif %}
 {%- elif item.__class__.__name__ == 'ServiceObject' %}
 	<td></td>
-    <td><a href="#service_object_{{ item.name}}">{{ item.name }}</a></td>
-    <td colspan="3"></td>
+	<td><a href="#service_object_{{ item.name}}">{{ item.name }}</a></td>
+	<td colspan="3"></td>
 {%- elif item.__class__.__name__ == 'ServiceGroup' %}
 	<td></td>
-    <td><a href="#service_group_{{ item.name}}">{{ item.name }}</a></td>
-    <td colspan="3"></td>
+	<td><a href="#service_group_{{ item.name}}">{{ item.name }}</a></td>
+	<td colspan="3"></td>
 {%- else %}
 	<td></td>
-    {{ item }}
+	{{ item }}
 {%- endif %}
 </tr>
 {%- endfor %}
@@ -452,7 +455,7 @@ thead			{ font-style: italic; }
 {%- endif %}
 {%- for items in obj.objects|batch(6) %}
 <tr {{ visible(obj) }}>
-    <td></td>
+	<td></td>
 {%- for item in items %}
 	<td> {{ port(item) }}</td>
 {%- endfor %}
@@ -492,11 +495,11 @@ thead			{ font-style: italic; }
 	</tr>
 {%- for items in obj.objects|batch(8) %}
 	<tr {{ visible(obj) }}>
-    <td></td>
+	<td></td>
 {%- for item in items %}
 		<td>{{ icmp(item) }}</td>
 {%- endfor %}
-    </tr>
+	</tr>
 {%- endfor %}
 {%- endfor %}
 </table>
@@ -533,8 +536,8 @@ thead			{ font-style: italic; }
 		<td colspan="4">{{ obj.description }}</td>
 	</tr>
 {%- for items in obj.objects|batch(8) %}
-    <tr {{ visible(obj) }}>
-    <td></td>
+	<tr {{ visible(obj) }}>
+	<td></td>
 {%- for item in items %}
 	<td>{{ protocol(item) }}</td>
 {%- endfor %}
@@ -571,10 +574,10 @@ thead			{ font-style: italic; }
 		<td colspan="2">{{ obj.description }}</td>
 	</tr>
 {%- for item in obj.objects %}
-    <tr {{ visible(obj) }}>
+	<tr {{ visible(obj) }}>
 		<td></td>
 		<td colspan="2">{{ item }}</td>
-    </tr>
+	</tr>
 {%- endfor %}
 {%- endfor %}
 </table>
@@ -588,7 +591,11 @@ thead			{ font-style: italic; }
 {%- if selection is none or obj.id in selection or args.show_not_selected %}
 	<tr>
 		<td class="different_acl_id" colspan="8">
-			{{ obj.id }}
+			<a id="access_group_{{ obj.id }}">{{ obj.id }}</a>
+{%- if obj.id in aclconfig.access_groups %}
+{%- set iag=aclconfig.access_groups[obj.id] %}
+	<a href="#interface_{{ iag.iface.alias }}">{{ iag.iface.alias }}/{{ iag.direction }}</a>
+{%- endif %}
 		</td>
 	</tr>
 	<tr>
@@ -618,7 +625,7 @@ thead			{ font-style: italic; }
 		</td>
 	</tr>
 {%-  endif %}
-    {%- set _=idx.update({'iface':idx['iface']+1, 'rule':1}) %}
+	{%- set _=idx.update({'iface':idx['iface']+1, 'rule':1}) %}
 {%- endif %}
 
 {%- if "inactive" in obj.options %}
@@ -639,19 +646,20 @@ thead			{ font-style: italic; }
 
 
 <tr {{ cls| safe }}>
-    <td>{{ idx['iface'] }}.{{ idx['rule'] }}</td>
-    <td class="mode_{{ obj.mode }}">{{ obj.mode }}</td>
-    <td class="protocol_{{ obj.protocol.name }}" align="center">{{ protocol(obj.protocol) }}</td>
-    <td>{{ host(obj.src.host) }}</td>
-    <td>{{ port(obj.src.port) }}</td>
-    <td>{{ host(obj.dst.host) }}</td>
+	<td>{{ idx['iface'] }}.{{ idx['rule'] }}</td>
+	<td class="mode_{{ obj.mode }}">{{ obj.mode }}</td>
+	<td class="protocol_{{ obj.protocol.name }}" align="center">{{ protocol(obj.protocol) }}</td>
+	<td>{{ host(obj.src.host) }}</td>
+	<td>{{ port(obj.src.port) }}</td>
+	<td>{{ host(obj.dst.host) }}</td>
 {%- if obj.protocol.__class__.__name__ == 'Protocol' and obj.protocol.name == 'icmp' %}
 	<td>{{ icmp(obj.icmp) }}</td>
 {%- else %}
-    <td>{{ port(obj.dst.port) }}</td>
+	<td>{{ port(obj.dst.port) }}</td>
 {%- endif %}
 	<td>{{ options(obj.options) }}</td>
 </tr>
+
 {%- if obj.remark %}
 {% for remark in obj.remark %}
 <tr {{ cls| safe }}>
