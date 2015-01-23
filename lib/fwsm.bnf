@@ -117,6 +117,12 @@ ignored
 	| "xlate-bypass" [WS] TOEOL NL
 	| "global" WS TOEOL NL
 	| "established" WS TOEOL NL
+	| "failover" [WS TOEOL] NL
+	| "dynamic-access-policy-record" WS TOEOL NL
+	| "console" WS TOEOL NL
+	| "ntp" WS TOEOL NL
+	| "prompt" WS TOEOL NL
+	| "call-home" TOEOL NL ignored_indent
 	;
 
 unmatched

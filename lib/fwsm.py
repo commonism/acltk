@@ -15,7 +15,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 from grako.parsing import graken, Parser
 
 
-__version__ = (2015, 1, 22, 12, 12, 53, 3)
+__version__ = (2015, 1, 23, 7, 29, 54, 4)
 
 __all__ = [
     'fwsmParser',
@@ -2254,6 +2254,37 @@ class fwsmParser(Parser):
                 self._WS_()
                 self._TOEOL_()
                 self._NL_()
+            with self._option():
+                self._token('failover')
+                with self._optional():
+                    self._WS_()
+                    self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('dynamic-access-policy-record')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('console')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('ntp')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('prompt')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('call-home')
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
             self._error('expecting one of: domain-name name-server')
 
     @graken()
