@@ -1,5 +1,5 @@
-from acltk.aclObjects import ACLConfig
-
+import grako.ast
+from acltk.aclObjects import ACLConfig, ACLVersion
 
 class fwsmConfig(ACLConfig):
 	def __init__(self, ast):
@@ -12,8 +12,9 @@ class fwsmConfig(ACLConfig):
 		:rtype : fwsmConfig
 		"""
 		if not text:
-			with open(filename) as f:
+			with open(filename, 'rb') as f:
 				text = f.read()
+				text = text.decode('utf-8-sig')
 
 		from acltk.fwsmSemantics import fwsmParser, fwsmSemantics
 		parser = fwsmParser(parseinfo=False)

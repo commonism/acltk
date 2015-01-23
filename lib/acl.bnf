@@ -1,4 +1,4 @@
-NL = "\n";
+NL = ["\r"] "\n";
 TOEOL = ?/[^\n]*/?;
 SP = " ";
 WS = /[ \t]+/;
@@ -25,19 +25,11 @@ description
 
 
 interface
-	= "interface" WS alias:interface_alias NL detail:{WS interface_detail}
+	= "interface" WS alias:interface_alias NL detail:{SP interface_detail}
 	;
 
 interface_alias
 	= ?/[^\s]+/?
-	;
-
-interface_detail
-	= type:"nameif" name:identifier NL
-	| type:"description" description:?/[^\n]+/? NL
-	| type:"ip nat" name:obj_name NL
-	| TOEOL NL
-	| ()
 	;
 
 acl_id
@@ -99,6 +91,10 @@ acl_time_range_id
 	= !()
 	;
 
+acl_interface_id
+	= !()
+	;
+
 acl_host
 	= type:("host"|"ip") WS address:(acl_names_id|ip4|ip6)
 	| type:"interface" WS name:identifier
@@ -133,7 +129,7 @@ acl_option
 	;
 
 acl_option_log_option
-	= ("disable"|"default"|"notifications"|"warnings")
+	= ("debugging"|"disable"|"default"|"notifications"|"warnings")
 	| "interval" WS int
 	| ()
 	;
@@ -162,6 +158,7 @@ network_object
 	| type:"range" WS start:ip4 WS stop:ip4 NL
 	| type:"range" WS start:ip6 WS stop:ip6 NL
 	| type:"fqdn" WS [limit:("v4"|"v6") WS] fqdn:string NL
+	| type:"nat" TOEOL NL
 	;
 
 service_object

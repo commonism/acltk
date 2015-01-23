@@ -153,9 +153,64 @@ thead			{ font-style: italic; }
 <pre>{{ caf }}</pre>
 {%- endblock %}
 
+{%- if selection is none or 'Interface' in selection or args.show_not_selected %}
 <h2>Interface Configuration</h2>
 <table>
+{%- for name,obj in aclconfig.interfaces.items()|sort %}
+{%- if loop.first %}
+	<tr>
+		<th>Name</th>
+		<th></th>
+		<th></th>
+	</tr>
+{%- endif %}
+{%- if selection is not none and obj not in selection and not args.show_not_selected %}
+{%- continue %}
+{%- endif %}
+	<tr {{ visible(obj) }}>
+		<td><a name="interface_{{ name }}" id="interface_{{ name }}">{{name}}</a></td>
+		<td colspan="2">{{ obj.description }}</td>
+	</tr>
+{% for addr in obj.addresses %}
+	<tr {{ visible(obj) }}>
+		<td></td>
+{% if loop.first %}
+		<td>Addresses</td>
+{% else %}
+	    <td></td>
+{% endif %}
+		<td>{{ addr.interface }}</td>
+	</tr>
+{% endfor %}
+
+{% for direction, group in obj.access_groups.items() %}
+	<tr {{ visible(obj) }}>
+		<td></td>
+{% if loop.first %}
+		<td>access-groups</td>
+{% else %}
+		<td></td>
+{% endif %}
+		<td>{{ direction }} <a href="#access_group_{{ group.name }}">{{ group.name }}</a></td>
+	</tr>
+{% endfor %}
+
+{% for route in obj.routes | sort(attribute='network') %}
+	<tr>
+		<td></td>
+{% if loop.first %}
+		<td>routes</td>
+{% else %}
+	    <td></td>
+{% endif %}
+		<td>{{ route.network }} via {{ route.gw }}</td>
+	</tr>
+{% endfor %}
+
+<tr><td colspan="3">&nbsp;</td></tr>
+{%- endfor %}
 </table>
+{% endif %}
 
 <h2>Name Aliases</h2>
 <table>
@@ -598,13 +653,15 @@ thead			{ font-style: italic; }
 	<td>{{ options(obj.options) }}</td>
 </tr>
 {%- if obj.remark %}
+{% for remark in obj.remark %}
 <tr {{ cls| safe }}>
 	<td>
 	</td>
 	<td colspan=7  class="acl_description">
-		{{ obj.remark }}
+		{{ remark }}
 	</td>
 </tr>
+{%  endfor %}
 {%- endif %}
 
 {%- set last=obj %}

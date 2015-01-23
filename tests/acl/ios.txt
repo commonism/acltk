@@ -1,5 +1,16 @@
+version 12.4
+
 hostname ios
 ip domain name example.org
+
+interface Example_If
+ description Example Interface
+ bandwidth 1000001
+ ip address 127.0.0.1 255.255.254.0 secondary
+ ip address 127.0.0.2 255.255.254.0
+ ip access-group example_in in
+ ip access-group example_out out
+!
 
 ip access-list extended example_out
  permit tcp host 127.0.0.1 host 127.0.0.2
@@ -49,3 +60,15 @@ access-list 102 permit tcp any any eq www log A
 access-list 102 permit tcp any any eq domain log
 access-list 102 permit udp any any eq domain log
 
+ip access-list standard Bi2RoutesAllowed
+ remark Default Route
+ permit 0.0.0.0
+ remark 130.75.0.0/16
+ permit 130.75.0.0
+ deny   any
+
+access-list 101 deny   tcp any any range 0 65535 log-input
+
+ip route profile
+ip route 10.0.1.0 255.255.255.0 127.0.0.1
+ip route 10.0.1.0 255.255.255.0 Example_If

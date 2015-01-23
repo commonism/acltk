@@ -3,12 +3,12 @@
 
 grammar
     =
-    @:{command}+ ("pager"|$)
+    @:{command}+ $
     ;
 
 version
-	= version:("ASA Version" ?/[^\n]*/?) NL "!" NL
-	| version:("FWSM Version" ?/[^\n]*/?) NL "!" NL
+	= version:?/ASA Version [^\n]*/? NL
+	| version:?/FWSM Version [^\n]*/? NL
 	;
 
 command
@@ -16,27 +16,34 @@ command
 	| hostname
 	| domain_name
 	| interface
-	| names
+	| name
 	| time_range
 	| object
 	| object_group
 	| access_list
-	| ignored NL
+	| access_group
+	| ignored
 	| unmatched NL
 	;
 
-names
-	= "names" NL objects:{name}* ["!" NL]
+interface_detail
+	= type:"description" WS value:TOEOL NL
+	| type:"nameif" WS value:identifier [WS] NL
+	| type:("ip" WS "address") WS value:(ip4 WS ip4) WS "standby" WS standby:ip4 NL
+	| type:("ipv6" WS "address") WS value:(ip6 "/" int) WS "standby" WS standby:ip6 NL
+	| TOEOL NL
+	| ()
 	;
+
 
 name
 	= "name" WS address:(ip4|ip6) WS hostname:identifier [WS "description" description:?/[^\n]+/?] NL
 	;
 
 access_list_rule
-	= "access-list" WS id:acl_id WS extended:acl_extended WS mode:acl_mode WS protocol:protocol_icmp WS source:acl_icmp_node WS dest:acl_icmp_node icmp:acl_icmp_options [WS options:acl_options] NL
-	| "access-list" WS id:acl_id WS extended:acl_extended WS mode:acl_mode WS protocol:acl_protocol WS source:node WS dest:node [WS options:acl_options] NL
-	| "access-list" WS id:acl_id WS protocol:"ethertype" "permit" "bpdu" NL
+	= "access-list" WS id:acl_id WS extended:acl_extended WS mode:acl_mode WS protocol:protocol_icmp WS source:acl_icmp_node WS dest:acl_icmp_node icmp:acl_icmp_options [WS options:acl_options] [WS] NL
+	| "access-list" WS id:acl_id WS extended:acl_extended WS mode:acl_mode WS protocol:acl_protocol WS source:node WS dest:node [WS options:acl_options] [WS] NL
+	| "access-list" WS id:acl_id WS protocol:"ethertype" TOEOL NL
 	;
 
 access_list
@@ -48,19 +55,68 @@ access_list_remark
 	= 'access-list' WS acl_id WS 'remark' SP remark:remark NL
 	;
 
+access_group
+	= "access-group" WS name:obj_name WS direction:obj_name WS "interface" WS iface:obj_name [WS] NL
+	;
+
+ignored_indent
+	= {/^ [^\n]*/ NL}*
+	;
 
 ignored
-	= ":" ?/[^\n]*/?
-	| "firewall" ?/[^\n]*/?
-	| "enable"  ?/[^\n]*/?
-	| "dns-guard" ?/[^\n]*/? NL "!"
-	| "dns" ?/[^\n]*/?
+	= ":" ?/[^\n]*/? NL
+	| "firewall" ?/[^\n]*/? NL
+	| "enable"  ?/[^\n]*/? NL
+	| "dns-guard" TOEOL NL
+	| "dns" TOEOL NL ignored_indent
 	| "name-server" ?/[^\n]*/?
 	| "domain-name" ?/[^\n]*/?
-	| ["no"] "logging" ?/[^\n]*/?
-	| "passwd" ?/[^\n]*/?
-	| "!"
-	| "same-security-traffic"  ?/[^\n]*/?
+	| "no" TOEOL NL
+	| "boot" TOEOL NL
+	| "ftp" TOEOL NL
+	| "clock" TOEOL NL
+	| "passwd" ?/[^\n]*/? NL
+	| "!" NL
+	| "same-security-traffic"  ?/[^\n]*/? NL
+	| "tcp-map" WS TOEOL NL ignored_indent
+	| "names" NL
+	| "pager" WS TOEOL NL
+	| "aaa" WS TOEOL NL
+	| "logging" WS TOEOL NL
+	| "mtu" WS TOEOL NL
+	| "monitor-interface" WS TOEOL NL
+	| "icmp" WS TOEOL NL
+	| "arp" WS TOEOL NL
+	| "static" WS TOEOL NL
+	| "route" WS TOEOL NL
+	| "timeout" WS TOEOL NL
+	| "username" WS TOEOL NL
+	| "http" WS TOEOL NL
+	| "aaa-server" WS TOEOL NL ignored_indent
+	| "snmp-server" WS TOEOL NL
+	| "sysopt" WS TOEOL NL
+	| "telnet" WS TOEOL NL
+	| "ssh" WS TOEOL NL
+	| "class-map" WS TOEOL NL ignored_indent
+	| "policy-map" WS TOEOL NL ignored_indent
+	| "service-policy" WS TOEOL NL
+	| "arp-inspection" WS TOEOL NL
+	| "tftp-server" WS TOEOL NL
+	| "Cryptochecksum:" TOEOL NL
+	| "asdm" WS TOEOL NL
+	| "ipv6" WS TOEOL NL
+	| "user-identity" WS TOEOL NL
+	| "crypto" WS TOEOL NL
+	| "threat-detection" WS TOEOL NL
+	| "ip" WS TOEOL NL
+	| "nat" WS TOEOL NL
+	| "service" WS TOEOL NL
+	| "dhcpd" WS TOEOL NL
+	| "dhcprelay" WS TOEOL NL
+	| "nat-control" [WS] TOEOL NL
+	| "xlate-bypass" [WS] TOEOL NL
+	| "global" WS TOEOL NL
+	| "established" WS TOEOL NL
 	;
 
 unmatched

@@ -1,9 +1,9 @@
-from grako.parsing import graken
+import ipaddress
 
 from acltk.ios import iosSemantics as _iosSemantics, iosParser as _iosParser
 from acltk.aclSemantics import aclSemantics, aclParser
 from acltk.aclObjects import ACLNode, ACLRules, Network, ACLRule, NetworkHost, Protocol, NetworkAny, NetworkWildcard
-from acltk.iosObjects import iosConfig
+from acltk.iosObjects import iosConfig, Route
 
 
 class iosSemantics(aclSemantics, _iosSemantics):
@@ -37,21 +37,23 @@ class iosSemantics(aclSemantics, _iosSemantics):
 		elif ast.cmd == 'domain name':
 			ast['domain_name'] = ast.name
 			return ast
+		elif ast.cmd == 'route':
+			return ast.route
 
 	def ip_access_list_extended(self, ast):
 		if ast.remark:
-			remark = ""
+			remark = []
 			for i in ast.remark:
-				remark += i.remark
+				remark.append(i.remark)
 			del ast['remark']
 			ast['remark'] = remark
 		return ast
 
 	def ip_access_list_standard(self, ast):
 		if ast.remark:
-			remark = ""
+			remark = []
 			for i in ast.remark:
-				remark += i.remark
+				remark.append(i.remark)
 			del ast['remark']
 			ast['remark'] = remark
 		return ast
@@ -79,9 +81,9 @@ class iosSemantics(aclSemantics, _iosSemantics):
 
 	def access_list_ip_standard(self, ast):
 		if ast.remark:
-			remark = ""
-			for i in ast['remark']:
-				remark += i['remark']
+			remark = []
+			for i in ast.remark:
+				remark.append(i.remark)
 			del ast['remark']
 			ast['remark'] = remark
 		return self.access_list_ip_standard_rule(ast)
@@ -95,9 +97,9 @@ class iosSemantics(aclSemantics, _iosSemantics):
 
 	def access_list_ip_extended(self, ast):
 		if ast.remark:
-			remark = ""
-			for i in ast['remark']:
-				remark += i['remark']
+			remark = []
+			for i in ast.remark:
+				remark.append(i.remark)
 			del ast['remark']
 			ast['remark'] = remark
 		return self.access_list_ip_extended_rule(ast)
@@ -124,6 +126,18 @@ class iosSemantics(aclSemantics, _iosSemantics):
 		for i in ast:
 			r[i.type] = i.value
 		return r
+
+	def ip_route(self, ast):
+		if ast.prefix is None:
+			return None
+
+		if ast.gw in self.parser.interfaces:
+			gw = self.parser.interfaces[ast.gw]
+		else:
+			gw = ipaddress.ip_address(ast.gw)
+
+		return Route(ipaddress.ip_network("{}/{}".format(ast.prefix, ast.mask)), gw)
+
 
 class iosParser(aclParser, _iosParser):
 	def __init__(self, **kwargs):

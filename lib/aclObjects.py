@@ -24,9 +24,42 @@ class Name:
 	def __repr__(self):
 		return "Name {self.hostname} -> {self.address}".format(self=self)
 
+
+class InterfaceAddress:
+	def __init__(self, address, netmask, priority=None):
+		self.interface = ipaddress.ip_interface("{}/{}".format(address,netmask))
+		self.priority = priority
+
+
+class InterfaceAccessGroup:
+	def __init__(self, iface, name, direction):
+		self.iface = iface
+		self.name = name
+		self.direction = direction
+
+
 class Interface:
-	def __init__(self, alias):
+	def __init__(self, alias, details):
 		self.alias = alias
+		self.addresses = []
+		self.access_groups = {}
+		self.nameif = None
+		self.routes = set()
+		self.description = None
+
+		for i in details:
+			if i.type == 'nameif':
+				self.nameif = i.value
+			elif i.type == 'description':
+				self.description = i.value
+			elif i.type[0] == 'ip':
+				if i.type[1] == 'address':
+					self.addresses.append(InterfaceAddress(*i.value))
+				elif i.type[1] == 'access-group':
+					self.access_groups[i.value[1]] = InterfaceAccessGroup(self, *i.value)
+			elif i.type[0] == 'ipv6':
+				if i.type[1] == 'address':
+					self.addresses.append(InterfaceAddress(i.value[0], i.value[2]))
 
 	def __repr__(self):
 		return "Interface {}".format(self.alias)
@@ -224,6 +257,8 @@ class NetworkAny4:
 				return True
 			else:
 				return False
+		elif isinstance(other, NetworkWildcard):
+			return True
 		elif isinstance(other, NetworkAny6):
 			return False
 		elif isinstance(other, (NetworkAny4, NetworkAny)):
@@ -249,6 +284,8 @@ class NetworkAny6:
 				return True
 			else:
 				return False
+		elif isinstance(other, NetworkWildcard):
+			return False
 		elif isinstance(other, NetworkAny4):
 			return False
 		elif isinstance(other, (NetworkAny6, NetworkAny)):
@@ -502,6 +539,11 @@ class ACLRules:
 		return r
 
 
+class ACLVersion:
+	def __init__(self, v):
+		self.version = v
+
+
 import grako.ast
 #from acltk.fwsmObjects import Names
 
@@ -511,11 +553,12 @@ class ACLConfig:
 		self.timestamp = datetime.datetime.now()
 		self.hostname = ""
 		self.domainname = ""
-		self.names = None
+		self.names = Names()
 		self.interfaces = {}
 		self.objects = ACLObjects()
 		self.groups = ACLObjects()
 		self.rules = ACLRules()
+		self.access_groups = {}
 		for i in list(ast):
 			if isinstance(i, grako.ast.AST) and 'hostname' in i:
 				self.hostname = i.hostname
@@ -523,10 +566,12 @@ class ACLConfig:
 				self.domainname = i.domain_name
 			elif isinstance(i, ACLRule):
 				self.rules.add(i)
-			elif isinstance(i, Names):
-				self.names = i
+			elif isinstance(i, Name):
+				self.names.add(i)
 			elif isinstance(i, Interface):
 				self.interfaces[i.alias] = i
+				for k,v in i.access_groups.items():
+					self.access_groups[v.name] = v
 			elif isinstance(i, TimeRange):
 				self.objects.time[i.name] = i
 			elif isinstance(i, NetworkObject):
@@ -543,6 +588,16 @@ class ACLConfig:
 				self.groups.icmp[i.name] = i
 			elif isinstance(i, NetworkGroup):
 				self.groups.network[i.name] = i
+			elif isinstance(i, ACLVersion):
+				self.version = i.version
+			elif isinstance(i, InterfaceAccessGroup):
+				for j in self.interfaces.values():
+					if j.nameif == i.iface:
+						i.iface = j
+						j.access_groups[i.direction] = i
+						break
+
+				self.access_groups[i.name] = i
 			else:
 				continue
 			ast.remove(i)
@@ -563,10 +618,7 @@ class ACLConfig:
 				print(i)
 		raise ValueError("Invalid Config?")
 
-
-
-	@classmethod
-	def resolve(cls, r):
+	def resolve(self, r):
 		for i in list(r):
 			r.add(i.protocol)
 			r.add(i.src.host)
@@ -580,6 +632,8 @@ class ACLConfig:
 			for k,v in i.options.items():
 				if isinstance(v, TimeRange):
 					r.add(v)
+			if i.id in self.access_groups:
+				r.add(self.access_groups[i.id])
 
 		done = set()
 		while True:
@@ -588,19 +642,25 @@ class ACLConfig:
 					continue
 				else:
 					done.add(i)
-
 				if isinstance(i, (NetworkGroup, PortGroup, ServiceGroup, ProtocolGroup, ICMPGroup)):
 					r.add(i.__class__.__name__)
 					r = r.union(set(i.objects))
 					break
 				elif isinstance(i, (Network, NetworkHost)):
-					r.add(i.target)
+					if i.target:
+						r.add(i.target)
+						r.add('Names')
 					break
 				elif isinstance(i, (NetworkObject, ServiceObject, TimeRange)):
 					r.add(i.__class__.__name__)
 					break
+				elif isinstance(i, InterfaceAccessGroup):
+					r.add(i.iface)
+					r.add('Interface')
+					break
 			else:
 				break
+
 		return r
 
 	def expand(self):

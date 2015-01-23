@@ -6,7 +6,8 @@ from grako.parsing import graken
 from acltk.aclObjects import TimeRangeObjectAbsolute, TimeRangeObjectPeriodic, TimeRange, \
 	NetworkObject, ServiceObject, NetworkGroup, PortGroup, ServiceGroup, ProtocolGroup, ICMPGroup, Protocol, ICMP, \
 	NetworkHost, Network, Service, PortRange, Port, ACLNode, NetworkAny, Interface, NetworkAny4, NetworkAny6, \
-	ACLRuleOptionInActive, ACLRuleOptionLog, NetworkInterface, Name
+	ACLRuleOptionInActive, ACLRuleOptionLog, NetworkInterface, ACLVersion
+import grako.ast
 
 
 class aclSemantics:
@@ -19,16 +20,18 @@ class aclSemantics:
 	def WS(self, ast):
 		return None
 
+	def version(self, ast):
+		return ACLVersion(ast.version)
+
 	def interface(self, ast):
-		iface = Interface(ast['alias'])
-		for i in ast['detail']:
-			for k, v in i.items():
-				if v is not None:
-					setattr(iface, k, v)
+		iface = Interface(ast.alias, ast.detail)
+		self.parser.interfaces[ast.alias] = iface
 		return iface
 
 	def interface_detail(self, ast):
-		return None
+		if ast.type is None:
+			return None
+		return ast
 
 	def hour(self, ast):
 		return int(ast)
@@ -85,8 +88,11 @@ class aclSemantics:
 			'network': (NetworkObject, self.parser.network_objects),
 			'service': (ServiceObject, self.parser.service_objects),
 		}
-
+		# TODO nat parsing
+		if ast.args.type == 'nat':
+			return None
 		cls, groups = action[ast.type]
+
 		p = cls(ast.name, ast.description, **ast['args'])
 		groups[ast.name] = p
 		return p
@@ -282,6 +288,7 @@ class aclParser:
 		self.protocol_groups = dict()
 		self.names = dict()
 		self.time_ranges = dict()
+		self.interfaces = dict()
 
 	def __acl_internal_ids(self, s):
 		if len(s) == 0:
@@ -296,6 +303,10 @@ class aclParser:
 						self._token(i)
 				with self._ifnot():
 					pass
+
+	@graken()
+	def _acl_interface_id_(self):
+		self.__acl_internal_ids(self.interfaces)
 
 	@graken()
 	def _acl_object_group_network_id_(self):

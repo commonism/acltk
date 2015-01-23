@@ -15,7 +15,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 from grako.parsing import graken, Parser
 
 
-__version__ = (2015, 1, 20, 15, 39, 35, 1)
+__version__ = (2015, 1, 22, 12, 12, 53, 3)
 
 __all__ = [
     'fwsmParser',
@@ -46,6 +46,8 @@ class fwsmParser(Parser):
 
     @graken()
     def _NL_(self):
+        with self._optional():
+            self._token('\r')
         self._token('\n')
 
     @graken()
@@ -123,7 +125,7 @@ class fwsmParser(Parser):
         self._NL_()
 
         def block2():
-            self._WS_()
+            self._SP_()
             self._interface_detail_()
         self._closure(block2)
         self.ast['detail'] = self.last_node
@@ -136,39 +138,6 @@ class fwsmParser(Parser):
     @graken()
     def _interface_alias_(self):
         self._pattern(r'[^\s]+')
-
-    @graken()
-    def _interface_detail_(self):
-        with self._choice():
-            with self._option():
-                self._token('nameif')
-                self.ast['type'] = self.last_node
-                self._identifier_()
-                self.ast['name'] = self.last_node
-                self._NL_()
-            with self._option():
-                self._token('description')
-                self.ast['type'] = self.last_node
-                self._pattern(r'[^\n]+')
-                self.ast['description'] = self.last_node
-                self._NL_()
-            with self._option():
-                self._token('ip nat')
-                self.ast['type'] = self.last_node
-                self._obj_name_()
-                self.ast['name'] = self.last_node
-                self._NL_()
-            with self._option():
-                self._TOEOL_()
-                self._NL_()
-            with self._option():
-                pass
-            self._error('no available options')
-
-        self.ast._define(
-            ['type', 'name', 'description'],
-            []
-        )
 
     @graken()
     def _acl_id_(self):
@@ -286,6 +255,11 @@ class fwsmParser(Parser):
 
     @graken()
     def _acl_time_range_id_(self):
+        with self._ifnot():
+            pass
+
+    @graken()
+    def _acl_interface_id_(self):
         with self._ifnot():
             pass
 
@@ -488,6 +462,8 @@ class fwsmParser(Parser):
                 with self._group():
                     with self._choice():
                         with self._option():
+                            self._token('debugging')
+                        with self._option():
                             self._token('disable')
                         with self._option():
                             self._token('default')
@@ -495,14 +471,14 @@ class fwsmParser(Parser):
                             self._token('notifications')
                         with self._option():
                             self._token('warnings')
-                        self._error('expecting one of: default disable notifications warnings')
+                        self._error('expecting one of: debugging default disable notifications warnings')
             with self._option():
                 self._token('interval')
                 self._WS_()
                 self._int_()
             with self._option():
                 pass
-            self._error('expecting one of: default disable notifications warnings')
+            self._error('expecting one of: debugging default disable notifications warnings')
 
     @graken()
     def _acl_icmp_node_(self):
@@ -635,6 +611,11 @@ class fwsmParser(Parser):
                     self._WS_()
                 self._string_()
                 self.ast['fqdn'] = self.last_node
+                self._NL_()
+            with self._option():
+                self._token('nat')
+                self.ast['type'] = self.last_node
+                self._TOEOL_()
                 self._NL_()
             self._error('no available options')
 
@@ -1596,32 +1577,18 @@ class fwsmParser(Parser):
         self._positive_closure(block1)
 
         self.ast['@'] = self.last_node
-        with self._group():
-            with self._choice():
-                with self._option():
-                    self._token('pager')
-                with self._option():
-                    self._check_eof()
-                self._error('expecting one of: pager')
+        self._check_eof()
 
     @graken()
     def _version_(self):
         with self._choice():
             with self._option():
-                with self._group():
-                    self._token('ASA Version')
-                    self._pattern(r'[^\n]*')
+                self._pattern(r'ASA Version [^\n]*')
                 self.ast['version'] = self.last_node
-                self._NL_()
-                self._token('!')
                 self._NL_()
             with self._option():
-                with self._group():
-                    self._token('FWSM Version')
-                    self._pattern(r'[^\n]*')
+                self._pattern(r'FWSM Version [^\n]*')
                 self.ast['version'] = self.last_node
-                self._NL_()
-                self._token('!')
                 self._NL_()
             self._error('no available options')
 
@@ -1642,7 +1609,7 @@ class fwsmParser(Parser):
             with self._option():
                 self._interface_()
             with self._option():
-                self._names_()
+                self._name_()
             with self._option():
                 self._time_range_()
             with self._option():
@@ -1652,28 +1619,78 @@ class fwsmParser(Parser):
             with self._option():
                 self._access_list_()
             with self._option():
+                self._access_group_()
+            with self._option():
                 self._ignored_()
-                self._NL_()
             with self._option():
                 self._unmatched_()
                 self._NL_()
             self._error('no available options')
 
     @graken()
-    def _names_(self):
-        self._token('names')
-        self._NL_()
-
-        def block1():
-            self._name_()
-        self._closure(block1)
-        self.ast['objects'] = self.last_node
-        with self._optional():
-            self._token('!')
-            self._NL_()
+    def _interface_detail_(self):
+        with self._choice():
+            with self._option():
+                self._token('description')
+                self.ast['type'] = self.last_node
+                self._WS_()
+                self._TOEOL_()
+                self.ast['value'] = self.last_node
+                self._NL_()
+            with self._option():
+                self._token('nameif')
+                self.ast['type'] = self.last_node
+                self._WS_()
+                self._identifier_()
+                self.ast['value'] = self.last_node
+                with self._optional():
+                    self._WS_()
+                self._NL_()
+            with self._option():
+                with self._group():
+                    self._token('ip')
+                    self._WS_()
+                    self._token('address')
+                self.ast['type'] = self.last_node
+                self._WS_()
+                with self._group():
+                    self._ip4_()
+                    self._WS_()
+                    self._ip4_()
+                self.ast['value'] = self.last_node
+                self._WS_()
+                self._token('standby')
+                self._WS_()
+                self._ip4_()
+                self.ast['standby'] = self.last_node
+                self._NL_()
+            with self._option():
+                with self._group():
+                    self._token('ipv6')
+                    self._WS_()
+                    self._token('address')
+                self.ast['type'] = self.last_node
+                self._WS_()
+                with self._group():
+                    self._ip6_()
+                    self._token('/')
+                    self._int_()
+                self.ast['value'] = self.last_node
+                self._WS_()
+                self._token('standby')
+                self._WS_()
+                self._ip6_()
+                self.ast['standby'] = self.last_node
+                self._NL_()
+            with self._option():
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                pass
+            self._error('no available options')
 
         self.ast._define(
-            ['objects'],
+            ['type', 'value', 'standby'],
             []
         )
 
@@ -1733,6 +1750,8 @@ class fwsmParser(Parser):
                     self._WS_()
                     self._acl_options_()
                     self.ast['options'] = self.last_node
+                with self._optional():
+                    self._WS_()
                 self._NL_()
             with self._option():
                 self._token('access-list')
@@ -1758,6 +1777,8 @@ class fwsmParser(Parser):
                     self._WS_()
                     self._acl_options_()
                     self.ast['options'] = self.last_node
+                with self._optional():
+                    self._WS_()
                 self._NL_()
             with self._option():
                 self._token('access-list')
@@ -1767,8 +1788,7 @@ class fwsmParser(Parser):
                 self._WS_()
                 self._token('ethertype')
                 self.ast['protocol'] = self.last_node
-                self._token('permit')
-                self._token('bpdu')
+                self._TOEOL_()
                 self._NL_()
             self._error('no available options')
 
@@ -1814,6 +1834,8 @@ class fwsmParser(Parser):
                             self._WS_()
                             self._acl_options_()
                             self.ast['options'] = self.last_node
+                        with self._optional():
+                            self._WS_()
                         self._NL_()
                     with self._option():
                         self._token('access-list')
@@ -1839,6 +1861,8 @@ class fwsmParser(Parser):
                             self._WS_()
                             self._acl_options_()
                             self.ast['options'] = self.last_node
+                        with self._optional():
+                            self._WS_()
                         self._NL_()
                     with self._option():
                         self._token('access-list')
@@ -1848,8 +1872,7 @@ class fwsmParser(Parser):
                         self._WS_()
                         self._token('ethertype')
                         self.ast['protocol'] = self.last_node
-                        self._token('permit')
-                        self._token('bpdu')
+                        self._TOEOL_()
                         self._NL_()
                     self._error('no available options')
             with self._option():
@@ -1880,6 +1903,8 @@ class fwsmParser(Parser):
                             self._WS_()
                             self._acl_options_()
                             self.ast['options'] = self.last_node
+                        with self._optional():
+                            self._WS_()
                         self._NL_()
                     with self._option():
                         self._token('access-list')
@@ -1905,6 +1930,8 @@ class fwsmParser(Parser):
                             self._WS_()
                             self._acl_options_()
                             self.ast['options'] = self.last_node
+                        with self._optional():
+                            self._WS_()
                         self._NL_()
                     with self._option():
                         self._token('access-list')
@@ -1914,8 +1941,7 @@ class fwsmParser(Parser):
                         self._WS_()
                         self._token('ethertype')
                         self.ast['protocol'] = self.last_node
-                        self._token('permit')
-                        self._token('bpdu')
+                        self._TOEOL_()
                         self._NL_()
                     self._error('no available options')
             self._error('no available options')
@@ -1943,25 +1969,60 @@ class fwsmParser(Parser):
         )
 
     @graken()
+    def _access_group_(self):
+        self._token('access-group')
+        self._WS_()
+        self._obj_name_()
+        self.ast['name'] = self.last_node
+        self._WS_()
+        self._obj_name_()
+        self.ast['direction'] = self.last_node
+        self._WS_()
+        self._token('interface')
+        self._WS_()
+        self._obj_name_()
+        self.ast['iface'] = self.last_node
+        with self._optional():
+            self._WS_()
+        self._NL_()
+
+        self.ast._define(
+            ['name', 'direction', 'iface'],
+            []
+        )
+
+    @graken()
+    def _ignored_indent_(self):
+
+        def block0():
+            self._pattern(r'^ [^\n]*')
+            self._NL_()
+        self._closure(block0)
+
+    @graken()
     def _ignored_(self):
         with self._choice():
             with self._option():
                 self._token(':')
                 self._pattern(r'[^\n]*')
+                self._NL_()
             with self._option():
                 self._token('firewall')
                 self._pattern(r'[^\n]*')
+                self._NL_()
             with self._option():
                 self._token('enable')
                 self._pattern(r'[^\n]*')
+                self._NL_()
             with self._option():
                 self._token('dns-guard')
-                self._pattern(r'[^\n]*')
+                self._TOEOL_()
                 self._NL_()
-                self._token('!')
             with self._option():
                 self._token('dns')
-                self._pattern(r'[^\n]*')
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
             with self._option():
                 self._token('name-server')
                 self._pattern(r'[^\n]*')
@@ -1969,19 +2030,231 @@ class fwsmParser(Parser):
                 self._token('domain-name')
                 self._pattern(r'[^\n]*')
             with self._option():
-                with self._optional():
-                    self._token('no')
-                self._token('logging')
-                self._pattern(r'[^\n]*')
+                self._token('no')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('boot')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('ftp')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('clock')
+                self._TOEOL_()
+                self._NL_()
             with self._option():
                 self._token('passwd')
                 self._pattern(r'[^\n]*')
+                self._NL_()
             with self._option():
                 self._token('!')
+                self._NL_()
             with self._option():
                 self._token('same-security-traffic')
                 self._pattern(r'[^\n]*')
-            self._error('expecting one of: ! : dns domain-name enable firewall logging name-server no passwd same-security-traffic')
+                self._NL_()
+            with self._option():
+                self._token('tcp-map')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
+            with self._option():
+                self._token('names')
+                self._NL_()
+            with self._option():
+                self._token('pager')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('aaa')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('logging')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('mtu')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('monitor-interface')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('icmp')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('arp')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('static')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('route')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('timeout')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('username')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('http')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('aaa-server')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
+            with self._option():
+                self._token('snmp-server')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('sysopt')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('telnet')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('ssh')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('class-map')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
+            with self._option():
+                self._token('policy-map')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
+            with self._option():
+                self._token('service-policy')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('arp-inspection')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('tftp-server')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('Cryptochecksum:')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('asdm')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('ipv6')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('user-identity')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('crypto')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('threat-detection')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('ip')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('nat')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('service')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('dhcpd')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('dhcprelay')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('nat-control')
+                with self._optional():
+                    self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('xlate-bypass')
+                with self._optional():
+                    self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('global')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('established')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            self._error('expecting one of: domain-name name-server')
 
     @graken()
     def _unmatched_(self):
@@ -2037,9 +2310,6 @@ class fwsmSemantics(object):
     def interface_alias(self, ast):
         return ast
 
-    def interface_detail(self, ast):
-        return ast
-
     def acl_id(self, ast):
         return ast
 
@@ -2080,6 +2350,9 @@ class fwsmSemantics(object):
         return ast
 
     def acl_time_range_id(self, ast):
+        return ast
+
+    def acl_interface_id(self, ast):
         return ast
 
     def acl_host(self, ast):
@@ -2211,7 +2484,7 @@ class fwsmSemantics(object):
     def command(self, ast):
         return ast
 
-    def names(self, ast):
+    def interface_detail(self, ast):
         return ast
 
     def name(self, ast):
@@ -2224,6 +2497,12 @@ class fwsmSemantics(object):
         return ast
 
     def access_list_remark(self, ast):
+        return ast
+
+    def access_group(self, ast):
+        return ast
+
+    def ignored_indent(self, ast):
         return ast
 
     def ignored(self, ast):

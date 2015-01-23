@@ -1,6 +1,6 @@
 from acltk.fwsm import fwsmSemantics as _fwsmSemantics, fwsmParser as _fwsmParser
 from acltk.aclSemantics import aclSemantics, aclParser
-from acltk.aclObjects import ACLConfig, ACLRule, Names, Name
+from acltk.aclObjects import ACLConfig, ACLRule, Names, Name, ACLVersion, InterfaceAccessGroup
 
 
 class fwsmSemantics(aclSemantics, _fwsmSemantics):
@@ -8,23 +8,16 @@ class fwsmSemantics(aclSemantics, _fwsmSemantics):
 		aclSemantics.__init__(self, parser)
 		_fwsmSemantics.__init__(self)
 
-	def names(self, ast):
-		n = Names()
-		for i in ast.objects:
-			n.add(i)
-		return n
-
 	def name(self, ast):
 		n = Name(**ast)
 		self.parser.names[ast.hostname] = n
 		return n
 
-
 	def access_list(self, ast):
 		if ast.remark:
-			remark = ""
-			for i in ast['remark']:
-				remark += i['remark']
+			remark = []
+			for i in ast.remark:
+				remark.append(i.remark)
 			del ast['remark']
 			ast['remark'] = remark
 		return self.access_list_rule(ast)
@@ -33,6 +26,9 @@ class fwsmSemantics(aclSemantics, _fwsmSemantics):
 		if ast.protocol == 'ethertype':
 			return None
 		return ACLRule(**ast)
+
+	def access_group(self, ast):
+		return InterfaceAccessGroup(**ast)
 
 	def grammar(self, ast):
 		# pdb.set_trace()

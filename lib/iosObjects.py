@@ -1,8 +1,17 @@
-from acltk.aclObjects import ACLConfig, ACLRules, ACLRule
+import ipaddress
+from acltk.aclObjects import ACLConfig, ACLRules, ACLRule, Interface
 
+
+class Route:
+	def __init__(self, network, gw):
+		assert isinstance(network, ipaddress.IPv4Network)
+		assert isinstance(gw, (ipaddress.IPv4Address, Interface)), "unexpected type {}".format(type(gw))
+		self.network = network
+		self.gw = gw
 
 class iosConfig(ACLConfig):
 	def __init__(self, ast):
+		self.routes = []
 		rules = list(filter(lambda x: isinstance(x, (ACLRule, ACLRules)),ast))
 		ACLConfig.__init__(self, ast)
 		self.rules.rules = []
@@ -15,7 +24,20 @@ class iosConfig(ACLConfig):
 				print(i)
 				continue
 
-		print(self)
+		for i in ast:
+			if isinstance(i, ACLRules):
+				continue
+			elif isinstance(i, Route):
+				self.routes.append(i)
+
+		for r in self.routes:
+			if isinstance(r.gw, Interface):
+				r.gw.routes.add(r)
+			else:
+				for iface in self.interfaces.values():
+					for ifaddr in iface.addresses:
+						if r.gw in ifaddr.interface.network:
+							iface.routes.add(r)
 
 	@classmethod
 	def parse(cls, filename, text=None, trace=False):

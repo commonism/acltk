@@ -7,7 +7,7 @@ grammar
     ;
 
 version
-	= version:("version" ?/[^\n]*/?) NL
+	= "version" version:?/[^\n]*/? NL
 	;
 
 command
@@ -20,6 +20,13 @@ command
 	| ignored
 	;
 
+interface_detail
+	= type:"description" WS value:TOEOL NL
+	| type:("ip" WS "address") WS value:(ip4 WS ip4 [WS "secondary"]) NL
+	| type:("ip" WS "access-group") WS value:(obj_name WS ("in"|"out")) NL
+	| TOEOL NL
+	| ()
+	;
 
 ip
 	= "ip" WS cmd:ip_command
@@ -28,7 +35,18 @@ ip
 ip_command
 	= cmd:"access-list" WS object:ip_access_list
 	| cmd:"domain name" WS name:obj_name
+	| cmd:"route" WS route:ip_route
 	| ip_ignored
+	;
+
+(*
+	ip route [vrf vrf-name] prefix mask {ip-address | interface-type interface-number [ip-address]} [dhcp] [distance] [name next-hop-name] [permanent | track number] [tag tag]
+	no ip route [vrf vrf-name] prefix mask {ip-address | interface-type interface-number [ip-address]} [dhcp] [distance] [name next-hop-name] [permanent | track number] [tag tag]
+*)
+
+ip_route
+	= "profile"
+	| prefix:ip4 WS mask:ip4 WS gw:(ip4|acl_interface_id) NL
 	;
 
 ip_access_list

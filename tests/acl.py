@@ -1,7 +1,7 @@
 import glob
 import unittest
 from acltk.fwsmObjects import fwsmConfig
-from acltk.aclObjects import NetworkWildcard, NetworkHost, Network
+from acltk.aclObjects import NetworkWildcard, NetworkHost, Network, ACLConfig
 
 
 class aclTestObjects(unittest.TestCase):
@@ -30,7 +30,8 @@ class aclTestParse(unittest.TestCase):
 
 	def test_private(self):
 		for i in glob.glob('acl/private/*.conf'):
-			cfg = fwsmConfig.parse(i)
+			print(i)
+			cfg = ACLConfig.parse(i)
 			self.assertIsNotNone(cfg)
 			cfg.name
 			cfg.names.__repr__()
