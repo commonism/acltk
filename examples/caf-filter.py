@@ -6,9 +6,9 @@ from acltk.cafObjects import cafBlock
 
 
 def main(args):
-	ast = cafBlock.parse(args.file, trace=args.trace)
+	ast = cafBlock.fromPath(args.file, trace=args.trace)
 	print(ast)
-	aclConfig = ACLConfig.parse(args.acls)
+	aclConfig = ACLConfig.fromPath(args.acls)
 	r = ast.run(aclConfig.rules)
 	print(len(r))
 	for i in r:

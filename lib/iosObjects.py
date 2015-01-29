@@ -40,20 +40,16 @@ class iosConfig(ACLConfig):
 							iface.routes.add(r)
 
 	@classmethod
-	def parse(cls, filename, text=None, trace=False):
+	def _parse(cls, data, filename=None, trace=False):
 		"""
 
 		:rtype : ACLConfig
 		"""
-		if not text:
-			with open(filename) as f:
-				text = f.read()
-
 		from acltk.iosSemantics import iosParser, iosSemantics
 		parser = iosParser(parseinfo=False, trace_length=200)
 		semantics = iosSemantics(parser)
 		config = parser.parse(
-			text,
+			data,
 			"grammar",
 			filename=filename,
 			trace=trace,

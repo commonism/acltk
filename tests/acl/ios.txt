@@ -60,11 +60,11 @@ access-list 102 permit tcp any any eq www log A
 access-list 102 permit tcp any any eq domain log
 access-list 102 permit udp any any eq domain log
 
-ip access-list standard Bi2RoutesAllowed
+ip access-list standard RoutesAllowed
  remark Default Route
  permit 0.0.0.0
- remark 130.75.0.0/16
- permit 130.75.0.0
+ remark 127.0.0.0/16
+ permit 127.0.0.0
  deny   any
 
 access-list 101 deny   tcp any any range 0 65535 log-input

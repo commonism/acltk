@@ -19,15 +19,12 @@ class cafBlock:
 		return self.expr.run(rules, verbose)
 
 	@classmethod
-	def parse(cls, filename, text=None, trace=False):
+	def _parse(cls, data, filename=None, trace=False):
 		from acltk.caf import cafParser
 		from acltk.cafSemantics import RealCafSemantics
-		if not text:
-			with open(filename) as f:
-				text = f.read()
 		parser = cafParser(parseinfo=False, trace_length=200)
 		config = parser.parse(
-			text,
+			data,
 			"grammar",
 			filename=filename,
 			trace=trace,
@@ -35,6 +32,25 @@ class cafBlock:
 			nameguard=True,
 			semantics=RealCafSemantics())
 		return config
+
+	@classmethod
+	def fromString(cls, _data, filename=None, trace=False):
+		assert(isinstance(_data, str))
+		return cls._parse(_data, filename, trace)
+
+	@classmethod
+	def fromFile(cls, f, trace=False):
+		data = f.read()
+		data = data.decode('utf-8-sig')
+		return cls.fromString(data, getattr(f, 'name', 'stdin'), trace)
+
+
+	@classmethod
+	def fromPath(cls, path, trace=False):
+		with open(path, 'rb') as f:
+			return cls.fromFile(f, trace)
+		return None
+
 
 
 class cafOp:

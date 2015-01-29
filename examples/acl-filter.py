@@ -11,7 +11,8 @@ def main():
 	parser.add_argument('filename', metavar="FILE", help="the input file to parse")
 	args = parser.parse_args()
 
-	config = ACLConfig.parse(args.filename, trace=args.trace)
+
+	config = ACLConfig.fromPath(args.filename, trace=args.trace)
 
 	anyany = set()
 	for acl in config.rules.rules:

@@ -15,10 +15,14 @@ shelve.init_app(app)
 def add():
 	if request.method == 'POST':
 		file = request.files['file']
-		cfg = ACLConfig.parse(None, text=file.stream.read().decode('utf-8'))
-		db = shelve.get_shelve()
-		db[cfg.name] = cfg
-		return redirect(url_for('index'))
+		try:
+			cfg = ACLConfig.fromFile(file.stream)
+			db = shelve.get_shelve()
+			db[cfg.name] = cfg
+			return redirect(url_for('show', config=cfg.name))
+		except ValueError:
+			return redirect(url_for('index'))
+
 
 
 @app.route('/', methods=['GET','POST'])
@@ -49,10 +53,10 @@ def show():
 		warning = None
 		if cafString and len(cafString) > 0:
 			try:
-				caf = cafBlock.parse(None, text=cafString)
+				caf = cafBlock.fromString(cafString)
 				selection = caf.run(acls.rules)
 				selection = acls.resolve(selection)
-			except:
+			except ValueError:
 				warning = "Filter ungültig"
 		else:
 			cafString = ""

@@ -607,16 +607,36 @@ class ACLConfig:
 		return "{}.{}".format(self.hostname, self.domainname)
 
 	@classmethod
-	def parse(cls, filename, text=None, trace=False):
+	def _parse(cls, data, filename=None, trace=False):
 		from acltk.fwsmObjects import fwsmConfig
 		from acltk.iosObjects import iosConfig
 
 		for i in [fwsmConfig, iosConfig]:
 			try:
-				return i.parse(filename, text, trace)
+				return i._parse(data, filename, trace)
 			except Exception:
 				print(i)
 		raise ValueError("Invalid Config?")
+
+	@classmethod
+	def fromString(cls, _data, filename=None, trace=False):
+		assert(isinstance(_data, str))
+#		data = _data.replace('\r', '')
+		data = _data + '\n'
+		return cls._parse(data, filename, trace)
+
+	@classmethod
+	def fromFile(cls, f, trace=False):
+		data = f.read()
+		data = data.decode('utf-8-sig')
+		return cls.fromString(data, getattr(f, 'name', 'stdin'), trace)
+
+
+	@classmethod
+	def fromPath(cls, path, trace=False):
+		with open(path, 'rb') as f:
+			return cls.fromFile(f, trace)
+		return None
 
 	def resolve(self, r):
 		for i in list(r):

@@ -16,7 +16,7 @@ class aclTestObjects(unittest.TestCase):
 
 class aclTestParse(unittest.TestCase):
 	def test_all(self):
-		cfg = fwsmConfig.parse("acl/all.conf")
+		cfg = fwsmConfig.fromPath("acl/all.conf")
 		self.assertIsNotNone(cfg)
 		cfg.names.__repr__()
 		for i in cfg.interfaces.values():
@@ -31,7 +31,7 @@ class aclTestParse(unittest.TestCase):
 	def test_private(self):
 		for i in glob.glob('acl/private/*.conf'):
 			print(i)
-			cfg = ACLConfig.parse(i)
+			cfg = ACLConfig.fromPath(i)
 			self.assertIsNotNone(cfg)
 			cfg.name
 			cfg.names.__repr__()

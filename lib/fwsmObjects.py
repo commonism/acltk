@@ -6,21 +6,16 @@ class fwsmConfig(ACLConfig):
 		ACLConfig.__init__(self, ast)
 
 	@classmethod
-	def parse(cls, filename, text=None, trace=False):
+	def _parse(cls, data, filename=None, trace=False):
 		"""
 
 		:rtype : fwsmConfig
 		"""
-		if not text:
-			with open(filename, 'rb') as f:
-				text = f.read()
-				text = text.decode('utf-8-sig')
-
 		from acltk.fwsmSemantics import fwsmParser, fwsmSemantics
 		parser = fwsmParser(parseinfo=False)
 		semantics = fwsmSemantics(parser)
 		config = parser.parse(
-			text,
+			data,
 			"grammar",
 			filename=filename,
 			trace=trace,
