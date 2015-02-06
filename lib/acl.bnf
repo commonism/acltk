@@ -282,7 +282,7 @@ timedate
 	;
 
 time_range_object
-	= type:"periodic" WS days:{day_of_the_week}+ WS start:time WS "to" WS edays:[day_of_the_week] WS end:time NL
+	= type:"periodic" WS days:{day_of_the_week}+ WS start:time WS "to" WS edays:[day_of_the_week WS] end:time NL
 	| type:"periodic" WS days+:("weekdays"|"weekend"|"daily") WS start:time WS "to" WS end:time NL
 	| type:"absolute" [WS "start" WS start:timedate] [WS "end" WS end:timedate] NL
 	| type:"no" WS TOEOL NL
