@@ -1,6 +1,6 @@
 from acltk.fwsm import fwsmSemantics as _fwsmSemantics, fwsmParser as _fwsmParser
 from acltk.aclSemantics import aclSemantics, aclParser
-from acltk.aclObjects import ACLConfig, ACLRule, Names, Name, ACLVersion, InterfaceAccessGroup
+from acltk.aclObjects import ACLConfig, ACLRule, Names, Name, ACLVersion, InterfaceAccessGroup, ACLNode, NetworkAny
 
 
 class fwsmSemantics(aclSemantics, _fwsmSemantics):
@@ -20,11 +20,21 @@ class fwsmSemantics(aclSemantics, _fwsmSemantics):
 				remark.append(i.remark)
 			del ast['remark']
 			ast['remark'] = remark
-		return self.access_list_rule(ast)
+		if ast.extended is not None:
+			return self.access_list_rule_extended(ast)
+		else:
+			return self.access_list_rule_standard(ast)
 
-	def access_list_rule(self, ast):
+	def access_list_rule_extended(self, ast):
 		if ast.protocol == 'ethertype':
 			return None
+		return ACLRule(**ast)
+
+	def access_list_rule_standard(self, ast):
+		ast['dest'] = ACLNode(NetworkAny())
+		src = ast.source
+		del ast['source']
+		ast['source'] = ACLNode(src)
 		return ACLRule(**ast)
 
 	def access_group(self, ast):

@@ -40,16 +40,24 @@ name
 	= "name" WS address:(ip4|ip6) WS hostname:identifier [WS "description" description:?/[^\n]+/?] NL
 	;
 
-access_list_rule
+access_list_rule_extended
 	= "access-list" WS id:acl_id WS extended:acl_extended WS mode:acl_mode WS protocol:protocol_icmp WS source:acl_icmp_node WS dest:acl_icmp_node icmp:acl_icmp_options [WS options:acl_options] [WS] NL
 	| "access-list" WS id:acl_id WS extended:acl_extended WS mode:acl_mode WS protocol:acl_protocol WS source:node WS dest:node [WS options:acl_options] [WS] NL
 	| "access-list" WS id:acl_id WS protocol:"ethertype" TOEOL NL
 	;
 
+(* access-list access_list_name standard {deny | permit} {any | ip_address mask} *)
+access_list_rule_standard
+    = "access-list" WS id:acl_id WS "standard" WS mode:acl_mode WS source:acl_host
+    ;
+
 access_list
-	= remark:{access_list_remark}+ >access_list_rule
-	| >access_list_rule
+	= remark:{access_list_remark}+ >access_list_rule_extended
+	| >access_list_rule_extended
+	| remark:{access_list_remark}+ >access_list_rule_standard
+	| >access_list_rule_standard
 	;
+
 
 access_list_remark
 	= 'access-list' WS acl_id WS 'remark' SP remark:remark NL
