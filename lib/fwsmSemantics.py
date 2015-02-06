@@ -1,6 +1,7 @@
 from acltk.fwsm import fwsmSemantics as _fwsmSemantics, fwsmParser as _fwsmParser
 from acltk.aclSemantics import aclSemantics, aclParser
-from acltk.aclObjects import ACLConfig, ACLRule, Names, Name, ACLVersion, InterfaceAccessGroup, ACLNode, NetworkAny
+from acltk.aclObjects import ACLConfig, ACLRule, Names, Name, ACLVersion, InterfaceAccessGroup, ACLNode, NetworkAny, \
+	Protocol
 
 
 class fwsmSemantics(aclSemantics, _fwsmSemantics):
@@ -35,6 +36,7 @@ class fwsmSemantics(aclSemantics, _fwsmSemantics):
 		src = ast.source
 		del ast['source']
 		ast['source'] = ACLNode(src)
+		ast['protocol'] = Protocol('ip')
 		return ACLRule(**ast)
 
 	def access_group(self, ast):
