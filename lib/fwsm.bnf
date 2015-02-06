@@ -114,7 +114,7 @@ ignored
 	| "asdm" WS TOEOL NL
 	| "ipv6" WS TOEOL NL
 	| "user-identity" WS TOEOL NL
-	| "crypto" WS TOEOL NL
+	| "crypto" WS TOEOL NL ignored_indent
 	| "threat-detection" WS TOEOL NL
 	| "ip" WS TOEOL NL
 	| "nat" WS TOEOL NL
@@ -131,6 +131,16 @@ ignored
 	| "ntp" WS TOEOL NL
 	| "prompt" WS TOEOL NL
 	| "call-home" TOEOL NL ignored_indent
+	| "terminal" WS TOEOL NL
+	| "xlate" WS TOEOL NL
+	| "router" WS TOEOL NL ignored_indent
+	| "eou" WS TOEOL NL
+	| "tls-proxy" WS TOEOL NL
+	| "ssl" WS TOEOL NL
+	| "webvpn" TOEOL NL ignored_indent
+	| "group-policy" WS TOEOL NL ignored_indent
+	| "tunnel-group" WS TOEOL NL ignored_indent
+	| "privilege" WS TOEOL NL
 	;
 
 unmatched

@@ -15,7 +15,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 from grako.parsing import graken, Parser
 
 
-__version__ = (2015, 1, 23, 7, 29, 54, 4)
+__version__ = (2015, 2, 6, 13, 45, 42, 4)
 
 __all__ = [
     'fwsmParser',
@@ -76,7 +76,7 @@ class fwsmParser(Parser):
 
     @graken()
     def _obj_name_(self):
-        self._pattern(r'[A-Za-z0-9_\-\.]*')
+        self._pattern(r'[A-Za-z0-9_\-\.+]*')
 
     @graken()
     def _hostname_(self):
@@ -1205,8 +1205,8 @@ class fwsmParser(Parser):
                 self._WS_()
                 with self._optional():
                     self._day_of_the_week_()
+                    self._WS_()
                 self.ast['edays'] = self.last_node
-                self._WS_()
                 self._time_()
                 self.ast['end'] = self.last_node
                 self._NL_()
@@ -1722,7 +1722,7 @@ class fwsmParser(Parser):
         )
 
     @graken()
-    def _access_list_rule_(self):
+    def _access_list_rule_extended_(self):
         with self._choice():
             with self._option():
                 self._token('access-list')
@@ -1794,6 +1794,26 @@ class fwsmParser(Parser):
 
         self.ast._define(
             ['id', 'extended', 'mode', 'protocol', 'source', 'dest', 'icmp', 'options'],
+            []
+        )
+
+    @graken()
+    def _access_list_rule_standard_(self):
+        self._token('access-list')
+        self._WS_()
+        self._acl_id_()
+        self.ast['id'] = self.last_node
+        self._WS_()
+        self._token('standard')
+        self._WS_()
+        self._acl_mode_()
+        self.ast['mode'] = self.last_node
+        self._WS_()
+        self._acl_host_()
+        self.ast['source'] = self.last_node
+
+        self.ast._define(
+            ['id', 'mode', 'source'],
             []
         )
 
@@ -1944,6 +1964,38 @@ class fwsmParser(Parser):
                         self._TOEOL_()
                         self._NL_()
                     self._error('no available options')
+            with self._option():
+
+                def block39():
+                    self._access_list_remark_()
+                self._positive_closure(block39)
+
+                self.ast['remark'] = self.last_node
+                self._token('access-list')
+                self._WS_()
+                self._acl_id_()
+                self.ast['id'] = self.last_node
+                self._WS_()
+                self._token('standard')
+                self._WS_()
+                self._acl_mode_()
+                self.ast['mode'] = self.last_node
+                self._WS_()
+                self._acl_host_()
+                self.ast['source'] = self.last_node
+            with self._option():
+                self._token('access-list')
+                self._WS_()
+                self._acl_id_()
+                self.ast['id'] = self.last_node
+                self._WS_()
+                self._token('standard')
+                self._WS_()
+                self._acl_mode_()
+                self.ast['mode'] = self.last_node
+                self._WS_()
+                self._acl_host_()
+                self.ast['source'] = self.last_node
             self._error('no available options')
 
         self.ast._define(
@@ -2202,6 +2254,7 @@ class fwsmParser(Parser):
                 self._WS_()
                 self._TOEOL_()
                 self._NL_()
+                self._ignored_indent_()
             with self._option():
                 self._token('threat-detection')
                 self._WS_()
@@ -2285,6 +2338,59 @@ class fwsmParser(Parser):
                 self._TOEOL_()
                 self._NL_()
                 self._ignored_indent_()
+            with self._option():
+                self._token('terminal')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('xlate')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('router')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
+            with self._option():
+                self._token('eou')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('tls-proxy')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('ssl')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('webvpn')
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
+            with self._option():
+                self._token('group-policy')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
+            with self._option():
+                self._token('tunnel-group')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
+            with self._option():
+                self._token('privilege')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
             self._error('expecting one of: domain-name name-server')
 
     @graken()
@@ -2521,7 +2627,10 @@ class fwsmSemantics(object):
     def name(self, ast):
         return ast
 
-    def access_list_rule(self, ast):
+    def access_list_rule_extended(self, ast):
+        return ast
+
+    def access_list_rule_standard(self, ast):
         return ast
 
     def access_list(self, ast):
