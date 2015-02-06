@@ -7,7 +7,7 @@ identifier = ?/[a-zA-Z_][A-Za-z0-9_\-\.]*/?;
 int = ?/[0-9]+/?;
 string = ?/[\S]+/?;
 
-obj_name = ?/[A-Za-z0-9_\-\.]*/?;
+obj_name = ?/[A-Za-z0-9_\-\.+]*/?;
 
 
 hostname
