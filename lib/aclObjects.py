@@ -621,7 +621,6 @@ class ACLConfig:
 	@classmethod
 	def fromString(cls, _data, filename=None, trace=False):
 		assert(isinstance(_data, str))
-#		data = _data.replace('\r', '')
 		data = _data + '\n'
 		return cls._parse(data, filename, trace)
 
@@ -684,10 +683,13 @@ class ACLConfig:
 		return r
 
 	def expand(self):
-		todo = [(self.groups.network, NetworkGroup),
+		todo = [
+			(self.groups.network, NetworkGroup),
 			(self.groups.port, PortGroup),
 			(self.groups.service, ServiceGroup),
-			(self.groups.protocol, ProtocolGroup)]
+			(self.groups.protocol, ProtocolGroup),
+			(self.groups.icmp, ICMPGroup)
+		]
 
 		for (l,n) in todo:
 			for group in l.values():
