@@ -32,6 +32,9 @@ class fwsmSemantics(aclSemantics, _fwsmSemantics):
 		return ACLRule(**ast)
 
 	def access_list_rule_standard(self, ast):
+		if ast.protocol == 'ethertype':
+			return None
+
 		ast['dest'] = ACLNode(NetworkAny())
 		src = ast.source
 		del ast['source']
