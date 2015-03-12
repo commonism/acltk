@@ -56,8 +56,8 @@ def show():
 				caf = cafBlock.fromString(cafString)
 				selection = caf.run(acls.rules)
 				selection = acls.resolve(selection)
-			except ValueError:
-				warning = "Filter ungültig"
+			except Exception as e:
+				warning = str(e)
 		else:
 			cafString = ""
 		return render_template('show.html', aclconfig=acls, args = {'show_not_selected':sns, 'expand_groups':exp, 'warning':warning}, selection=selection, caf=cafString)

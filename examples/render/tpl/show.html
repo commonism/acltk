@@ -2,9 +2,11 @@
 
 {% block caf %}
 {% if args.warning %}
+<pre>
 <p style="padding:10px; border:7px solid #FF0000">
 {{ args.warning }}
 </p>
+</pre>
 {% endif %}
 
 <form action="{{url_for("show")}}" method="get">
