@@ -15,7 +15,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 from grako.parsing import graken, Parser
 
 
-__version__ = (2015, 1, 22, 12, 12, 56, 3)
+__version__ = (2015, 4, 29, 10, 35, 22, 2)
 
 __all__ = [
     'iosParser',
@@ -76,7 +76,7 @@ class iosParser(Parser):
 
     @graken()
     def _obj_name_(self):
-        self._pattern(r'[A-Za-z0-9_\-\.]*')
+        self._pattern(r'[A-Za-z0-9_\-\.+]*')
 
     @graken()
     def _hostname_(self):
@@ -1205,8 +1205,8 @@ class iosParser(Parser):
                 self._WS_()
                 with self._optional():
                     self._day_of_the_week_()
+                    self._WS_()
                 self.ast['edays'] = self.last_node
-                self._WS_()
                 self._time_()
                 self.ast['end'] = self.last_node
                 self._NL_()
@@ -2704,6 +2704,35 @@ class iosParser(Parser):
                 self._TOEOL_()
                 self._NL_()
             with self._option():
+                self._token('vrf')
+                self._TOEOL_()
+                self._NL_()
+
+                def block11():
+                    self._pattern(r'^ [^\n]*')
+                    self._NL_()
+                self._closure(block11)
+            with self._option():
+                self._token('hw-module')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('errdisable')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('power')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('spanning-tree')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('vlan')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
                 self._NL_()
             self._error('no available options')
 
@@ -2793,6 +2822,18 @@ class iosParser(Parser):
                 self._NL_()
             with self._option():
                 self._token('accounting-threshold')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('host')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('ftp')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('default-gateway')
                 self._TOEOL_()
                 self._NL_()
             self._error('expecting one of: dhcp pool')

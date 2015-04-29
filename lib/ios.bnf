@@ -206,6 +206,12 @@ ignored
 	| "dial-peer" TOEOL NL
 	| "rtr" TOEOL NL
 	| "alias" TOEOL NL
+	| "vrf" TOEOL NL {/^ [^\n]*/ NL}*
+	| "hw-module" TOEOL NL
+	| "errdisable" TOEOL NL
+	| "power" TOEOL NL
+	| "spanning-tree" TOEOL NL
+	| "vlan" TOEOL NL
 	| NL
 	;
 
@@ -230,4 +236,7 @@ ip_ignored
 	| "vrf" TOEOL NL {/^ [^\n]*/ NL}*
 	| "multicast-routing" TOEOL NL
 	| "accounting-threshold" TOEOL NL
+	| "host" TOEOL NL
+	| "ftp" TOEOL NL
+	| "default-gateway" TOEOL NL
 	;
