@@ -187,6 +187,10 @@ access_list_ip_extended_id
 	;
 
 
+ignored_indent
+	= {/^ [^\n]*/ NL}*
+	;
+
 
 ignored
 	= "!" TOEOL NL
@@ -200,14 +204,14 @@ ignored
 	| "Current configuration" TOEOL NL
 	| "enable" TOEOL NL
 	| "resource" TOEOL NL
-	| "crypto" TOEOL NL {/^ [^\n]*/ NL}*
-	| "dot11" TOEOL NL {/^ [^\n]*/ NL}*
-	| "appfw" TOEOL NL {/^ [^\n]*/ NL}*
-	| "archive" TOEOL NL {/^ [^\n]*/ NL}*
-	| "route-map" TOEOL NL {/^ [^\n]*/ NL}*
-	| "vpdn" TOEOL NL {/^ [^\n]*/ NL}*
-	| "key" TOEOL NL {/^ [^\n]*/ NL}*
-	| "redundancy" TOEOL NL {/^ [^\n]*/ NL}*
+	| "crypto" TOEOL NL ignored_indent
+	| "dot11" TOEOL NL ignored_indent
+	| "appfw" TOEOL NL ignored_indent
+	| "archive" TOEOL NL ignored_indent
+	| "route-map" TOEOL NL ignored_indent
+	| "vpdn" TOEOL NL ignored_indent
+	| "key" TOEOL NL ignored_indent
+	| "redundancy" TOEOL NL ignored_indent
 	| "username" TOEOL NL
 	| "bridge" TOEOL NL
 	| "encryption" TOEOL NL
@@ -221,19 +225,34 @@ ignored
 	| "mmi" TOEOL NL
 	| "isdn" TOEOL NL
 	| "dialer-list" TOEOL NL
-	| "router" TOEOL NL {/^ [^\n]*/ NL}*
+	| "router" TOEOL NL ignored_indent
 	| "arp" TOEOL NL
 	| "snmp" TOEOL NL
 	| "rmon" TOEOL NL
 	| "dial-peer" TOEOL NL
 	| "rtr" TOEOL NL
 	| "alias" TOEOL NL
-	| "vrf" TOEOL NL {/^ [^\n]*/ NL}*
+	| "vrf" TOEOL NL ignored_indent
 	| "hw-module" TOEOL NL
 	| "errdisable" TOEOL NL
 	| "power" TOEOL NL
 	| "spanning-tree" TOEOL NL
-	| "vlan" TOEOL NL
+	| "vlan" TOEOL NL ignored_indent
+	| "firewall" TOEOL NL
+	| "call-home" TOEOL NL ignored_indent
+	| "ipv6" TOEOL NL ignored_indent
+	| "mls" TOEOL NL
+	| "wism" TOEOL NL
+	| "diagnostic" TOEOL NL
+	| "port-channel" TOEOL NL
+	| "transceiver" TOEOL NL ignored_indent
+	| "policy-map" WS TOEOL NL ignored_indent
+	| "class-map" WS TOEOL NL ignored_indent
+	| "define" WS "interface-range" TOEOL NL
+	| "system" TOEOL NL
+	| "cts" TOEOL NL
+	| "lldp" TOEOL NL
+	| "vtp" TOEOL NL
 	| NL
 	;
 
@@ -255,10 +274,16 @@ ip_ignored
 	| "ips" TOEOL NL
 	| "flow-cache" TOEOL NL
 	| "flow-export" TOEOL NL
-	| "vrf" TOEOL NL {/^ [^\n]*/ NL}*
+	| "vrf" TOEOL NL ignored_indent
 	| "multicast-routing" TOEOL NL
 	| "accounting-threshold" TOEOL NL
 	| "host" TOEOL NL
 	| "ftp" TOEOL NL
 	| "default-gateway" TOEOL NL
+	| "sla" TOEOL NL ignored_indent
+	| "slb" TOEOL NL ignored_indent
+	| "flow-aggregation" TOEOL NL ignored_indent
+	| "flow-top-talkers" TOEOL NL ignored_indent
+	| "prefix-list" TOEOL NL
+	| "pim" TOEOL NL
 	;

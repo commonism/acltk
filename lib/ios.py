@@ -15,7 +15,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 from grako.parsing import graken, Parser
 
 
-__version__ = (2015, 4, 29, 10, 35, 22, 2)
+__version__ = (2015, 5, 5, 12, 10, 54, 1)
 
 __all__ = [
     'iosParser',
@@ -364,7 +364,9 @@ class iosParser(Parser):
                             self._token('lt')
                         with self._option():
                             self._token('eq')
-                        self._error('expecting one of: eq gt lt')
+                        with self._option():
+                            self._token('neq')
+                        self._error('expecting one of: eq gt lt neq')
                 self.ast['op'] = self.last_node
                 self._WS_()
                 self._port_()
@@ -1676,6 +1678,33 @@ class iosParser(Parser):
         )
 
     @graken()
+    def _banner_(self):
+        self._token('banner')
+        self._WS_()
+        self._banner_cmd_()
+
+    @graken()
+    def _banner_cmd_(self):
+        self._token('motd')
+        self._WS_()
+        self._delim_start_()
+        self._delim_msg_()
+        self._delim_stop_()
+        self._NL_()
+
+    @graken()
+    def _delim_start_(self):
+        self._pattern(r'.')
+
+    @graken()
+    def _delim_msg_(self):
+        pass
+
+    @graken()
+    def _delim_stop_(self):
+        pass
+
+    @graken()
     def _ip_(self):
         self._token('ip')
         self._WS_()
@@ -2488,6 +2517,14 @@ class iosParser(Parser):
             self._error('no available options')
 
     @graken()
+    def _ignored_indent_(self):
+
+        def block0():
+            self._pattern(r'^ [^\n]*')
+            self._NL_()
+        self._closure(block0)
+
+    @graken()
     def _ignored_(self):
         with self._choice():
             with self._option():
@@ -2543,74 +2580,42 @@ class iosParser(Parser):
                 self._token('crypto')
                 self._TOEOL_()
                 self._NL_()
-
-                def block1():
-                    self._pattern(r'^ [^\n]*')
-                    self._NL_()
-                self._closure(block1)
+                self._ignored_indent_()
             with self._option():
                 self._token('dot11')
                 self._TOEOL_()
                 self._NL_()
-
-                def block2():
-                    self._pattern(r'^ [^\n]*')
-                    self._NL_()
-                self._closure(block2)
+                self._ignored_indent_()
             with self._option():
                 self._token('appfw')
                 self._TOEOL_()
                 self._NL_()
-
-                def block3():
-                    self._pattern(r'^ [^\n]*')
-                    self._NL_()
-                self._closure(block3)
+                self._ignored_indent_()
             with self._option():
                 self._token('archive')
                 self._TOEOL_()
                 self._NL_()
-
-                def block4():
-                    self._pattern(r'^ [^\n]*')
-                    self._NL_()
-                self._closure(block4)
+                self._ignored_indent_()
             with self._option():
                 self._token('route-map')
                 self._TOEOL_()
                 self._NL_()
-
-                def block5():
-                    self._pattern(r'^ [^\n]*')
-                    self._NL_()
-                self._closure(block5)
+                self._ignored_indent_()
             with self._option():
                 self._token('vpdn')
                 self._TOEOL_()
                 self._NL_()
-
-                def block6():
-                    self._pattern(r'^ [^\n]*')
-                    self._NL_()
-                self._closure(block6)
+                self._ignored_indent_()
             with self._option():
                 self._token('key')
                 self._TOEOL_()
                 self._NL_()
-
-                def block7():
-                    self._pattern(r'^ [^\n]*')
-                    self._NL_()
-                self._closure(block7)
+                self._ignored_indent_()
             with self._option():
                 self._token('redundancy')
                 self._TOEOL_()
                 self._NL_()
-
-                def block8():
-                    self._pattern(r'^ [^\n]*')
-                    self._NL_()
-                self._closure(block8)
+                self._ignored_indent_()
             with self._option():
                 self._token('username')
                 self._TOEOL_()
@@ -2627,14 +2632,7 @@ class iosParser(Parser):
                 self._token('control-plane')
                 self._NL_()
             with self._option():
-                self._token('banner')
-                self._TOEOL_()
-                self._NL_()
-
-                def block9():
-                    self._pattern(r'^ [^\n]*')
-                    self._NL_()
-                self._closure(block9)
+                self._banner_()
             with self._option():
                 self._token('Using')
                 self._int_()
@@ -2674,11 +2672,7 @@ class iosParser(Parser):
                 self._token('router')
                 self._TOEOL_()
                 self._NL_()
-
-                def block10():
-                    self._pattern(r'^ [^\n]*')
-                    self._NL_()
-                self._closure(block10)
+                self._ignored_indent_()
             with self._option():
                 self._token('arp')
                 self._TOEOL_()
@@ -2707,11 +2701,7 @@ class iosParser(Parser):
                 self._token('vrf')
                 self._TOEOL_()
                 self._NL_()
-
-                def block11():
-                    self._pattern(r'^ [^\n]*')
-                    self._NL_()
-                self._closure(block11)
+                self._ignored_indent_()
             with self._option():
                 self._token('hw-module')
                 self._TOEOL_()
@@ -2730,6 +2720,76 @@ class iosParser(Parser):
                 self._NL_()
             with self._option():
                 self._token('vlan')
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
+            with self._option():
+                self._token('firewall')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('call-home')
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
+            with self._option():
+                self._token('ipv6')
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
+            with self._option():
+                self._token('mls')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('wism')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('diagnostic')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('port-channel')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('transceiver')
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
+            with self._option():
+                self._token('policy-map')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
+            with self._option():
+                self._token('class-map')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
+            with self._option():
+                self._token('define')
+                self._WS_()
+                self._token('interface-range')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('system')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('cts')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('lldp')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('vtp')
                 self._TOEOL_()
                 self._NL_()
             with self._option():
@@ -2811,11 +2871,7 @@ class iosParser(Parser):
                 self._token('vrf')
                 self._TOEOL_()
                 self._NL_()
-
-                def block1():
-                    self._pattern(r'^ [^\n]*')
-                    self._NL_()
-                self._closure(block1)
+                self._ignored_indent_()
             with self._option():
                 self._token('multicast-routing')
                 self._TOEOL_()
@@ -2834,6 +2890,34 @@ class iosParser(Parser):
                 self._NL_()
             with self._option():
                 self._token('default-gateway')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('sla')
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
+            with self._option():
+                self._token('slb')
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
+            with self._option():
+                self._token('flow-aggregation')
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
+            with self._option():
+                self._token('flow-top-talkers')
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
+            with self._option():
+                self._token('prefix-list')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('pim')
                 self._TOEOL_()
                 self._NL_()
             self._error('expecting one of: dhcp pool')
@@ -3065,6 +3149,21 @@ class iosSemantics(object):
     def interface_detail(self, ast):
         return ast
 
+    def banner(self, ast):
+        return ast
+
+    def banner_cmd(self, ast):
+        return ast
+
+    def delim_start(self, ast):
+        return ast
+
+    def delim_msg(self, ast):
+        return ast
+
+    def delim_stop(self, ast):
+        return ast
+
     def ip(self, ast):
         return ast
 
@@ -3135,6 +3234,9 @@ class iosSemantics(object):
         return ast
 
     def access_list_ip_extended_id(self, ast):
+        return ast
+
+    def ignored_indent(self, ast):
         return ast
 
     def ignored(self, ast):
