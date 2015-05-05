@@ -30,6 +30,7 @@ ip access-list extended BLOCK_PRIV_ADDRS
  deny   ip 10.0.0.0 0.255.255.255 any
  deny   ip 172.16.0.0 0.15.255.255 any
  deny   ip 192.168.0.0 0.0.255.255 any
+ permit tcp any any neq telnet log-input
  permit ip any any
 
 ip access-list extended INTERNET_IN

@@ -107,7 +107,7 @@ acl_host
 
 acl_port
 	= type:"object-group" WS name:acl_object_group_service_id
-	| op:("gt"|"lt"|"eq") WS port:port
+	| op:("gt"|"lt"|"eq"|"neq") WS port:port
 	| type:"range" WS start:port WS stop:port
 	;
 
