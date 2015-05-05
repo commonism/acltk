@@ -72,3 +72,12 @@ access-list 101 deny   tcp any any range 0 65535 log-input
 ip route profile
 ip route 10.0.1.0 255.255.255.0 127.0.0.1
 ip route 10.0.1.0 255.255.255.0 Example_If
+
+
+banner motd 
+
+
+
+
+
+banner test

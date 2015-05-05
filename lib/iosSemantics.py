@@ -1,5 +1,7 @@
 import ipaddress
 
+from grako.parsing import graken
+
 from acltk.ios import iosSemantics as _iosSemantics, iosParser as _iosParser
 from acltk.aclSemantics import aclSemantics, aclParser
 from acltk.aclObjects import ACLNode, ACLRules, Network, ACLRule, NetworkHost, Protocol, NetworkAny, NetworkWildcard
@@ -138,9 +140,23 @@ class iosSemantics(aclSemantics, _iosSemantics):
 
 		return Route(ipaddress.ip_network("{}/{}".format(ast.prefix, ast.mask)), gw)
 
+	def delim_start(self, ast):
+		self.parser.delim = ast
+
 
 class iosParser(aclParser, _iosParser):
 	def __init__(self, **kwargs):
 		aclParser.__init__(self)
 		_iosParser.__init__(self, kwargs)
+		self.delim = None
+
+	@graken()
+	def _delim_msg_(self):
+		p = r'[^\x{:02x}]*'.format(int.from_bytes(self.delim.encode('utf-8'), byteorder="little"))
+		print(p)
+		self._pattern(p)
+
+	@graken()
+	def _delim_stop_(self):
+		self._pattern(r'\x{:02x}'.format(int.from_bytes(self.delim.encode('utf-8'), byteorder="little")))
 

@@ -28,6 +28,28 @@ interface_detail
 	| ()
 	;
 
+banner
+    = "banner" WS banner_cmd
+    ;
+
+
+banner_cmd
+    = "motd" WS delim_start delim_msg delim_stop NL
+    ;
+
+
+delim_start
+    = ?/./?
+    ;
+
+delim_msg
+    = ()
+    ;
+
+delim_stop
+    = ()
+    ;
+
 ip
 	= "ip" WS cmd:ip_command
 	;
@@ -190,7 +212,7 @@ ignored
 	| "bridge" TOEOL NL
 	| "encryption" TOEOL NL
 	| "control-plane" NL
-	| "banner" TOEOL NL {/^ [^\n]*/ NL}*
+	| banner
 	| "Using" int "out of" int "bytes" NL
 	| "aaa" TOEOL NL
 	| "multilink" TOEOL NL
