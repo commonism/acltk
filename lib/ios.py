@@ -15,7 +15,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 from grako.parsing import graken, Parser
 
 
-__version__ = (2015, 5, 5, 12, 10, 54, 1)
+__version__ = (2015, 5, 21, 13, 33, 25, 3)
 
 __all__ = [
     'iosParser',
@@ -1694,7 +1694,12 @@ class iosParser(Parser):
 
     @graken()
     def _delim_start_(self):
-        self._pattern(r'.')
+        with self._choice():
+            with self._option():
+                self._token('^C')
+            with self._option():
+                self._pattern(r'.')
+            self._error('expecting one of: . ^C')
 
     @graken()
     def _delim_msg_(self):

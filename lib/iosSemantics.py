@@ -152,11 +152,18 @@ class iosParser(aclParser, _iosParser):
 
 	@graken()
 	def _delim_msg_(self):
-		p = r'[^\x{:02x}]*'.format(int.from_bytes(self.delim.encode('utf-8'), byteorder="little"))
-		print(p)
-		self._pattern(p)
+		if self.delim == '^C':
+			# not ^ or ^ not followed by C
+			self._pattern(r'([^^]|\^[^C])*')
+		else:
+			p = r'[^\x{:02x}]*'.format(int.from_bytes(self.delim.encode('utf-8'), byteorder="little"))
+			self._pattern(p)
 
 	@graken()
 	def _delim_stop_(self):
-		self._pattern(r'\x{:02x}'.format(int.from_bytes(self.delim.encode('utf-8'), byteorder="little")))
+		if self.delim == '^C':
+			self._token('^C')
+		else:
+			self._pattern(r'\x{:02x}'.format(int.from_bytes(self.delim.encode('utf-8'), byteorder="little")))
+
 

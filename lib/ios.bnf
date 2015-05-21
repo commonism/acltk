@@ -39,7 +39,8 @@ banner_cmd
 
 
 delim_start
-    = ?/./?
+    = "^C"
+    | ?/./?
     ;
 
 delim_msg

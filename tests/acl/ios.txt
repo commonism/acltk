@@ -82,3 +82,5 @@ banner motd 
 
 
 banner test
+
+banner motd ^Cbanner test 2^C
