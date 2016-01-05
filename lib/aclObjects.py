@@ -127,7 +127,7 @@ class NetworkObject:
 					ipaddress.ip_address(start),
 					ipaddress.ip_address(stop)
 			):
-				self.addresses.append(Network(i.network_address, i.netmask))
+				self.addresses.append(Network(i.network_address, i.prefixlen))
 		elif type == 'fqdn':
 			if limit is None:
 				self.addresses = [NetworkAny()]
