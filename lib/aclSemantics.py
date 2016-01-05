@@ -178,6 +178,13 @@ class aclSemantics:
 			r = self.parser.service_groups[ast.object]
 			return r
 
+	def service_object(self, ast):
+		if not isinstance(ast['protocol'], Protocol):
+			a = ast['protocol']
+			del ast['protocol']
+			ast['protocol'] = Protocol(a)
+		return ast
+
 	def service_object_op(self, ast):
 		if ast[0] == 'range':
 			return PortRange(ast[1], ast[2])
