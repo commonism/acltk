@@ -102,6 +102,7 @@ ignored
 	| "http" WS TOEOL NL
 	| "aaa-server" WS TOEOL NL ignored_indent
 	| "snmp-server" WS TOEOL NL
+	| "snmp-map" WS TOEOL NL ignored_indent
 	| "sysopt" WS TOEOL NL
 	| "telnet" WS TOEOL NL
 	| "ssh" WS TOEOL NL

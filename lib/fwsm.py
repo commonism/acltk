@@ -15,7 +15,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 from grako.parsing import graken, Parser
 
 
-__version__ = (2015, 2, 6, 13, 45, 42, 4)
+__version__ = (2016, 1, 5, 9, 11, 36, 1)
 
 __all__ = [
     'fwsmParser',
@@ -364,7 +364,9 @@ class fwsmParser(Parser):
                             self._token('lt')
                         with self._option():
                             self._token('eq')
-                        self._error('expecting one of: eq gt lt')
+                        with self._option():
+                            self._token('neq')
+                        self._error('expecting one of: eq gt lt neq')
                 self.ast['op'] = self.last_node
                 self._WS_()
                 self._port_()
@@ -2188,6 +2190,12 @@ class fwsmParser(Parser):
                 self._WS_()
                 self._TOEOL_()
                 self._NL_()
+            with self._option():
+                self._token('snmp-map')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
             with self._option():
                 self._token('sysopt')
                 self._WS_()

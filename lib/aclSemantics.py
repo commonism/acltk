@@ -14,6 +14,9 @@ class aclSemantics:
 	def __init__(self, parser):
 		self.parser = parser
 
+	def NL(self, ast):
+		return None
+
 	def SP(self, ast):
 		return None
 
