@@ -107,8 +107,10 @@ ignored
 	| "ip" WS TOEOL NL
 	| "logging" WS TOEOL NL
 	| "mac-address-table" TOEOL NL
+	| "mac-address" TOEOL NL
 	| "monitor-interface" WS TOEOL NL
 	| "mtu" WS TOEOL NL
+	| "multicast-routing" TOEOL NL
 	| "names" NL
 	| "nat-control" [WS] TOEOL NL
 	| "nat" WS TOEOL NL
@@ -119,6 +121,7 @@ ignored
 	| "policy-map" WS TOEOL NL ignored_indent
 	| "privilege" WS TOEOL NL
 	| "prompt" WS TOEOL NL
+	| "resource" TOEOL NL
 	| "router" WS TOEOL NL ignored_indent
 	| "route" WS TOEOL NL
 	| "same-security-traffic"  TOEOL NL
@@ -140,6 +143,7 @@ ignored
 	| "tunnel-group" WS TOEOL NL ignored_indent
 	| "user-identity" WS TOEOL NL
 	| "username" WS TOEOL NL
+	| "virtual" TOEOL NL
 	| "webvpn" TOEOL NL ignored_indent
 	| "xlate-bypass" [WS] TOEOL NL
 	| "xlate" WS TOEOL NL

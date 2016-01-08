@@ -228,6 +228,7 @@ ignored
 	| "lldp" TOEOL NL
 	| "logging" TOEOL NL
 	| "mac-address-table" TOEOL NL
+	| "mac-address" TOEOL NL
 	| "mls" TOEOL NL
 	| "mmi" TOEOL NL
 	| "multilink" TOEOL NL
