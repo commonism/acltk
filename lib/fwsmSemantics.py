@@ -43,7 +43,11 @@ class fwsmSemantics(aclSemantics, _fwsmSemantics):
 		return ACLRule(**ast)
 
 	def access_group(self, ast):
-		return InterfaceAccessGroup(**ast)
+		if ast.type == 'interface':
+			del ast['type']
+			return InterfaceAccessGroup(**ast)
+		else:
+			return None
 
 	def grammar(self, ast):
 		# pdb.set_trace()

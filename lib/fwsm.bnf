@@ -65,7 +65,8 @@ access_list_remark
 	;
 
 access_group
-	= "access-group" WS name:obj_name WS direction:obj_name WS "interface" WS iface:obj_name [WS] NL
+	= "access-group" WS name:obj_name WS direction:obj_name WS type:"interface" WS iface:obj_name [WS] NL
+	| "access-group" WS name:obj_name WS type:"global" [WS] NL
 	;
 
 ignored_indent
