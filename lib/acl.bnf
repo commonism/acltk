@@ -289,7 +289,7 @@ time_range_object
 	;
 
 time_range
-	= 'time-range' WS name:string NL objects:{SP time_range_object}+
+	= 'time-range' WS name:string NL objects:{SP time_range_object}*
 	;
 
 
