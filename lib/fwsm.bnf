@@ -72,76 +72,74 @@ ignored_indent
 	;
 
 ignored
-	= ":" ?/[^\n]*/? NL
-	| "firewall" ?/[^\n]*/? NL
-	| "enable"  ?/[^\n]*/? NL
-	| "dns-guard" TOEOL NL
-	| "dns" TOEOL NL ignored_indent
-	| "name-server" ?/[^\n]*/?
-	| "domain-name" ?/[^\n]*/?
-	| "no" TOEOL NL
-	| "boot" TOEOL NL
-	| "ftp" TOEOL NL
-	| "clock" TOEOL NL
-	| "passwd" ?/[^\n]*/? NL
+	=  ":" TOEOL NL
 	| "!" NL
-	| "same-security-traffic"  ?/[^\n]*/? NL
-	| "tcp-map" WS TOEOL NL ignored_indent
-	| "names" NL
-	| "pager" WS TOEOL NL
-	| "aaa" WS TOEOL NL
-	| "logging" WS TOEOL NL
-	| "mtu" WS TOEOL NL
-	| "monitor-interface" WS TOEOL NL
-	| "icmp" WS TOEOL NL
-	| "arp" WS TOEOL NL
-	| "static" WS TOEOL NL
-	| "route" WS TOEOL NL
-	| "timeout" WS TOEOL NL
-	| "username" WS TOEOL NL
-	| "http" WS TOEOL NL
 	| "aaa-server" WS TOEOL NL ignored_indent
-	| "snmp-server" WS TOEOL NL
-	| "snmp-map" WS TOEOL NL ignored_indent
-	| "sysopt" WS TOEOL NL
-	| "telnet" WS TOEOL NL
-	| "ssh" WS TOEOL NL
-	| "class-map" WS TOEOL NL ignored_indent
-	| "policy-map" WS TOEOL NL ignored_indent
-	| "service-policy" WS TOEOL NL
+	| "aaa" WS TOEOL NL
 	| "arp-inspection" WS TOEOL NL
-	| "tftp-server" WS TOEOL NL
-	| "Cryptochecksum:" TOEOL NL
+	| "arp" WS TOEOL NL
 	| "asdm" WS TOEOL NL
-	| "ipv6" WS TOEOL NL
-	| "user-identity" WS TOEOL NL
+	| "boot" TOEOL NL
+	| "call-home" TOEOL NL ignored_indent
+	| "class-map" WS TOEOL NL ignored_indent
+	| "clock" TOEOL NL
+	| "console" WS TOEOL NL
+	| "Cryptochecksum:" TOEOL NL
 	| "crypto" WS TOEOL NL ignored_indent
-	| "threat-detection" WS TOEOL NL
-	| "ip" WS TOEOL NL
-	| "nat" WS TOEOL NL
-	| "service" WS TOEOL NL
 	| "dhcpd" WS TOEOL NL
 	| "dhcprelay" WS TOEOL NL
-	| "nat-control" [WS] TOEOL NL
-	| "xlate-bypass" [WS] TOEOL NL
-	| "global" WS TOEOL NL
+	| "dns-guard" TOEOL NL
+	| "dns" TOEOL NL ignored_indent
+	| "dynamic-access-policy-record" WS TOEOL NL
+	| "enable"  TOEOL NL
+	| "eou" WS TOEOL NL
 	| "established" WS TOEOL NL
 	| "failover" [WS TOEOL] NL
-	| "dynamic-access-policy-record" WS TOEOL NL
-	| "console" WS TOEOL NL
-	| "ntp" WS TOEOL NL
-	| "prompt" WS TOEOL NL
-	| "call-home" TOEOL NL ignored_indent
-	| "terminal" WS TOEOL NL
-	| "xlate" WS TOEOL NL
-	| "router" WS TOEOL NL ignored_indent
-	| "eou" WS TOEOL NL
-	| "tls-proxy" WS TOEOL NL
-	| "ssl" WS TOEOL NL
-	| "webvpn" TOEOL NL ignored_indent
+	| "firewall" TOEOL NL
+	| "ftp" TOEOL NL
+	| "global" WS TOEOL NL
 	| "group-policy" WS TOEOL NL ignored_indent
-	| "tunnel-group" WS TOEOL NL ignored_indent
+	| "http" WS TOEOL NL
+	| "icmp" WS TOEOL NL
+	| "ipv6" WS TOEOL NL
+	| "ip" WS TOEOL NL
+	| "logging" WS TOEOL NL
+	| "monitor-interface" WS TOEOL NL
+	| "mtu" WS TOEOL NL
+	| "names" NL
+	| "nat-control" [WS] TOEOL NL
+	| "nat" WS TOEOL NL
+	| "no" TOEOL NL
+	| "ntp" WS TOEOL NL
+	| "pager" WS TOEOL NL
+	| "passwd" TOEOL NL
+	| "policy-map" WS TOEOL NL ignored_indent
 	| "privilege" WS TOEOL NL
+	| "prompt" WS TOEOL NL
+	| "router" WS TOEOL NL ignored_indent
+	| "route" WS TOEOL NL
+	| "same-security-traffic"  TOEOL NL
+	| "service-policy" WS TOEOL NL
+	| "service" WS TOEOL NL
+	| "snmp-map" WS TOEOL NL ignored_indent
+	| "snmp-server" WS TOEOL NL
+	| "ssh" WS TOEOL NL
+	| "ssl" WS TOEOL NL
+	| "static" WS TOEOL NL
+	| "sysopt" WS TOEOL NL
+	| "tcp-map" WS TOEOL NL ignored_indent
+	| "telnet" WS TOEOL NL
+	| "terminal" WS TOEOL NL
+	| "tftp-server" WS TOEOL NL
+	| "threat-detection" WS TOEOL NL
+	| "timeout" WS TOEOL NL
+	| "tls-proxy" WS TOEOL NL
+	| "tunnel-group" WS TOEOL NL ignored_indent
+	| "user-identity" WS TOEOL NL
+	| "username" WS TOEOL NL
+	| "webvpn" TOEOL NL ignored_indent
+	| "xlate-bypass" [WS] TOEOL NL
+	| "xlate" WS TOEOL NL
 	;
 
 unmatched

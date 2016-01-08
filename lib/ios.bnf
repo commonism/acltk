@@ -196,64 +196,64 @@ ignored_indent
 ignored
 	= "!" TOEOL NL
 	| ":" TOEOL NL
-	| "service" TOEOL NL
-	| "boot" TOEOL NL
-	| ("boot-start-marker"|"boot-end-marker") NL
-	| "logging" TOEOL NL
-	| "no" TOEOL NL
-	| "clock" TOEOL NL
-	| "Current configuration" TOEOL NL
-	| "enable" TOEOL NL
-	| "resource" TOEOL NL
-	| "crypto" TOEOL NL ignored_indent
-	| "dot11" TOEOL NL ignored_indent
+	| "aaa" TOEOL NL
+	| "alias" TOEOL NL
 	| "appfw" TOEOL NL ignored_indent
 	| "archive" TOEOL NL ignored_indent
-	| "route-map" TOEOL NL ignored_indent
-	| "vpdn" TOEOL NL ignored_indent
-	| "key" TOEOL NL ignored_indent
-	| "redundancy" TOEOL NL ignored_indent
-	| "username" TOEOL NL
-	| "bridge" TOEOL NL
-	| "encryption" TOEOL NL
-	| "control-plane" NL
-	| banner
-	| "Using" int "out of" int "bytes" NL
-	| "aaa" TOEOL NL
-	| "multilink" TOEOL NL
-	| "snmp-server" TOEOL NL
-	| "security" TOEOL NL
-	| "mmi" TOEOL NL
-	| "isdn" TOEOL NL
-	| "dialer-list" TOEOL NL
-	| "router" TOEOL NL ignored_indent
 	| "arp" TOEOL NL
-	| "snmp" TOEOL NL
-	| "rmon" TOEOL NL
-	| "dial-peer" TOEOL NL
-	| "rtr" TOEOL NL
-	| "alias" TOEOL NL
-	| "vrf" TOEOL NL ignored_indent
-	| "hw-module" TOEOL NL
-	| "errdisable" TOEOL NL
-	| "power" TOEOL NL
-	| "spanning-tree" TOEOL NL
-	| "vlan" TOEOL NL ignored_indent
-	| "firewall" TOEOL NL
+	| banner
+	| ("boot-start-marker"|"boot-end-marker") NL
+	| "boot" TOEOL NL
+	| "bridge" TOEOL NL
 	| "call-home" TOEOL NL ignored_indent
-	| "ipv6" TOEOL NL ignored_indent
-	| "mls" TOEOL NL
-	| "wism" TOEOL NL
-	| "diagnostic" TOEOL NL
-	| "port-channel" TOEOL NL
-	| "transceiver" TOEOL NL ignored_indent
-	| "policy-map" WS TOEOL NL ignored_indent
 	| "class-map" WS TOEOL NL ignored_indent
-	| "define" WS "interface-range" TOEOL NL
-	| "system" TOEOL NL
+	| "clock" TOEOL NL
+	| "control-plane" NL
+	| "crypto" TOEOL NL ignored_indent
 	| "cts" TOEOL NL
+	| "Current configuration" TOEOL NL
+	| "define" WS "interface-range" TOEOL NL
+	| "diagnostic" TOEOL NL
+	| "dialer-list" TOEOL NL
+	| "dial-peer" TOEOL NL
+	| "dot11" TOEOL NL ignored_indent
+	| "enable" TOEOL NL
+	| "encryption" TOEOL NL
+	| "errdisable" TOEOL NL
+	| "firewall" TOEOL NL
+	| "hw-module" TOEOL NL
+	| "ipv6" TOEOL NL ignored_indent
+	| "isdn" TOEOL NL
+	| "key" TOEOL NL ignored_indent
 	| "lldp" TOEOL NL
+	| "logging" TOEOL NL
+	| "mls" TOEOL NL
+	| "mmi" TOEOL NL
+	| "multilink" TOEOL NL
+	| "no" TOEOL NL
+	| "policy-map" WS TOEOL NL ignored_indent
+	| "port-channel" TOEOL NL
+	| "power" TOEOL NL
+	| "redundancy" TOEOL NL ignored_indent
+	| "resource" TOEOL NL
+	| "rmon" TOEOL NL
+	| "route-map" TOEOL NL ignored_indent
+	| "router" TOEOL NL ignored_indent
+	| "rtr" TOEOL NL
+	| "security" TOEOL NL
+	| "service" TOEOL NL
+	| "snmp-server" TOEOL NL
+	| "snmp" TOEOL NL
+	| "spanning-tree" TOEOL NL
+	| "system" TOEOL NL
+	| "transceiver" TOEOL NL ignored_indent
+	| "username" TOEOL NL
+	| "Using" int "out of" int "bytes" NL
+	| "vlan" TOEOL NL ignored_indent
+	| "vpdn" TOEOL NL ignored_indent
+	| "vrf" TOEOL NL ignored_indent
 	| "vtp" TOEOL NL
+	| "wism" TOEOL NL
 	| NL
 	;
 
