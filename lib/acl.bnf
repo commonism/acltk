@@ -212,7 +212,7 @@ object_group_type
 service_group_object
 	= type:"service-object" WS protocol:int NL
 	| type:"service-object" WS protocol:protocol_icmp [WS icmp_type:(icmp_type|int) [WS icmp_code:int]] NL
-	| type:"service-object" WS protocol:protocol [WS] source:service_object_source [WS] destination:service_object_destination NL
+	| type:"service-object" WS protocol:protocol [WS] source:service_object_source [WS] destination:service_object_destination [WS] NL
 	| type:"service-object" WS protocol:"object" WS object:acl_object_service_id NL
     | type:"group-object" WS object:acl_object_group_service_id NL
 	| ()
