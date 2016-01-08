@@ -105,6 +105,7 @@ ignored
 	| "ipv6" WS TOEOL NL
 	| "ip" WS TOEOL NL
 	| "logging" WS TOEOL NL
+	| "mac-address-table" TOEOL NL
 	| "monitor-interface" WS TOEOL NL
 	| "mtu" WS TOEOL NL
 	| "names" NL
