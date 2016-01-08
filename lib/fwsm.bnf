@@ -81,6 +81,7 @@ ignored
 	| "arp-inspection" WS TOEOL NL
 	| "arp" WS TOEOL NL
 	| "asdm" WS TOEOL NL
+	| "auth-prompt" WS TOEOL NL
 	| "boot" TOEOL NL
 	| "call-home" TOEOL NL ignored_indent
 	| "class-map" WS TOEOL NL ignored_indent
@@ -113,6 +114,7 @@ ignored
 	| "monitor-interface" WS TOEOL NL
 	| "mtu" WS TOEOL NL
 	| "multicast-routing" TOEOL NL
+	| "nac-policy" TOEOL NL ignored_indent
 	| "names" NL
 	| "nat-control" [WS] TOEOL NL
 	| "nat" WS TOEOL NL
@@ -131,6 +133,7 @@ ignored
 	| "service" WS TOEOL NL
 	| "snmp-map" WS TOEOL NL ignored_indent
 	| "snmp-server" WS TOEOL NL
+	| "smtp-server" WS TOEOL NL
 	| "ssh" WS TOEOL NL
 	| "ssl" WS TOEOL NL
 	| "static" WS TOEOL NL
@@ -142,6 +145,7 @@ ignored
 	| "threat-detection" WS TOEOL NL
 	| "timeout" WS TOEOL NL
 	| "tls-proxy" WS TOEOL NL
+	| "tunnel-group-map" WS TOEOL NL
 	| "tunnel-group" WS TOEOL NL ignored_indent
 	| "user-identity" WS TOEOL NL
 	| "username" WS TOEOL NL ignored_indent

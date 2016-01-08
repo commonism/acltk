@@ -164,7 +164,7 @@ network_object
 service_object
 	= type:"service" WS protocol:int NL
 	| type:"service" WS protocol:protocol_icmp [WS icmp_type:(icmp_type|int) [WS icmp_code:int]] NL
-	| type:"service" WS protocol:protocol [WS] source:service_object_source [WS] destination:service_object_destination NL
+	| type:"service" WS protocol:protocol [WS] source:service_object_source [WS] destination:service_object_destination [WS] NL
 	;
 
 service_object_op
