@@ -98,6 +98,7 @@ ignored
 	| "established" WS TOEOL NL
 	| "failover" [WS TOEOL] NL
 	| "firewall" TOEOL NL
+	| "fragment" TOEOL NL
 	| "ftp" TOEOL NL
 	| "global" WS TOEOL NL
 	| "group-policy" WS TOEOL NL ignored_indent

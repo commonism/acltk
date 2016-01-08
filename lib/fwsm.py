@@ -15,7 +15,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 from grako.parsing import graken, Parser
 
 
-__version__ = (2016, 1, 8, 14, 21, 1, 4)
+__version__ = (2016, 1, 8, 14, 24, 50, 4)
 
 __all__ = [
     'fwsmParser',
@@ -2256,6 +2256,10 @@ class fwsmParser(Parser):
                 self._NL_()
             with self._option():
                 self._token('firewall')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('fragment')
                 self._TOEOL_()
                 self._NL_()
             with self._option():
