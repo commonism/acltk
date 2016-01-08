@@ -49,7 +49,7 @@ access_list_rule_extended
 
 (* access-list access_list_name standard {deny | permit} {any | ip_address mask} *)
 access_list_rule_standard
-    = "access-list" WS id:acl_id WS "standard" WS mode:acl_mode WS source:acl_host
+    = "access-list" WS id:acl_id WS "standard" WS mode:acl_mode WS source:acl_host [WS]
     ;
 
 access_list
