@@ -70,7 +70,7 @@ access_group
 	;
 
 ignored_indent
-	= {/^ [^\n]*/ NL}*
+	= {[NL] /^ [^\n]*/ NL}*
 	;
 
 ignored
