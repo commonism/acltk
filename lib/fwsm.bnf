@@ -146,6 +146,7 @@ ignored
 	| "username" WS TOEOL NL ignored_indent
 	| "virtual" TOEOL NL
 	| "vpn-group-policy" TOEOL NL
+	| "vpn" TOEOL NL ignored_indent
 	| "webvpn" TOEOL NL ignored_indent
 	| "xlate-bypass" [WS] TOEOL NL
 	| "xlate" WS TOEOL NL
