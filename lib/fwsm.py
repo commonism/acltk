@@ -15,7 +15,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 from grako.parsing import graken, Parser
 
 
-__version__ = (2016, 1, 8, 13, 49, 46, 4)
+__version__ = (2016, 1, 8, 14, 2, 6, 4)
 
 __all__ = [
     'fwsmParser',
@@ -2270,6 +2270,10 @@ class fwsmParser(Parser):
                 self._NL_()
                 self._ignored_indent_()
             with self._option():
+                self._token('hpm')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
                 self._token('http')
                 self._WS_()
                 self._TOEOL_()
@@ -2476,8 +2480,13 @@ class fwsmParser(Parser):
                 self._WS_()
                 self._TOEOL_()
                 self._NL_()
+                self._ignored_indent_()
             with self._option():
                 self._token('virtual')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('vpn-group-policy')
                 self._TOEOL_()
                 self._NL_()
             with self._option():
