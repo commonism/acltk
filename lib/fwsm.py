@@ -15,7 +15,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 from grako.parsing import graken, Parser
 
 
-__version__ = (2016, 1, 8, 14, 5, 30, 4)
+__version__ = (2016, 1, 8, 14, 21, 1, 4)
 
 __all__ = [
     'fwsmParser',
@@ -508,10 +508,11 @@ class fwsmParser(Parser):
                 self._WS_()
                 self._obj_name_()
                 self.ast['name'] = self.last_node
-                self._NL_()
-                self._SP_()
-                self._network_object_()
-                self.ast['args'] = self.last_node
+                with self._optional():
+                    self._NL_()
+                    self._SP_()
+                    self._network_object_()
+                    self.ast['args'] = self.last_node
                 with self._optional():
                     self._SP_()
                     self._token('description')
@@ -525,10 +526,11 @@ class fwsmParser(Parser):
                 self._WS_()
                 self._obj_name_()
                 self.ast['name'] = self.last_node
-                self._NL_()
-                self._SP_()
-                self._service_object_()
-                self.ast['args'] = self.last_node
+                with self._optional():
+                    self._NL_()
+                    self._SP_()
+                    self._service_object_()
+                    self.ast['args'] = self.last_node
                 with self._optional():
                     self._SP_()
                     self._token('description')
@@ -673,6 +675,8 @@ class fwsmParser(Parser):
                     self._WS_()
                 self._service_object_destination_()
                 self.ast['destination'] = self.last_node
+                with self._optional():
+                    self._WS_()
                 self._NL_()
             self._error('no available options')
 
