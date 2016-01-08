@@ -21,6 +21,7 @@ command
 	| object
 	| object_group
 	| access_list
+	| {access_list_remark}+
 	| access_group
 	| ignored
 	| unmatched NL
