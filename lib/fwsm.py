@@ -15,7 +15,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 from grako.parsing import graken, Parser
 
 
-__version__ = (2016, 1, 5, 9, 11, 36, 1)
+__version__ = (2016, 1, 8, 12, 0, 0, 4)
 
 __all__ = [
     'fwsmParser',
@@ -1338,6 +1338,8 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('unreachable')
             with self._option():
+                self._token('ttl-exceeded')
+            with self._option():
                 self._token('traceroute')
             with self._option():
                 self._token('timestamp-request')
@@ -1345,6 +1347,8 @@ class fwsmParser(Parser):
                 self._token('timestamp-reply')
             with self._option():
                 self._token('time-exceeded')
+            with self._option():
+                self._token('source-route-failed')
             with self._option():
                 self._token('source-quench')
             with self._option():
@@ -1354,7 +1358,31 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('redirect')
             with self._option():
+                self._token('reassembly-timeout')
+            with self._option():
+                self._token('protocol-unreachable')
+            with self._option():
+                self._token('precedence-unreachable')
+            with self._option():
+                self._token('port-unreachable')
+            with self._option():
                 self._token('parameter-problem')
+            with self._option():
+                self._token('packet-too-big')
+            with self._option():
+                self._token('option-missing')
+            with self._option():
+                self._token('no-room-for-option')
+            with self._option():
+                self._token('network-unknown')
+            with self._option():
+                self._token('net-unreachable')
+            with self._option():
+                self._token('net-tos-unreachable')
+            with self._option():
+                self._token('net-tos-redirect')
+            with self._option():
+                self._token('net-redirect')
             with self._option():
                 self._token('mobile-redirect')
             with self._option():
@@ -1366,12 +1394,36 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('information-reply')
             with self._option():
+                self._token('host-unreachable')
+            with self._option():
+                self._token('host-unknown')
+            with self._option():
+                self._token('host-tos-unreachable')
+            with self._option():
+                self._token('host-tos-redirect')
+            with self._option():
+                self._token('host-redirect')
+            with self._option():
+                self._token('host-precedence-unreachable')
+            with self._option():
+                self._token('host-isolated')
+            with self._option():
+                self._token('general-parameter-problem')
+            with self._option():
                 self._token('echo-reply')
             with self._option():
                 self._token('echo')
             with self._option():
-                self._token('ttl-exceeded')
-            self._error('expecting one of: echo echo-reply information-reply information-request mask-reply mask-request mobile-redirect parameter-problem redirect router-advertisement router-solicitation source-quench time-exceeded timestamp-reply timestamp-request traceroute ttl-exceeded unreachable')
+                self._token('dod-net-prohibited')
+            with self._option():
+                self._token('dod-host-prohibited')
+            with self._option():
+                self._token('conversion-error')
+            with self._option():
+                self._token('alternate-address')
+            with self._option():
+                self._token('administratively-prohibited')
+            self._error('expecting one of: administratively-prohibited alternate-address conversion-error dod-host-prohibited dod-net-prohibited echo echo-reply general-parameter-problem host-isolated host-precedence-unreachable host-redirect host-tos-redirect host-tos-unreachable host-unknown host-unreachable information-reply information-request mask-reply mask-request mobile-redirect net-redirect net-tos-redirect net-tos-unreachable net-unreachable network-unknown no-room-for-option option-missing packet-too-big parameter-problem port-unreachable precedence-unreachable protocol-unreachable reassembly-timeout redirect router-advertisement router-solicitation source-quench source-route-failed time-exceeded timestamp-reply timestamp-request traceroute ttl-exceeded unreachable')
 
     @graken()
     def _protocol_code_(self):
@@ -2058,126 +2110,10 @@ class fwsmParser(Parser):
         with self._choice():
             with self._option():
                 self._token(':')
-                self._pattern(r'[^\n]*')
-                self._NL_()
-            with self._option():
-                self._token('firewall')
-                self._pattern(r'[^\n]*')
-                self._NL_()
-            with self._option():
-                self._token('enable')
-                self._pattern(r'[^\n]*')
-                self._NL_()
-            with self._option():
-                self._token('dns-guard')
                 self._TOEOL_()
-                self._NL_()
-            with self._option():
-                self._token('dns')
-                self._TOEOL_()
-                self._NL_()
-                self._ignored_indent_()
-            with self._option():
-                self._token('name-server')
-                self._pattern(r'[^\n]*')
-            with self._option():
-                self._token('domain-name')
-                self._pattern(r'[^\n]*')
-            with self._option():
-                self._token('no')
-                self._TOEOL_()
-                self._NL_()
-            with self._option():
-                self._token('boot')
-                self._TOEOL_()
-                self._NL_()
-            with self._option():
-                self._token('ftp')
-                self._TOEOL_()
-                self._NL_()
-            with self._option():
-                self._token('clock')
-                self._TOEOL_()
-                self._NL_()
-            with self._option():
-                self._token('passwd')
-                self._pattern(r'[^\n]*')
                 self._NL_()
             with self._option():
                 self._token('!')
-                self._NL_()
-            with self._option():
-                self._token('same-security-traffic')
-                self._pattern(r'[^\n]*')
-                self._NL_()
-            with self._option():
-                self._token('tcp-map')
-                self._WS_()
-                self._TOEOL_()
-                self._NL_()
-                self._ignored_indent_()
-            with self._option():
-                self._token('names')
-                self._NL_()
-            with self._option():
-                self._token('pager')
-                self._WS_()
-                self._TOEOL_()
-                self._NL_()
-            with self._option():
-                self._token('aaa')
-                self._WS_()
-                self._TOEOL_()
-                self._NL_()
-            with self._option():
-                self._token('logging')
-                self._WS_()
-                self._TOEOL_()
-                self._NL_()
-            with self._option():
-                self._token('mtu')
-                self._WS_()
-                self._TOEOL_()
-                self._NL_()
-            with self._option():
-                self._token('monitor-interface')
-                self._WS_()
-                self._TOEOL_()
-                self._NL_()
-            with self._option():
-                self._token('icmp')
-                self._WS_()
-                self._TOEOL_()
-                self._NL_()
-            with self._option():
-                self._token('arp')
-                self._WS_()
-                self._TOEOL_()
-                self._NL_()
-            with self._option():
-                self._token('static')
-                self._WS_()
-                self._TOEOL_()
-                self._NL_()
-            with self._option():
-                self._token('route')
-                self._WS_()
-                self._TOEOL_()
-                self._NL_()
-            with self._option():
-                self._token('timeout')
-                self._WS_()
-                self._TOEOL_()
-                self._NL_()
-            with self._option():
-                self._token('username')
-                self._WS_()
-                self._TOEOL_()
-                self._NL_()
-            with self._option():
-                self._token('http')
-                self._WS_()
-                self._TOEOL_()
                 self._NL_()
             with self._option():
                 self._token('aaa-server')
@@ -2186,45 +2122,7 @@ class fwsmParser(Parser):
                 self._NL_()
                 self._ignored_indent_()
             with self._option():
-                self._token('snmp-server')
-                self._WS_()
-                self._TOEOL_()
-                self._NL_()
-            with self._option():
-                self._token('snmp-map')
-                self._WS_()
-                self._TOEOL_()
-                self._NL_()
-                self._ignored_indent_()
-            with self._option():
-                self._token('sysopt')
-                self._WS_()
-                self._TOEOL_()
-                self._NL_()
-            with self._option():
-                self._token('telnet')
-                self._WS_()
-                self._TOEOL_()
-                self._NL_()
-            with self._option():
-                self._token('ssh')
-                self._WS_()
-                self._TOEOL_()
-                self._NL_()
-            with self._option():
-                self._token('class-map')
-                self._WS_()
-                self._TOEOL_()
-                self._NL_()
-                self._ignored_indent_()
-            with self._option():
-                self._token('policy-map')
-                self._WS_()
-                self._TOEOL_()
-                self._NL_()
-                self._ignored_indent_()
-            with self._option():
-                self._token('service-policy')
+                self._token('aaa')
                 self._WS_()
                 self._TOEOL_()
                 self._NL_()
@@ -2234,12 +2132,8 @@ class fwsmParser(Parser):
                 self._TOEOL_()
                 self._NL_()
             with self._option():
-                self._token('tftp-server')
+                self._token('arp')
                 self._WS_()
-                self._TOEOL_()
-                self._NL_()
-            with self._option():
-                self._token('Cryptochecksum:')
                 self._TOEOL_()
                 self._NL_()
             with self._option():
@@ -2248,13 +2142,31 @@ class fwsmParser(Parser):
                 self._TOEOL_()
                 self._NL_()
             with self._option():
-                self._token('ipv6')
+                self._token('boot')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('call-home')
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
+            with self._option():
+                self._token('class-map')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
+            with self._option():
+                self._token('clock')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('console')
                 self._WS_()
                 self._TOEOL_()
                 self._NL_()
             with self._option():
-                self._token('user-identity')
-                self._WS_()
+                self._token('Cryptochecksum:')
                 self._TOEOL_()
                 self._NL_()
             with self._option():
@@ -2263,26 +2175,6 @@ class fwsmParser(Parser):
                 self._TOEOL_()
                 self._NL_()
                 self._ignored_indent_()
-            with self._option():
-                self._token('threat-detection')
-                self._WS_()
-                self._TOEOL_()
-                self._NL_()
-            with self._option():
-                self._token('ip')
-                self._WS_()
-                self._TOEOL_()
-                self._NL_()
-            with self._option():
-                self._token('nat')
-                self._WS_()
-                self._TOEOL_()
-                self._NL_()
-            with self._option():
-                self._token('service')
-                self._WS_()
-                self._TOEOL_()
-                self._NL_()
             with self._option():
                 self._token('dhcpd')
                 self._WS_()
@@ -2294,19 +2186,25 @@ class fwsmParser(Parser):
                 self._TOEOL_()
                 self._NL_()
             with self._option():
-                self._token('nat-control')
-                with self._optional():
-                    self._WS_()
+                self._token('dns-guard')
                 self._TOEOL_()
                 self._NL_()
             with self._option():
-                self._token('xlate-bypass')
-                with self._optional():
-                    self._WS_()
+                self._token('dns')
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
+            with self._option():
+                self._token('dynamic-access-policy-record')
+                self._WS_()
                 self._TOEOL_()
                 self._NL_()
             with self._option():
-                self._token('global')
+                self._token('enable')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('eou')
                 self._WS_()
                 self._TOEOL_()
                 self._NL_()
@@ -2322,13 +2220,75 @@ class fwsmParser(Parser):
                     self._TOEOL_()
                 self._NL_()
             with self._option():
-                self._token('dynamic-access-policy-record')
+                self._token('firewall')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('ftp')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('global')
                 self._WS_()
                 self._TOEOL_()
                 self._NL_()
             with self._option():
-                self._token('console')
+                self._token('group-policy')
                 self._WS_()
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
+            with self._option():
+                self._token('http')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('icmp')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('ipv6')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('ip')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('logging')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('monitor-interface')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('mtu')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('names')
+                self._NL_()
+            with self._option():
+                self._token('nat-control')
+                with self._optional():
+                    self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('nat')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('no')
                 self._TOEOL_()
                 self._NL_()
             with self._option():
@@ -2337,22 +2297,27 @@ class fwsmParser(Parser):
                 self._TOEOL_()
                 self._NL_()
             with self._option():
-                self._token('prompt')
+                self._token('pager')
                 self._WS_()
                 self._TOEOL_()
                 self._NL_()
             with self._option():
-                self._token('call-home')
+                self._token('passwd')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('policy-map')
+                self._WS_()
                 self._TOEOL_()
                 self._NL_()
                 self._ignored_indent_()
             with self._option():
-                self._token('terminal')
+                self._token('privilege')
                 self._WS_()
                 self._TOEOL_()
                 self._NL_()
             with self._option():
-                self._token('xlate')
+                self._token('prompt')
                 self._WS_()
                 self._TOEOL_()
                 self._NL_()
@@ -2363,12 +2328,37 @@ class fwsmParser(Parser):
                 self._NL_()
                 self._ignored_indent_()
             with self._option():
-                self._token('eou')
+                self._token('route')
                 self._WS_()
                 self._TOEOL_()
                 self._NL_()
             with self._option():
-                self._token('tls-proxy')
+                self._token('same-security-traffic')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('service-policy')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('service')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('snmp-map')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
+            with self._option():
+                self._token('snmp-server')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('ssh')
                 self._WS_()
                 self._TOEOL_()
                 self._NL_()
@@ -2378,16 +2368,51 @@ class fwsmParser(Parser):
                 self._TOEOL_()
                 self._NL_()
             with self._option():
-                self._token('webvpn')
+                self._token('static')
+                self._WS_()
                 self._TOEOL_()
                 self._NL_()
-                self._ignored_indent_()
             with self._option():
-                self._token('group-policy')
+                self._token('sysopt')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('tcp-map')
                 self._WS_()
                 self._TOEOL_()
                 self._NL_()
                 self._ignored_indent_()
+            with self._option():
+                self._token('telnet')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('terminal')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('tftp-server')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('threat-detection')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('timeout')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('tls-proxy')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
             with self._option():
                 self._token('tunnel-group')
                 self._WS_()
@@ -2395,11 +2420,32 @@ class fwsmParser(Parser):
                 self._NL_()
                 self._ignored_indent_()
             with self._option():
-                self._token('privilege')
+                self._token('user-identity')
                 self._WS_()
                 self._TOEOL_()
                 self._NL_()
-            self._error('expecting one of: domain-name name-server')
+            with self._option():
+                self._token('username')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('webvpn')
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
+            with self._option():
+                self._token('xlate-bypass')
+                with self._optional():
+                    self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('xlate')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            self._error('no available options')
 
     @graken()
     def _unmatched_(self):
