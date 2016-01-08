@@ -15,7 +15,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 from grako.parsing import graken, Parser
 
 
-__version__ = (2016, 1, 8, 12, 0, 11, 4)
+__version__ = (2016, 1, 8, 13, 1, 23, 4)
 
 __all__ = [
     'iosParser',
@@ -425,6 +425,8 @@ class iosParser(Parser):
 
         def block0():
             self._acl_option_()
+            with self._optional():
+                self._WS_()
         self._closure(block0)
 
     @graken()
@@ -916,6 +918,8 @@ class iosParser(Parser):
                     self._WS_()
                 self._service_object_destination_()
                 self.ast['destination'] = self.last_node
+                with self._optional():
+                    self._WS_()
                 self._NL_()
             with self._option():
                 self._token('service-object')
