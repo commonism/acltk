@@ -430,6 +430,7 @@ port_code
 	| "netbios-dgm"
 	| "netbios-ssn"
 	| "netbios-ss"
+	| "nfs"
 	| "nntp"
 	| "non500-isakmp"
 	| "ntp"
