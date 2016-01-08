@@ -15,7 +15,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 from grako.parsing import graken, Parser
 
 
-__version__ = (2016, 1, 8, 13, 1, 26, 4)
+__version__ = (2016, 1, 8, 13, 49, 46, 4)
 
 __all__ = [
     'fwsmParser',
@@ -1279,8 +1279,7 @@ class fwsmParser(Parser):
         def block2():
             self._SP_()
             self._time_range_object_()
-        self._positive_closure(block2)
-
+        self._closure(block2)
         self.ast['objects'] = self.last_node
 
         self.ast._define(
@@ -1558,6 +1557,8 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('netbios-ss')
             with self._option():
+                self._token('nfs')
+            with self._option():
                 self._token('nntp')
             with self._option():
                 self._token('non500-isakmp')
@@ -1625,7 +1626,7 @@ class fwsmParser(Parser):
                 self._token('www')
             with self._option():
                 self._token('xdmcp')
-            self._error('expecting one of: aol bgp biff bootpc bootps chargen citrix-ica cmd ctiqbe daytime discard dnsix domain echo exec finger ftp ftp-data gopher h323 hostname https ident imap4 irc isakmp kerberos klogin kshell ldap ldaps login lotusnotes lpd mobile-ip nameserver netbios-dgm netbios-ns netbios-ss netbios-ssn nntp non500-isakmp ntp pcanywhere-data pcanywhere-status pim-auto-rp pop2 pop3 pptp radius radius-acct rip rpc rsh rtsp secureid-udp sip smtp snmp snmptrap sqlnet ssh sunrpc syslog tacacs talk telnet tftp time uucp who whois www xdmcp')
+            self._error('expecting one of: aol bgp biff bootpc bootps chargen citrix-ica cmd ctiqbe daytime discard dnsix domain echo exec finger ftp ftp-data gopher h323 hostname https ident imap4 irc isakmp kerberos klogin kshell ldap ldaps login lotusnotes lpd mobile-ip nameserver netbios-dgm netbios-ns netbios-ss netbios-ssn nfs nntp non500-isakmp ntp pcanywhere-data pcanywhere-status pim-auto-rp pop2 pop3 pptp radius radius-acct rip rpc rsh rtsp secureid-udp sip smtp snmp snmptrap sqlnet ssh sunrpc syslog tacacs talk telnet tftp time uucp who whois www xdmcp')
 
     @graken()
     def _grammar_(self):
@@ -1874,6 +1875,8 @@ class fwsmParser(Parser):
         self._WS_()
         self._acl_host_()
         self.ast['source'] = self.last_node
+        with self._optional():
+            self._WS_()
 
         self.ast._define(
             ['id', 'mode', 'source'],
@@ -2046,6 +2049,8 @@ class fwsmParser(Parser):
                 self._WS_()
                 self._acl_host_()
                 self.ast['source'] = self.last_node
+                with self._optional():
+                    self._WS_()
             with self._option():
                 self._token('access-list')
                 self._WS_()
@@ -2059,6 +2064,8 @@ class fwsmParser(Parser):
                 self._WS_()
                 self._acl_host_()
                 self.ast['source'] = self.last_node
+                with self._optional():
+                    self._WS_()
             self._error('no available options')
 
         self.ast._define(
@@ -2085,24 +2092,39 @@ class fwsmParser(Parser):
 
     @graken()
     def _access_group_(self):
-        self._token('access-group')
-        self._WS_()
-        self._obj_name_()
-        self.ast['name'] = self.last_node
-        self._WS_()
-        self._obj_name_()
-        self.ast['direction'] = self.last_node
-        self._WS_()
-        self._token('interface')
-        self._WS_()
-        self._obj_name_()
-        self.ast['iface'] = self.last_node
-        with self._optional():
-            self._WS_()
-        self._NL_()
+        with self._choice():
+            with self._option():
+                self._token('access-group')
+                self._WS_()
+                self._obj_name_()
+                self.ast['name'] = self.last_node
+                self._WS_()
+                self._obj_name_()
+                self.ast['direction'] = self.last_node
+                self._WS_()
+                self._token('interface')
+                self.ast['type'] = self.last_node
+                self._WS_()
+                self._obj_name_()
+                self.ast['iface'] = self.last_node
+                with self._optional():
+                    self._WS_()
+                self._NL_()
+            with self._option():
+                self._token('access-group')
+                self._WS_()
+                self._obj_name_()
+                self.ast['name'] = self.last_node
+                self._WS_()
+                self._token('global')
+                self.ast['type'] = self.last_node
+                with self._optional():
+                    self._WS_()
+                self._NL_()
+            self._error('no available options')
 
         self.ast._define(
-            ['name', 'direction', 'iface'],
+            ['name', 'direction', 'type', 'iface'],
             []
         )
 
@@ -2273,6 +2295,14 @@ class fwsmParser(Parser):
                 self._TOEOL_()
                 self._NL_()
             with self._option():
+                self._token('mac-address-table')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('mac-address')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
                 self._token('monitor-interface')
                 self._WS_()
                 self._TOEOL_()
@@ -2280,6 +2310,10 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('mtu')
                 self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('multicast-routing')
                 self._TOEOL_()
                 self._NL_()
             with self._option():
@@ -2328,6 +2362,10 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('prompt')
                 self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('resource')
                 self._TOEOL_()
                 self._NL_()
             with self._option():
@@ -2436,6 +2474,10 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('username')
                 self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('virtual')
                 self._TOEOL_()
                 self._NL_()
             with self._option():
