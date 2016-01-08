@@ -15,7 +15,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 from grako.parsing import graken, Parser
 
 
-__version__ = (2016, 1, 8, 14, 24, 50, 4)
+__version__ = (2016, 1, 8, 15, 6, 24, 4)
 
 __all__ = [
     'fwsmParser',
@@ -2136,6 +2136,8 @@ class fwsmParser(Parser):
     def _ignored_indent_(self):
 
         def block0():
+            with self._optional():
+                self._NL_()
             self._pattern(r'^ [^\n]*')
             self._NL_()
         self._closure(block0)
@@ -2173,6 +2175,11 @@ class fwsmParser(Parser):
                 self._NL_()
             with self._option():
                 self._token('asdm')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('auth-prompt')
                 self._WS_()
                 self._TOEOL_()
                 self._NL_()
@@ -2329,6 +2336,11 @@ class fwsmParser(Parser):
                 self._TOEOL_()
                 self._NL_()
             with self._option():
+                self._token('nac-policy')
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
+            with self._option():
                 self._token('names')
                 self._NL_()
             with self._option():
@@ -2417,6 +2429,11 @@ class fwsmParser(Parser):
                 self._TOEOL_()
                 self._NL_()
             with self._option():
+                self._token('smtp-server')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
                 self._token('ssh')
                 self._WS_()
                 self._TOEOL_()
@@ -2469,6 +2486,11 @@ class fwsmParser(Parser):
                 self._NL_()
             with self._option():
                 self._token('tls-proxy')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('tunnel-group-map')
                 self._WS_()
                 self._TOEOL_()
                 self._NL_()
