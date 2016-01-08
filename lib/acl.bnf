@@ -147,8 +147,8 @@ object
 	;
 
 object_type
-	= type:"network" WS name:obj_name NL SP args:network_object [SP >description]
-	| type:"service" WS name:obj_name NL SP args:service_object [SP >description]
+	= type:"network" WS name:obj_name [NL SP args:network_object] [SP >description]
+	| type:"service" WS name:obj_name [NL SP args:service_object] [SP >description]
 	;
 
 network_object

@@ -92,10 +92,12 @@ class aclSemantics:
 			'service': (ServiceObject, self.parser.service_objects),
 		}
 		# TODO nat parsing
-		if ast.args.type == 'nat':
+		if ast.args and ast.args.type == 'nat':
 			return None
+		if ast.args is None:
+			del ast['args']
+			ast['args'] = {}
 		cls, groups = action[ast.type]
-
 		p = cls(ast.name, ast.description, **ast['args'])
 		groups[ast.name] = p
 		return p
