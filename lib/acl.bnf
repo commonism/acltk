@@ -321,6 +321,7 @@ month
 
 icmp_type
 	= "unreachable"
+	| "ttl-exceeded"
 	| "traceroute"
 	| "timestamp-request"
 	| "timestamp-reply"
@@ -337,7 +338,6 @@ icmp_type
 	| "information-reply"
 	| "echo-reply"
 	| "echo"
-	| "ttl-exceeded"
 	;
 
 protocol_code
