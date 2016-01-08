@@ -118,7 +118,7 @@ acl_icmp_options
 	;
 
 acl_options
-	= {acl_option}
+	= {acl_option [WS]}
 	;
 
 acl_option
