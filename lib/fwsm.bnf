@@ -101,6 +101,7 @@ ignored
 	| "ftp" TOEOL NL
 	| "global" WS TOEOL NL
 	| "group-policy" WS TOEOL NL ignored_indent
+	| "hpm" TOEOL NL
 	| "http" WS TOEOL NL
 	| "icmp" WS TOEOL NL
 	| "ipv6" WS TOEOL NL
@@ -142,8 +143,9 @@ ignored
 	| "tls-proxy" WS TOEOL NL
 	| "tunnel-group" WS TOEOL NL ignored_indent
 	| "user-identity" WS TOEOL NL
-	| "username" WS TOEOL NL
+	| "username" WS TOEOL NL ignored_indent
 	| "virtual" TOEOL NL
+	| "vpn-group-policy" TOEOL NL
 	| "webvpn" TOEOL NL ignored_indent
 	| "xlate-bypass" [WS] TOEOL NL
 	| "xlate" WS TOEOL NL
