@@ -15,7 +15,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 from grako.parsing import graken, Parser
 
 
-__version__ = (2016, 1, 8, 15, 6, 24, 4)
+__version__ = (2016, 9, 12, 10, 36, 36, 0)
 
 __all__ = [
     'fwsmParser',
@@ -2151,6 +2151,7 @@ class fwsmParser(Parser):
                 self._NL_()
             with self._option():
                 self._token('!')
+                self._TOEOL_()
                 self._NL_()
             with self._option():
                 self._token('aaa-server')

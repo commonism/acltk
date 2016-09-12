@@ -75,7 +75,7 @@ ignored_indent
 
 ignored
 	=  ":" TOEOL NL
-	| "!" NL
+	| "!" TOEOL NL
 	| "aaa-server" WS TOEOL NL ignored_indent
 	| "aaa" WS TOEOL NL
 	| "arp-inspection" WS TOEOL NL
