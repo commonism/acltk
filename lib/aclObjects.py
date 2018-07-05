@@ -1,6 +1,10 @@
 import datetime
 import ipaddress
 import math
+import logging
+
+
+log = logging.getLogger()
 
 
 class Names:
@@ -478,9 +482,13 @@ class ACLRuleOptionLog:
 class ACLRuleOptionInActive:
 	pass
 
+class ACLRuleOptionInterface:
+	def __init__(self, interfaces, direction):
+		self.interfaces = interfaces
+		self.direction = direction
 
 class ACLRule:
-	def __init__(self, line=None, id=None, extended=None, mode=None, protocol=None, source=None, dest=None, remark=None, options=None, icmp=None,
+	def __init__(self, line=None, id=None, extended=None, mode=None, protocol=None, source=None, dest=None, remark=None, options=None, icmp=None, head=None,
 				 **kwargs):
 		self.line = line
 		self.id = id
@@ -498,6 +506,7 @@ class ACLRule:
 		else:
 			self.options = options
 		self.icmp = icmp
+		self.head = head
 
 	def __and__(self, other):
 		assert isinstance(other, ACLRule)
@@ -610,12 +619,13 @@ class ACLConfig:
 	def _parse(cls, data, filename=None, trace=False):
 		from acltk.fwsmObjects import fwsmConfig
 		from acltk.iosObjects import iosConfig
+		from acltk.pfsenseObjects import pfsenseConfig
 
-		for i in [fwsmConfig, iosConfig]:
+		for i in [fwsmConfig, iosConfig, pfsenseConfig]:
 			try:
 				return i._parse(data, filename, trace)
-			except Exception:
-				print(i)
+			except Exception as e:
+				log.exception(e)
 		raise ValueError("Invalid Config?")
 
 	@classmethod

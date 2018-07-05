@@ -21,8 +21,10 @@
 	any4
 {%- elif obj.__class__.__name__ == 'NetworkAny6' -%}
 	any6
-{%  elif obj.__class__.__name__ == 'NetworkWildcard' %}
+{%-  elif obj.__class__.__name__ == 'NetworkWildcard' -%}
 VERIFY {{ obj.address }}/{{ obj.wildcard }}
+{%-  elif obj.__class__.__name__ == 'NetworkInterface' -%}
+    <a href="#interface_{{ obj.name }}">{{ obj.name }}</a>
 {%  else %}
 FIXME {{ obj.__class__.__name__ }}
 {%- endif -%}
@@ -68,16 +70,28 @@ FIXME {{ obj.__class__.__name__ }}
 {%- endmacro -%}
 
 {%- macro options(obj) -%}
-{%- for k,i in obj.items() -%}
+{%- for k in obj.keys()|sort -%}
+{%- set i=obj[k] %}
 {%- if i.__class__.__name__ == 'ACLRuleOptionLog' -%}
 log {{ i.options|join(" ") }}
 {%- elif i.__class__.__name__ == 'TimeRange' -%}
 &#x231A;:<a href="#time_range_{{ i.name }}">{{ i.name }}</a>
 {%- elif i.__class__.__name__ == 'ACLRuleOptionInActive' -%}
 inactive
+{%- elif i.__class__.__name__ == 'ACLRuleOptionInterface' -%}
+{% if i.direction == 'in' %}
+&gt;{{ i.interfaces|join(',') }}
+{% elif i.direction == 'out' %}
+{{ i.interfaces|join(',') }}&gt;
+{% elif i.direction == 'any' %}
+&gt;{{ i.interfaces|join(',') }}&gt;
+{%  else %}
+?{{ i.interfaces|join(',') }}?
+{% endif %}
 {%- else -%}
-{{ k }} &nbsp;
+{{ k }}:{{ i }} &nbsp;
 {%- endif -%}
+<br/>
 {%- endfor -%}
 {%- endmacro -%}
 
@@ -115,7 +129,7 @@ thead			{ font-style: italic; }
 .new_service_group{ font-weight: bold;
 					font-size: 110%; }
 .new_time_range{ font-weight: bold;
-	             font-size: 110%; }
+				 font-size: 110%; }
 .network_group_description{
 					font-size: 80%;
 					font-style: italic; }
@@ -127,17 +141,56 @@ thead			{ font-style: italic; }
 					font-size: 150%; }
 .acl_description{ font-size: 80%;
 				  font-style: italic; }
-.mode_deny      { color:#FF0000;
+.mode_deny	  { color:#FF0000;
 				  font-weight: bold; }
 .mode_permit	{ color:#008000;
 				  font-weight: bold; }
 .mode_inactive	{ background:#CCCCCC;
-				  font-style: italic; }
+				  font-style: italic;
+				  color: rgba(51,51,51,.5); }
 .protocol_ip	{ background:#FFFFE9; }
 .protocol_tcp	{ background:#feffbb; }
 .protocol_udp	{ background:#edf9f9; }
+.protocol_tcp_udp	{ background: #7fcdbb; }
 .protocol_icmp	{ background:#e5ffff; }
 .filterd_by_the_filter { color:grey; }
+
+
+
+.bg-primary {
+	color: #000;
+	background-color: #009688;
+}
+
+.bg-info {
+	color: #01579B;
+	background-color: #B3E5FC;
+}
+
+.bg-danger {
+	color: #000;
+	background-color: #EF9A9A;
+}
+
+.bg-warning {
+	color: #000;
+	background-color: #FFF9C4;
+}
+
+.bg-success {
+	color: #1B5E20;
+	background-color: #C8E6C9;
+}
+
+.tr-odd {
+	background-color: rgb(249, 249, 249);
+/*	color: rgba(51,51,51,.5); */
+}
+
+.tr-even {
+	background-color: rgba(255, 255, 255, .5);
+/*	color: rgba(51,51,51,.5); */
+}
 
 -->
 </STYLE>
@@ -178,7 +231,7 @@ thead			{ font-style: italic; }
 {% if loop.first %}
 		<td>Addresses</td>
 {% else %}
-	    <td></td>
+		<td></td>
 {% endif %}
 		<td>{{ addr.interface }}</td>
 	</tr>
@@ -202,12 +255,18 @@ thead			{ font-style: italic; }
 {% if loop.first %}
 		<td>routes</td>
 {% else %}
-	    <td></td>
+		<td></td>
 {% endif %}
 		<td>{{ route.network }} via {{ route.gw }}</td>
 	</tr>
 {% endfor %}
 
+{%  if obj.nameif  %}
+	<tr>
+		<td></td>
+		<td>iface</td>
+		<td>{{ obj.nameif }}</td>
+{%  endif %}
 <tr><td colspan="3">&nbsp;</td></tr>
 {%- endfor %}
 </table>
@@ -272,11 +331,11 @@ thead			{ font-style: italic; }
 <table>
 	<tr>
 		<td></td>
-	    <td style="width:16%;"></td>
-	    <td style="width:16%;"></td>
-	    <td style="width:16%;"></td>
-	    <td style="width:16%;"></td>
-	    <td style="width:16%;"></td>
+		<td style="width:16%;"></td>
+		<td style="width:16%;"></td>
+		<td style="width:16%;"></td>
+		<td style="width:16%;"></td>
+		<td style="width:16%;"></td>
 		<td style="width:16%;"></td>
 	</tr>
 {%- for name in aclconfig.groups.network.keys()|sort %}
@@ -328,7 +387,7 @@ thead			{ font-style: italic; }
 		<td style="width:19%;">Protocol</td>
 		<td style="width:19%;">Source</td>
 		<td style="width:19%;">Destination</td>
-	    <td style="width:19%;">Description</td>
+		<td style="width:19%;">Description</td>
 	</tr>
 {%- endif %}
 
@@ -631,7 +690,7 @@ thead			{ font-style: italic; }
 {%- if "inactive" in obj.options %}
 {%- set cls = 'class="mode_inactive"' %}
 {%- else %}
-{%- set cls = '' %}
+{%- set cls = 'class="tr-even"' if idx['rule'] % 2 else 'class="tr-odd"' %}
 {%- endif %}
 
 {%- if selection is not none and obj not in selection %}
@@ -644,11 +703,27 @@ thead			{ font-style: italic; }
 {%- endif %}
 {%- endif %}
 
+{%- if obj.head %}
+{% for h in obj.head %}
+{% if loop.first %}
+<tr>
+	<td colspan="8"><br/></td>
+</tr>
+{% endif %}
+<tr>
+	<td colspan="1">
+	</td>
+	<td colspan="7" class="{{h.bg | safe }}" >
+		{{ h.text }}
+	</td>
+</tr>
+{%  endfor %}
+{%- endif %}
 
 <tr {{ cls| safe }}>
 	<td>{{ idx['iface'] }}.{{ idx['rule'] }}</td>
 	<td class="mode_{{ obj.mode }}">{{ obj.mode }}</td>
-	<td class="protocol_{{ obj.protocol.name }}" align="center">{{ protocol(obj.protocol) }}</td>
+	<td class="protocol_{{ obj.protocol.name|replace('/','_') }}" align="center">{{ protocol(obj.protocol) }}</td>
 	<td>{{ host(obj.src.host) }}</td>
 	<td>{{ port(obj.src.port) }}</td>
 	<td>{{ host(obj.dst.host) }}</td>
@@ -657,7 +732,7 @@ thead			{ font-style: italic; }
 {%- else %}
 	<td>{{ port(obj.dst.port) }}</td>
 {%- endif %}
-	<td>{{ options(obj.options) }}</td>
+	<td rowspan="{{ obj.remark|length + 1 }}">{{ options(obj.options) }}</td>
 </tr>
 
 {%- if obj.remark %}
