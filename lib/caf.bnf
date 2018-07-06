@@ -8,6 +8,10 @@ string = ?/[A-Za-z0-9_\-\.]*/?;
 
 int = ?/[0-9]+/?;
 
+comments
+    = {comment}+
+    ;
+
 comment
 	= "/*" ?/([^*]|(\*[^/]))*/? "*/"
 	;
@@ -55,10 +59,10 @@ set_expr
 set_r
 	= set_ip
 	| set_expr
-	| comment
+	| comments
 	;
 
-set = [comment] id:[set_id] objects:{set_r}*
+set = [comments] id:[set_id] objects:{set_r}*
 	;
 
 

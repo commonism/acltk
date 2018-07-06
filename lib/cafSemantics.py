@@ -67,7 +67,7 @@ class RealCafSemantics(cafSemantics):
 
     def expr_r(self, ast):
         r = [ast[0]]
-        r.extend(ast[1])
+        r.extend(ast[1][0])
         return r
 
     def set_expr(self, ast):
@@ -85,10 +85,12 @@ class RealCafSemantics(cafSemantics):
         return ast[1]
 
     def set(self, ast):
-        if len(ast.objects) == 1 and isinstance(ast.objects[0], cafBlock):
-            return ast.objects[0]
+        objects = list(filter(lambda i: i is not None, ast.objects))
+
+        if len(objects) == 1 and isinstance(objects[0], cafBlock):
+            return objects[0]
         ip = []
-        for i in ast.objects:
+        for i in objects:
             if 'ip' in i:
                 ip.extend(i.ip)
 
@@ -103,8 +105,21 @@ class RealCafSemantics(cafSemantics):
                 nodes[k] = NetworkAny()
             elif len(v.objects) == 1:
                 nodes[k] = v.objects[0]
+            else:
+                nodes[k] = NetworkGroup('','')
+                for i in v.objects:
+                    nodes[k].add(i)
+#                raise ValueError("failed")
 
         return ACLRule(id=ast.id, source=ACLNode(nodes['src']), dest=ACLNode(nodes['dst']))
+
+    def set_r(self, ast):
+        if isinstance(ast, list) and len(ast) == 1 and ast[0] == None:
+            return None
+        return ast
+
+    def comments(self, ast):
+        return None
 
     def comment(self, ast):
         return None
