@@ -1752,6 +1752,8 @@ class fwsmParser(Parser):
                 self._WS_()
                 self._ip4_()
                 self.name_last_node('standby')
+                with self._optional():
+                    self._WS_()
                 self._NL_()
             with self._option():
                 with self._group():
@@ -1770,8 +1772,13 @@ class fwsmParser(Parser):
                 self._WS_()
                 self._ip6_()
                 self.name_last_node('standby')
+                with self._optional():
+                    self._WS_()
                 self._NL_()
             with self._option():
+                with self._optional():
+                    self._token('no')
+                    self._WS_()
                 self._TOEOL_()
                 self._NL_()
             with self._option():

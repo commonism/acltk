@@ -30,9 +30,9 @@ command
 interface_detail
 	= type:"description" WS value:TOEOL NL
 	| type:"nameif" WS value:identifier [WS] NL
-	| type:("ip" WS "address") WS value:(ip4 WS ip4) WS "standby" WS standby:ip4 NL
-	| type:("ipv6" WS "address") WS value:(ip6 "/" int) WS "standby" WS standby:ip6 NL
-	| TOEOL NL
+	| type:("ip" WS "address") WS value:(ip4 WS ip4) WS "standby" WS standby:ip4 [WS] NL
+	| type:("ipv6" WS "address") WS value:(ip6 "/" int) WS "standby" WS standby:ip6 [WS] NL
+	| ["no" WS] TOEOL NL
 	| ()
 	;
 

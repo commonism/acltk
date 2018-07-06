@@ -1727,6 +1727,8 @@ class iosParser(Parser):
                         self._WS_()
                         self._token('secondary')
                 self.name_last_node('value')
+                with self._optional():
+                    self._WS_()
                 self._NL_()
             with self._option():
                 with self._group():
@@ -1746,6 +1748,8 @@ class iosParser(Parser):
                                 self._token('out')
                             self._error('no available options')
                 self.name_last_node('value')
+                with self._optional():
+                    self._WS_()
                 self._NL_()
             with self._option():
                 self._TOEOL_()

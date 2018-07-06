@@ -52,6 +52,8 @@ class Interface:
 		self.description = None
 
 		for i in details:
+			if i is None: # no [ip address|...]
+				continue
 			if i.type == 'nameif':
 				self.nameif = i.value
 			elif i.type == 'description':

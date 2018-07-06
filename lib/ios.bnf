@@ -22,8 +22,8 @@ command
 
 interface_detail
 	= type:"description" WS value:TOEOL NL
-	| type:("ip" WS "address") WS value:(ip4 WS ip4 [WS "secondary"]) NL
-	| type:("ip" WS "access-group") WS value:(obj_name WS ("in"|"out")) NL
+	| type:("ip" WS "address") WS value:(ip4 WS ip4 [WS "secondary"]) [WS] NL
+	| type:("ip" WS "access-group") WS value:(obj_name WS ("in"|"out")) [WS] NL
 	| TOEOL NL
 	| ()
 	;
