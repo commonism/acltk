@@ -1,6 +1,6 @@
 import glob
 import unittest
-import grako.exceptions
+import tatsu.exceptions
 from acltk import ACLConfig
 
 from acltk.cafObjects import cafBlock
@@ -19,7 +19,7 @@ class cafTestParse(unittest.TestCase):
 
 	def test_bad(self):
 		for i in self.bad:
-			with self.assertRaises(grako.exceptions.FailedParse):
+			with self.assertRaises(tatsu.exceptions.FailedParse):
 				cafBlock.fromPath("caf/{}.caf".format(i))
 
 

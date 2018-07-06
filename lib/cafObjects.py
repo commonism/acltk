@@ -28,6 +28,7 @@ class cafBlock:
 			"grammar",
 			filename=filename,
 			trace=trace,
+			colorize=trace,
 			whitespace=None,
 			nameguard=True,
 			semantics=RealCafSemantics())

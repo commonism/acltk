@@ -1,6 +1,6 @@
 import ipaddress
 
-from grako.parsing import graken
+from tatsu.parsing import tatsumasu
 
 from acltk.ios import iosSemantics as _iosSemantics, iosParser as _iosParser
 from acltk.aclSemantics import aclSemantics, aclParser
@@ -150,7 +150,7 @@ class iosParser(aclParser, _iosParser):
 		_iosParser.__init__(self, kwargs)
 		self.delim = None
 
-	@graken()
+	@tatsumasu()
 	def _delim_msg_(self):
 		if self.delim == '^C':
 			# not ^ or ^ not followed by C
@@ -159,7 +159,7 @@ class iosParser(aclParser, _iosParser):
 			p = r'[^\x{:02x}]*'.format(int.from_bytes(self.delim.encode('utf-8'), byteorder="little"))
 			self._pattern(p)
 
-	@graken()
+	@tatsumasu()
 	def _delim_stop_(self):
 		if self.delim == '^C':
 			self._token('^C')

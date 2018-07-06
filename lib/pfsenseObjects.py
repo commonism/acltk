@@ -1,4 +1,4 @@
-import grako.ast
+import tatsu.ast
 from acltk.aclObjects import ACLConfig, ACLVersion
 
 class pfsenseConfig(ACLConfig):

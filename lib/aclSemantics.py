@@ -1,13 +1,13 @@
 import datetime
 import ipaddress
 
-from grako.parsing import graken
+from tatsu.parsing import tatsumasu
 
 from acltk.aclObjects import TimeRangeObjectAbsolute, TimeRangeObjectPeriodic, TimeRange, \
 	NetworkObject, ServiceObject, NetworkGroup, PortGroup, ServiceGroup, ProtocolGroup, ICMPGroup, Protocol, ICMP, \
 	NetworkHost, Network, Service, PortRange, Port, ACLNode, NetworkAny, Interface, NetworkAny4, NetworkAny6, \
 	ACLRuleOptionInActive, ACLRuleOptionLog, NetworkInterface, ACLVersion
-import grako.ast
+import tatsu.ast
 
 
 class aclSemantics:
@@ -316,39 +316,39 @@ class aclParser:
 				with self._ifnot():
 					pass
 
-	@graken()
+	@tatsumasu()
 	def _acl_interface_id_(self):
 		self.__acl_internal_ids(self.interfaces)
 
-	@graken()
+	@tatsumasu()
 	def _acl_object_group_network_id_(self):
 		self.__acl_internal_ids(self.network_groups)
 
-	@graken()
+	@tatsumasu()
 	def _acl_object_network_id_(self):
 		self.__acl_internal_ids(self.network_objects)
 
-	@graken()
+	@tatsumasu()
 	def _acl_object_group_service_id_(self):
 		self.__acl_internal_ids(self.service_groups)
 
-	@graken()
+	@tatsumasu()
 	def _acl_object_service_id_(self):
 		self.__acl_internal_ids(self.service_objects)
 
-	@graken()
+	@tatsumasu()
 	def _acl_object_group_icmp_id_(self):
 		self.__acl_internal_ids(self.icmp_groups)
 
-	@graken()
+	@tatsumasu()
 	def _acl_object_group_protocol_id_(self):
 		self.__acl_internal_ids(self.protocol_groups)
 
-	@graken()
+	@tatsumasu()
 	def _acl_names_id_(self):
 		self.__acl_internal_ids(self.names)
 
-	@graken()
+	@tatsumasu()
 	def _acl_time_range_id_(self):
 		self.__acl_internal_ids(self.time_ranges)
 

@@ -8,7 +8,7 @@ from acltk.pfsenseObjects import ACLSeparator
 from acltk.aclSemantics import aclSemantics, aclParser
 from acltk.aclObjects import Interface, ACLConfig, ACLRuleOptionInterface, ACLRuleOptionLog, ACLRuleOptionInActive, NetworkAny, NetworkInterface, ACLRule, ACLNode, Protocol, Network, NetworkHost, NetworkGroup, PortGroup, Port, PortRange, ICMP
 from acltk.pfsenseObjects import pfsenseConfig
-import grako.ast
+import tatsu.ast
 import xml.etree.ElementTree as ET
 import logging
 
@@ -49,7 +49,7 @@ class pfsenseParser(aclParser):
 				domain = i.text
 			elif i.tag == 'hostname':
 				hostname = i.text
-		ast.append(grako.ast.AST(**{'hostname': '{hostname}.{domain}'.format(**locals())}))
+		ast.append(tatsu.ast.AST(**{'hostname': '{hostname}.{domain}'.format(**locals())}))
 		return ast
 
 	def _parse_interfaces(self, root):
@@ -61,18 +61,18 @@ class pfsenseParser(aclParser):
 			values['name'] = i.tag
 			if 'ipaddr' in values:
 				if values['ipaddr'] != 'dhcp':
-					details = [grako.ast.AST(**{'type':['ip','address'],'value':[values['ipaddr'],values['subnet']]})]
+					details = [tatsu.ast.AST(**{'type':['ip','address'],'value':[values['ipaddr'],values['subnet']]})]
 				else:
-					details = [grako.ast.AST(**{'type': 'nameif', 'value': values['if']})]
+					details = [tatsu.ast.AST(**{'type': 'nameif', 'value': values['if']})]
 			else:
-				details = [grako.ast.AST(**{'type': 'nameif', 'value': values['if']})]
+				details = [tatsu.ast.AST(**{'type': 'nameif', 'value': values['if']})]
 
 			alias = i.tag
 			if alias.startswith('opt'):
-				details.append(grako.ast.AST(**{'type': 'description', 'value': alias}))
+				details.append(tatsu.ast.AST(**{'type': 'description', 'value': alias}))
 				alias = values.get('descr', alias)
 			else:
-				details.append(grako.ast.AST(**{'type': 'description', 'value': values.get('descr', '')}))
+				details.append(tatsu.ast.AST(**{'type': 'description', 'value': values.get('descr', '')}))
 
 			obj = Interface(alias=alias, details=details)
 			ast.append(obj)

@@ -645,6 +645,7 @@ thead			{ font-style: italic; }
 <h2>Access Control List</h2>
 <table>
 {%- set idx = {'rule':0,'iface':0} %}
+{%- set last = aclconfig.rules.rules[0] %}
 {%- for obj in aclconfig.rules.rules %}
 {%- if loop.first or last.id != obj.id %}
 {%- if selection is none or obj.id in selection or args.show_not_selected %}

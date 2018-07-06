@@ -553,7 +553,7 @@ class ACLVersion:
 		self.version = v
 
 
-import grako.ast
+import tatsu.ast
 #from acltk.fwsmObjects import Names
 
 
@@ -569,9 +569,9 @@ class ACLConfig:
 		self.rules = ACLRules()
 		self.access_groups = {}
 		for i in list(ast):
-			if isinstance(i, grako.ast.AST) and 'hostname' in i:
+			if isinstance(i, tatsu.ast.AST) and 'hostname' in i:
 				self.hostname = i.hostname
-			elif isinstance(i, grako.ast.AST) and 'domain_name' in i:
+			elif isinstance(i, tatsu.ast.AST) and 'domain_name' in i:
 				self.domainname = i.domain_name
 			elif isinstance(i, ACLRule):
 				self.rules.add(i)
