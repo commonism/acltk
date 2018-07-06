@@ -27,12 +27,40 @@ class cafTestFilter(unittest.TestCase):
 	def setUp(self):
 		self.acls = fwsmConfig.fromPath('acl/all.conf')
 
-	def test_public(self):
-		for i in cafTestParse.good:
-			cfg = cafBlock.fromPath("caf/{}.caf".format(i))
-			r = cfg.run(self.acls.rules, verbose=True)
-			self.assertTrue(len(r) >= 0)
-			self.acls.resolve(r)
+	def _test_single_caf(self, name):
+		cfg = cafBlock.fromPath("caf/{}.caf".format(name))
+		r = cfg.run(self.acls.rules, verbose=True)
+#		self.assertTrue(len(r) >= 0)
+		self.acls.resolve(r)
+		return r
+
+	def test__any(self):
+		return self._test_single_caf('any')
+
+	def test__comments(self):
+		return self._test_single_caf('comments')
+
+	def test__localhosts(self):
+		return self._test_single_caf('localhosts')
+
+	def test__multi_addr(self):
+		return self._test_single_caf('multi_addr')
+
+	def test__multi_id(self):
+		with self.assertRaises(tatsu.exceptions.FailedParse):
+			self._test_single_caf('multi_id')
+
+	def test__nested(self):
+		return self._test_single_caf('nested')
+
+	def test__single(self):
+		return self._test_single_caf('single')
+
+	def test__v6(self):
+		return self._test_single_caf('v6')
+
+	def test_expand(self):
+		self.acls.expand()
 
 	def test_private(self):
 		for i in glob.glob("acl/private/*.conf"):
@@ -50,5 +78,10 @@ class cafTestFilter(unittest.TestCase):
 				self.assertTrue(len(r) >= 0)
 				acl.resolve(r)
 
-	def test_expand(self):
-		self.acls.expand()
+	def test_public(self):
+		for i in cafTestParse.good:
+			print(i)
+			cfg = cafBlock.fromPath("caf/{}.caf".format(i))
+			r = cfg.run(self.acls.rules, verbose=True)
+			self.assertTrue(len(r) >= 0)
+			self.acls.resolve(r)
