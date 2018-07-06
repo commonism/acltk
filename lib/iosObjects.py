@@ -53,6 +53,7 @@ class iosConfig(ACLConfig):
 			"grammar",
 			filename=filename,
 			trace=trace,
+			colorize=trace,
 			whitespace='',
 			nameguard=True,
 			semantics=semantics,
