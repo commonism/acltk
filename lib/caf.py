@@ -99,7 +99,11 @@ class cafParser(Parser):
 
     @tatsumasu()
     def _string_(self):  # noqa
-        self._pattern(r'[A-Za-z0-9_\-\.]*')
+        self._pattern(r'[A-Za-z0-9_\-\.]+')
+
+    @tatsumasu()
+    def _pattern_(self):  # noqa
+        self._pattern(r'[A-Za-z0-9_\-\.\?\*\[\]\!\/]+')
 
     @tatsumasu()
     def _int_(self):  # noqa
@@ -229,7 +233,7 @@ class cafParser(Parser):
     def _set_id_(self):  # noqa
         self._token('id')
         with self._group():
-            self._string_()
+            self._pattern_()
 
     @tatsumasu()
     def _set_expr_(self):  # noqa
@@ -280,6 +284,9 @@ class cafSemantics(object):
         return ast
 
     def string(self, ast):  # noqa
+        return ast
+
+    def pattern(self, ast):  # noqa
         return ast
 
     def int(self, ast):  # noqa

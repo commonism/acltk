@@ -4,7 +4,9 @@ grammar
     = @:expr $
     ;
 
-string = ?/[A-Za-z0-9_\-\.]*/?;
+string = ?/[A-Za-z0-9_\-\.]+/?;
+
+pattern = ?/[A-Za-z0-9_\-\.\?\*\[\]\!\/]+/?;
 
 int = ?/[0-9]+/?;
 
@@ -49,7 +51,7 @@ set_ip
 	;
 
 set_id
-	= "id" (string)
+	= "id" (pattern)
 	;
 
 set_expr

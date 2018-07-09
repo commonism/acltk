@@ -1,6 +1,7 @@
 import datetime
 import ipaddress
 import math
+import fnmatch
 import logging
 
 
@@ -512,7 +513,19 @@ class ACLRule:
 
 	def __and__(self, other):
 		assert isinstance(other, ACLRule)
-		if self.id and other.id and self.id != other.id:
+		if self.id and other.id:
+			pattern = name = None
+			if self.id[0] == self.id[-1] == '/':
+				pattern = self.id[1:-1]
+				name = other.id
+			elif other.id[0] == other.id[-1] == '/':
+				pattern = other.id[1:-1]
+				name = self.id
+
+			if name and pattern:
+				return fnmatch.fnmatchcase(name, pattern)
+			else:
+				return self.id == other.id
 			return False
 		if self.src & other.src and self.dst & other.dst:
 			return True

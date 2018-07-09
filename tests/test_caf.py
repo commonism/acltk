@@ -40,6 +40,13 @@ class cafTestFilter(unittest.TestCase):
 	def test__comments(self):
 		return self._test_single_caf('comments')
 
+	def test__empty_id(self):
+		with self.assertRaises(tatsu.exceptions.FailedParse):
+			self._test_single_caf('empty_id')
+
+	def test__fnmatch_id(self):
+		self._test_single_caf('fnmatch_id')
+
 	def test__localhosts(self):
 		return self._test_single_caf('localhosts')
 
