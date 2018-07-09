@@ -203,7 +203,6 @@ class pfsenseParser(aclParser):
 				#					print(v.tag)
 				address = port = None
 				for n in list(v):
-					#						print(n)
 					if n.tag == 'any':
 						address = NetworkAny()
 					elif n.tag == 'address':
@@ -220,14 +219,18 @@ class pfsenseParser(aclParser):
 						try:
 							port = self.port_groups[port]
 						except KeyError as e:
-							port = Port('=', port)
-
+							if '-' in port:
+								port = PortRange(*port.split('-', 2))
+							else:
+								port = Port('eq', port)
 					elif n.tag == 'network':
 						address = n.text
 						if address in self.interfaces:
 							address = NetworkInterface(self.interfaces[address].alias)
 						else:
 							raise ValueError(n.text)
+					else:
+						raise ValueError(n.tag)
 				values[v.tag] = ACLNode(address, port)
 			elif v.tag in ['created', 'updated']:
 				for n in list(v):
@@ -246,13 +249,11 @@ class pfsenseParser(aclParser):
 
 		if values.get('floating', 'no') == 'yes':
 			iface = 'floating'
-			#					direction = {'out':'{}=>','in':'=>{}','any':'<>{}'}[values['direction']]
-			#					options = {'iface':direction.format(values['interface'])}
 			options['floating'] = ACLRuleOptionInterface(values['interface'].split(','), values['direction'])
 		else:
 			iface = values['interface']
 
-			# lookup interface alias, default to old namd
+			# lookup interface alias, default to old name
 			iface = self.interface_map.get(iface, iface)
 		if 'disabled' in values:
 			options['inactive'] = ACLRuleOptionInActive()
