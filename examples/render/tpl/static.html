@@ -183,12 +183,12 @@ thead			{ font-style: italic; }
 }
 
 .tr-odd {
-	background-color: rgb(249, 249, 249);
+	background-color: rgba(255, 255, 255, .5);
 /*	color: rgba(51,51,51,.5); */
 }
 
 .tr-even {
-	background-color: rgba(255, 255, 255, .5);
+	background-color: rgb(249, 249, 249);
 /*	color: rgba(51,51,51,.5); */
 }
 
@@ -645,9 +645,8 @@ thead			{ font-style: italic; }
 <h2>Access Control List</h2>
 <table>
 {%- set idx = {'rule':0,'iface':0} %}
-{%- set last = aclconfig.rules.rules[0] %}
 {%- for obj in aclconfig.rules.rules %}
-{%- if loop.first or last.id != obj.id %}
+{%- if loop.changed(obj.id) %}
 {%- if selection is none or obj.id in selection or args.show_not_selected %}
 	<tr>
 		<td class="different_acl_id" colspan="8">
@@ -698,7 +697,6 @@ thead			{ font-style: italic; }
 {%- if args.show_not_selected %}
 {%- set cls = 'class="filterd_by_the_filter"' %}
 {%- else %}
-{%- set last=obj %}
 {%- set _=idx.update({'rule':idx['rule']+1,}) %}
 {%- continue %}
 {%- endif %}
@@ -748,7 +746,6 @@ thead			{ font-style: italic; }
 {%  endfor %}
 {%- endif %}
 
-{%- set last=obj %}
 {%- set _=idx.update({'rule':idx['rule']+1,}) %}
 {%- endfor %}
 </table>
