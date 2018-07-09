@@ -21,13 +21,3 @@ class pfsenseConfig(ACLConfig):
 		)
 		return config
 
-
-
-class ACLSeparator:
-	def __init__(self, iface, rule, text, bg):
-		self.iface = iface
-		self.rule = rule
-		self.text = text
-		self.bg = bg
-	def __repr__(self):
-		return "ACLSeparator {s.iface} {s.rule} {s.text}".format(s=self)

@@ -4,9 +4,8 @@ import urllib
 import urllib.error
 import urllib.request
 import ipaddress
-from acltk.pfsenseObjects import ACLSeparator
 from acltk.aclSemantics import aclSemantics, aclParser
-from acltk.aclObjects import Interface, ACLConfig, ACLRuleOptionInterface, ACLRuleOptionLog, ACLRuleOptionInActive, NetworkAny, NetworkInterface, ACLRule, ACLNode, Protocol, Network, NetworkHost, NetworkGroup, PortGroup, Port, PortRange, ICMP
+from acltk.aclObjects import Interface, ACLConfig, ACLRuleOptionInterface, ACLRuleOptionLog, ACLRuleOptionInActive, NetworkAny, NetworkInterface, ACLRule, ACLCaption, ACLNode, Protocol, Network, NetworkHost, NetworkGroup, PortGroup, Port, PortRange, ICMP
 from acltk.pfsenseObjects import pfsenseConfig
 import tatsu.ast
 import xml.etree.ElementTree as ET
@@ -170,7 +169,7 @@ class pfsenseParser(aclParser):
 							iface = self.interface_map.get(iface, iface)
 						# EXML - pfsense uses "fr{idx}" to denote the rows number
 						row = int(values['row'][2:])
-						separators[iface][row].append(ACLSeparator(iface=iface, rule=row, bg=values['color'], text=values['text']))
+						separators[iface][row].append(ACLCaption(bg=values['color'], text=values['text']))
 
 
 				ifname = None

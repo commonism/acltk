@@ -523,6 +523,14 @@ class ACLRule:
 			self=self)
 
 
+class ACLCaption:
+	def __init__(self, text, bg):
+		self.text = text
+		self.bg = bg
+	def __repr__(self):
+		return "ACLCaption {s.text}".format(s=self)
+
+
 class ACLObjects:
 	def __init__(self):
 		self.network = {}
