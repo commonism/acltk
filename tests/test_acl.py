@@ -1,5 +1,10 @@
 import glob
 import unittest
+
+from jinja2 import FileSystemLoader, Environment
+from jinja2.utils import concat
+
+
 from acltk.fwsmObjects import fwsmConfig
 from acltk.iosObjects import iosConfig
 from acltk.pfsenseObjects import pfsenseConfig
@@ -36,10 +41,6 @@ class aclTestParse(unittest.TestCase):
 		self.assertIsNotNone(cfg)
 		cfg.names.__repr__()
 		for i in cfg.interfaces.values():
-			i.__repr__()
-		for i in cfg.objects.time.values():
-			i.__repr__()
-		for i in cfg.groups.icmp.values():
 			i.__repr__()
 		for i in cfg.rules.rules:
 			i.__repr__()
@@ -81,10 +82,6 @@ class aclTestParse(unittest.TestCase):
 			for i in cfg.rules.rules:
 				i.__repr__()
 
-from jinja2 import FileSystemLoader, Environment
-from jinja2.utils import concat
-
-
 class aclTestBlock(unittest.TestCase):
 	def setUp(self):
 		loader = FileSystemLoader('./acl/tpl/')
@@ -92,14 +89,16 @@ class aclTestBlock(unittest.TestCase):
 		self.tpl = env.get_template('all.jinja2')
 		self.ctx = self.tpl.new_context({})
 
-	def _test_block(self, block, deps=None):
+	def _test_block(self, block, deps=None, trace=False):
 		blocks = [block]
 		if deps:
 			blocks.extend(deps)
 		data = ''
 		for b in blocks[::-1]:
 			data += concat(self.tpl.blocks[b](self.ctx))
-			cfg = fwsmConfig.fromString(data)
+			with open('acl/single/{}.txt'.format(b), 'wt') as f:
+				f.write(data)
+			cfg = fwsmConfig.fromString(data, trace=trace)
 
 	def test_block_names(self):
 		return self._test_block('names')
@@ -130,6 +129,9 @@ class aclTestBlock(unittest.TestCase):
 
 	def test_block_object_protocol(self):
 		return self._test_block('object_protocol')
+
+	def test_block_access_list_rule_webtype(self):
+		return self._test_block('access_list_rule_webtype', trace=True)
 
 	def test_all(self):
 		return self._test_block('all')

@@ -2,7 +2,7 @@ from acltk.fwsm import fwsmSemantics as _fwsmSemantics, fwsmParser as _fwsmParse
 from acltk.aclSemantics import aclSemantics, aclParser
 from acltk.aclObjects import ACLConfig, ACLRule, Names, Name, ACLVersion, InterfaceAccessGroup, ACLNode, NetworkAny, \
 	Protocol
-
+from acltk.fwsmObjects import Webtype
 
 class fwsmSemantics(aclSemantics, _fwsmSemantics):
 	def __init__(self, parser):
@@ -21,10 +21,13 @@ class fwsmSemantics(aclSemantics, _fwsmSemantics):
 				remark.append(i.remark)
 			del ast['remark']
 			ast['remark'] = remark
-		if ast.extended is not None:
+		assert( ast.extended is not None)
+		if ast.extended == 'extended':
 			return self.access_list_rule_extended(ast)
-		else:
+		elif ast.extended == 'standard':
 			return self.access_list_rule_standard(ast)
+		elif ast.extended == 'webtype':
+			return self.access_list_rule_webtype(ast)
 
 	def access_list_rule_extended(self, ast):
 		if ast.protocol == 'ethertype':
@@ -40,6 +43,19 @@ class fwsmSemantics(aclSemantics, _fwsmSemantics):
 		del ast['source']
 		ast['source'] = ACLNode(src)
 		ast['protocol'] = Protocol('ip')
+		return ACLRule(**ast)
+
+	def access_list_rule_webtype(self, ast):
+		ast['source'] = ACLNode(NetworkAny())
+		if ast.protocol == 'tcp':
+			pass
+		elif ast.protocol == 'url':
+			ast['dest'] = ACLNode(Webtype(ast.url))
+		else:
+			raise ValueError(ast.protocol)
+		protocol = ast.protocol
+		del ast['protocol']
+		ast['protocol'] = Protocol(protocol)
 		return ACLRule(**ast)
 
 	def access_group(self, ast):

@@ -1,5 +1,10 @@
 import tatsu.ast
-from acltk.aclObjects import ACLConfig, ACLVersion
+from acltk.aclObjects import ACLConfig, NetworkAny
+
+class Webtype(NetworkAny):
+	def __init__(self, url):
+		NetworkAny.__init__(self)
+		self.url = url
 
 class fwsmConfig(ACLConfig):
 	def __init__(self, ast):

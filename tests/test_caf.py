@@ -1,8 +1,12 @@
 import glob
 import unittest
-import tatsu.exceptions
-from acltk import ACLConfig
 
+from jinja2 import FileSystemLoader, Environment
+from jinja2.utils import concat
+
+import tatsu.exceptions
+
+from acltk import ACLConfig
 from acltk.cafObjects import cafBlock
 from acltk.fwsmObjects import fwsmConfig
 
@@ -25,7 +29,13 @@ class cafTestParse(unittest.TestCase):
 
 class cafTestFilter(unittest.TestCase):
 	def setUp(self):
-		self.acls = fwsmConfig.fromPath('acl/all.conf')
+		loader = FileSystemLoader('./acl/tpl/')
+		env = Environment(loader=loader, extensions=[])
+		self.tpl = env.get_template('all.jinja2')
+		self.ctx = self.tpl.new_context({})
+
+		data = concat(self.tpl.blocks['all'](self.ctx))
+		self.acls = fwsmConfig.fromString(data)
 
 	def _test_single_caf(self, name):
 		cfg = cafBlock.fromPath("caf/{}.caf".format(name))

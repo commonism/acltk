@@ -433,4 +433,10 @@ access-list outside_access_in remark multi
 access-list outside_access_in remark line
 access-list outside_access_in remark remark without rule
 
+
+{% block access_list_rule_webtype %}
+access-list webvpn_out webtype permit url ssh://mac.gflyg.se log default
+access-list webvpn_out webtype permit tcp host 127.0.0.1 range 80 81 log default
+access-list webvpn_out webtype permit tcp any lt 81 log default
+{% endblock access_list_rule_webtype%}
 {% endblock all %}
