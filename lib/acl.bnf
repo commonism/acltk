@@ -319,6 +319,7 @@ month
 	| "December"
 	;
 
+# https://www.cisco.com/c/en/us/td/docs/security/asa/asa72/configuration/guide/conf_gd/ports.html#wp1021334%0A
 
 icmp_type
 	= "unreachable"
@@ -330,6 +331,7 @@ icmp_type
 	| "source-route-failed"
 	| "source-quench"
 	| "router-solicitation"
+	| "router-renumbering"
 	| "router-advertisement"
 	| "redirect"
 	| "reassembly-timeout"
@@ -345,7 +347,13 @@ icmp_type
 	| "net-tos-unreachable"
 	| "net-tos-redirect"
 	| "net-redirect"
+	| "neighbor-solicitation"
+	| "neighbor-redirect"
+	| "neighbor-advertisement"
 	| "mobile-redirect"
+	| "membership-report"
+	| "membership-reduction"
+	| "membership-query"
 	| "mask-request"
 	| "mask-reply"
 	| "information-request"
@@ -358,14 +366,19 @@ icmp_type
 	| "host-precedence-unreachable"
 	| "host-isolated"
 	| "general-parameter-problem"
+	| "echo-request"
 	| "echo-reply"
 	| "echo"
 	| "dod-net-prohibited"
 	| "dod-host-prohibited"
+	| "destination-unreachable"
 	| "conversion-error"
 	| "alternate-address"
 	| "administratively-prohibited"
+	| "address-mask-request"
+	| "address-mask-reply"
 	;
+
 
 protocol_code
 	= "ip"
