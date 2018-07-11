@@ -1,3 +1,4 @@
+import os
 import glob
 import unittest
 
@@ -86,17 +87,22 @@ class aclTestBlock(unittest.TestCase):
 	def setUp(self):
 		loader = FileSystemLoader('./acl/tpl/')
 		env = Environment(loader=loader, extensions=[])
-		self.tpl = env.get_template('all.jinja2')
-		self.ctx = self.tpl.new_context({})
+		self.tpl = {}
+		self.ctx = {}
+		for tpl in env.list_templates():
+			name = os.path.splitext(tpl)[0]
+			self.tpl[name] = env.get_template(tpl)
+			self.ctx[name] = self.tpl[name].new_context({})
 
-	def _test_block(self, block, deps=None, trace=False):
+	def _test_block(self, block, tpl='all', deps=None, trace=False):
 		blocks = [block]
 		if deps:
 			blocks.extend(deps)
 		data = ''
 		for b in blocks[::-1]:
-			data += concat(self.tpl.blocks[b](self.ctx))
-			with open('acl/single/{}.txt'.format(b), 'wt') as f:
+			data += concat(self.tpl[tpl].blocks[b](self.ctx[tpl]))
+			fname = 'acl/single/{tpl}-{block}.txt' if block != 'all' else 'acl/single/{tpl}.txt'
+			with open(fname.format(**{'tpl':tpl,'block':block}), 'wt') as f:
 				f.write(data)
 			cfg = fwsmConfig.fromString(data, trace=trace)
 
@@ -136,3 +142,5 @@ class aclTestBlock(unittest.TestCase):
 	def test_all(self):
 		return self._test_block('all')
 
+	def test_auto(self):
+		return self._test_block('all',tpl='auto')

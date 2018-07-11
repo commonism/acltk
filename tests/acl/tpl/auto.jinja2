@@ -1,0 +1,66 @@
+{% block all %}
+names
+name 127.1.0.2 obj_name description obj_name
+!
+
+interface iface0
+ description this interface is like eth0
+ nameif outside
+ security-level 0
+ ip address 10.1.1.1 255.255.255.240 standby 10.1.1.2
+!
+
+object network obj_network
+
+object-group network objgrp_network
+ network-object host 127.0.0.1
+
+object-group service objgrp_service_tcp tcp
+ description www & https
+ port-object eq www
+ port-object eq https
+
+object service obj_service
+ service tcp source range 1 100
+ description low ports
+
+object-group protocol objgrp_protocol
+ protocol-object tcp
+
+object-group service objgrp_service
+ description PR 9.3 service group
+ service-object tcp destination eq www
+
+{#
+acl_host
+	= type:("host"|"ip") WS address:(acl_names_id|ip4|ip6)
+	| type:"interface" WS name:identifier
+	| type:("any"|"any4"|"any6")
+	| type:"object" WS name:acl_object_network_id
+	| type:"object-group" WS name:acl_object_group_network_id
+	| address:(acl_names_id|ip4) WS netmask:ip4
+	| address:(acl_names_id|ip6) "/" netmask:int
+	;
+
+acl_port
+	= type:"object-group" WS name:acl_object_group_service_id
+	| op:("gt"|"lt"|"eq"|"neq") WS port:port
+	| type:"range" WS start:port WS stop:port
+	;
+-#}
+    {%- set hosts=['host obj_name','ip 127.0.0.1', 'interface iface0', 'any','any4', 'any6', 'object obj_network', 'object-group objgrp_network', 'fe80::/64', '127.0.0.0 255.255.254.0'] %}
+    {%- set ports=['object-group objgrp_service_tcp', 'gt 100','lt 100','eq 100','neq 100','range 1 100', ''] %}
+{%- for proto in ['tcp', 'object obj_service', 'object-group objgrp_protocol', 'object-group objgrp_service'] %}
+{%- for sh in hosts %}
+{%- for dh in hosts %}
+{%- for sp in ports %}
+{%- for dp in ports -%}
+access-list node_test extended permit {{ proto }} {{ sh }} {{ sp }} {{ dh }} {{ dp }}
+{% endfor %}
+{% endfor %}
+{% endfor %}
+{% endfor %}
+{% endfor %}
+
+
+{% endblock %}
