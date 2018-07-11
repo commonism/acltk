@@ -3,11 +3,11 @@
 
 grammar
     =
-    @:{command}+ ("line"|"end"|$)
+    @:{command ~}+ ("line"|"end"|$)
     ;
 
 version
-	= "version" version:?/[^\n]*/? NL
+	= "version" version:TOEOL NL
 	;
 
 command

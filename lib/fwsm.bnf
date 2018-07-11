@@ -3,7 +3,7 @@
 
 grammar
     =
-    @:{command}+ $
+    @:{command ~}+ $
     ;
 
 version
@@ -25,7 +25,7 @@ command
 	| access_group
 	| ignored
 	| unmatched NL
-	;
+    ;
 
 interface_detail
 	= type:"description" WS value:TOEOL NL
