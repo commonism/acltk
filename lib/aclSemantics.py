@@ -142,6 +142,9 @@ class aclSemantics:
 	def protocol(self, ast):
 		return Protocol(ast)
 
+	def protocol_code(self, ast):
+		return Protocol(ast)
+
 	def network_group_object(self, ast):
 		if ast.type is None:
 			return None
