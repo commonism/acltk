@@ -18,19 +18,6 @@ class aclTestObjects(unittest.TestCase):
 
 
 class aclTestParse(unittest.TestCase):
-	def test_all(self):
-		cfg = fwsmConfig.fromPath("acl/all.conf")
-		self.assertIsNotNone(cfg)
-		cfg.names.__repr__()
-		for i in cfg.interfaces.values():
-			i.__repr__()
-		for i in cfg.objects.time.values():
-			i.__repr__()
-		for i in cfg.groups.icmp.values():
-			i.__repr__()
-		for i in cfg.rules.rules:
-			i.__repr__()
-
 	def test_ios(self):
 		cfg = iosConfig.fromPath("acl/ios.txt")
 		self.assertIsNotNone(cfg)
