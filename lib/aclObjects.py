@@ -503,7 +503,7 @@ class ACLRule:
 		self.src = source
 		assert isinstance(dest, ACLNode)
 		self.dst = dest
-		self.remark = remark
+		self.remark = remark if remark else []
 		if options is None:
 			self.options = {}
 		else:

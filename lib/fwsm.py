@@ -672,13 +672,6 @@ class fwsmParser(Parser):
                 self._token('service')
                 self.name_last_node('type')
                 self._WS_()
-                self._int_()
-                self.name_last_node('protocol')
-                self._NL_()
-            with self._option():
-                self._token('service')
-                self.name_last_node('type')
-                self._WS_()
                 self._protocol_icmp_()
                 self.name_last_node('protocol')
                 with self._optional():
@@ -712,6 +705,13 @@ class fwsmParser(Parser):
                 self.name_last_node('destination')
                 with self._optional():
                     self._WS_()
+                self._NL_()
+            with self._option():
+                self._token('service')
+                self.name_last_node('type')
+                self._WS_()
+                self._int_()
+                self.name_last_node('protocol')
                 self._NL_()
             self._error('no available options')
         self.ast._define(
@@ -917,13 +917,6 @@ class fwsmParser(Parser):
                 self._token('service-object')
                 self.name_last_node('type')
                 self._WS_()
-                self._int_()
-                self.name_last_node('protocol')
-                self._NL_()
-            with self._option():
-                self._token('service-object')
-                self.name_last_node('type')
-                self._WS_()
                 self._protocol_icmp_()
                 self.name_last_node('protocol')
                 with self._optional():
@@ -957,6 +950,19 @@ class fwsmParser(Parser):
                 self.name_last_node('destination')
                 with self._optional():
                     self._WS_()
+                self._NL_()
+            with self._option():
+                self._token('service-object')
+                self.name_last_node('type')
+                self._WS_()
+                with self._group():
+                    with self._choice():
+                        with self._option():
+                            self._protocol_code_()
+                        with self._option():
+                            self._int_()
+                        self._error('no available options')
+                self.name_last_node('protocol')
                 self._NL_()
             with self._option():
                 self._token('service-object')
@@ -1384,6 +1390,8 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('router-solicitation')
             with self._option():
+                self._token('router-renumbering')
+            with self._option():
                 self._token('router-advertisement')
             with self._option():
                 self._token('redirect')
@@ -1414,7 +1422,19 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('net-redirect')
             with self._option():
+                self._token('neighbor-solicitation')
+            with self._option():
+                self._token('neighbor-redirect')
+            with self._option():
+                self._token('neighbor-advertisement')
+            with self._option():
                 self._token('mobile-redirect')
+            with self._option():
+                self._token('membership-report')
+            with self._option():
+                self._token('membership-reduction')
+            with self._option():
+                self._token('membership-query')
             with self._option():
                 self._token('mask-request')
             with self._option():
@@ -1440,6 +1460,8 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('general-parameter-problem')
             with self._option():
+                self._token('echo-request')
+            with self._option():
                 self._token('echo-reply')
             with self._option():
                 self._token('echo')
@@ -1448,16 +1470,24 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('dod-host-prohibited')
             with self._option():
+                self._token('destination-unreachable')
+            with self._option():
                 self._token('conversion-error')
             with self._option():
                 self._token('alternate-address')
             with self._option():
                 self._token('administratively-prohibited')
+            with self._option():
+                self._token('address-mask-request')
+            with self._option():
+                self._token('address-mask-reply')
             self._error('no available options')
 
     @tatsumasu()
     def _protocol_code_(self):  # noqa
         with self._choice():
+            with self._option():
+                self._token('xxxx')
             with self._option():
                 self._token('ip')
             with self._option():
