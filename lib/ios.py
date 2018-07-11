@@ -1487,47 +1487,47 @@ class iosParser(Parser):
     def _protocol_code_(self):  # noqa
         with self._choice():
             with self._option():
-                self._token('xxxx')
-            with self._option():
-                self._token('ip')
-            with self._option():
-                self._token('icmp')
-            with self._option():
-                self._token('igmp')
-            with self._option():
-                self._token('ipinip')
+                self._token('udp')
             with self._option():
                 self._token('tcp')
             with self._option():
-                self._token('igrp')
-            with self._option():
-                self._token('udp')
-            with self._option():
-                self._token('gre')
+                self._token('snp')
             with self._option():
                 self._token('pptp')
-            with self._option():
-                self._token('esp')
-            with self._option():
-                self._token('ipsec')
-            with self._option():
-                self._token('ahp')
-            with self._option():
-                self._token('ah')
-            with self._option():
-                self._token('icmp6')
-            with self._option():
-                self._token('eigrp')
-            with self._option():
-                self._token('ospf')
-            with self._option():
-                self._token('nos')
             with self._option():
                 self._token('pim')
             with self._option():
                 self._token('pcp')
             with self._option():
-                self._token('snp')
+                self._token('ospf')
+            with self._option():
+                self._token('nos')
+            with self._option():
+                self._token('ipsec')
+            with self._option():
+                self._token('ipinip')
+            with self._option():
+                self._token('ip')
+            with self._option():
+                self._token('igrp')
+            with self._option():
+                self._token('igmp')
+            with self._option():
+                self._token('icmp6')
+            with self._option():
+                self._token('icmpv6')
+            with self._option():
+                self._token('icmp')
+            with self._option():
+                self._token('gre')
+            with self._option():
+                self._token('esp')
+            with self._option():
+                self._token('eigrp')
+            with self._option():
+                self._token('ahp')
+            with self._option():
+                self._token('ah')
             self._error('no available options')
 
     @tatsumasu()
@@ -1690,6 +1690,7 @@ class iosParser(Parser):
 
         def block1():
             self._command_()
+            self._cut()
         self._positive_closure(block1)
         self.name_last_node('@')
         with self._group():
@@ -1705,7 +1706,7 @@ class iosParser(Parser):
     @tatsumasu()
     def _version_(self):  # noqa
         self._token('version')
-        self._pattern(r'[^\n]*')
+        self._TOEOL_()
         self.name_last_node('version')
         self._NL_()
         self.ast._define(

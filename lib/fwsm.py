@@ -1487,47 +1487,47 @@ class fwsmParser(Parser):
     def _protocol_code_(self):  # noqa
         with self._choice():
             with self._option():
-                self._token('xxxx')
-            with self._option():
-                self._token('ip')
-            with self._option():
-                self._token('icmp')
-            with self._option():
-                self._token('igmp')
-            with self._option():
-                self._token('ipinip')
+                self._token('udp')
             with self._option():
                 self._token('tcp')
             with self._option():
-                self._token('igrp')
-            with self._option():
-                self._token('udp')
-            with self._option():
-                self._token('gre')
+                self._token('snp')
             with self._option():
                 self._token('pptp')
-            with self._option():
-                self._token('esp')
-            with self._option():
-                self._token('ipsec')
-            with self._option():
-                self._token('ahp')
-            with self._option():
-                self._token('ah')
-            with self._option():
-                self._token('icmp6')
-            with self._option():
-                self._token('eigrp')
-            with self._option():
-                self._token('ospf')
-            with self._option():
-                self._token('nos')
             with self._option():
                 self._token('pim')
             with self._option():
                 self._token('pcp')
             with self._option():
-                self._token('snp')
+                self._token('ospf')
+            with self._option():
+                self._token('nos')
+            with self._option():
+                self._token('ipsec')
+            with self._option():
+                self._token('ipinip')
+            with self._option():
+                self._token('ip')
+            with self._option():
+                self._token('igrp')
+            with self._option():
+                self._token('igmp')
+            with self._option():
+                self._token('icmp6')
+            with self._option():
+                self._token('icmpv6')
+            with self._option():
+                self._token('icmp')
+            with self._option():
+                self._token('gre')
+            with self._option():
+                self._token('esp')
+            with self._option():
+                self._token('eigrp')
+            with self._option():
+                self._token('ahp')
+            with self._option():
+                self._token('ah')
             self._error('no available options')
 
     @tatsumasu()
@@ -1690,6 +1690,7 @@ class fwsmParser(Parser):
 
         def block1():
             self._command_()
+            self._cut()
         self._positive_closure(block1)
         self.name_last_node('@')
         self._check_eof()
@@ -1928,6 +1929,7 @@ class fwsmParser(Parser):
         self.name_last_node('id')
         self._WS_()
         self._token('standard')
+        self.name_last_node('extended')
         self._WS_()
         self._acl_mode_()
         self.name_last_node('mode')
@@ -1936,8 +1938,72 @@ class fwsmParser(Parser):
         self.name_last_node('source')
         with self._optional():
             self._WS_()
+        self._NL_()
         self.ast._define(
-            ['id', 'mode', 'source'],
+            ['extended', 'id', 'mode', 'source'],
+            []
+        )
+
+    @tatsumasu()
+    def _access_list_rule_webtype_(self):  # noqa
+        with self._choice():
+            with self._option():
+                self._token('access-list')
+                self._WS_()
+                self._acl_id_()
+                self.name_last_node('id')
+                self._WS_()
+                self._token('webtype')
+                self.name_last_node('extended')
+                self._WS_()
+                self._acl_mode_()
+                self.name_last_node('mode')
+                self._WS_()
+                self._token('url')
+                self.name_last_node('protocol')
+                self._WS_()
+                with self._group():
+                    with self._choice():
+                        with self._option():
+                            self._string_()
+                        with self._option():
+                            self._token('any')
+                        self._error('no available options')
+                self.name_last_node('url')
+                with self._optional():
+                    self._WS_()
+                    self._acl_options_()
+                    self.name_last_node('options')
+                with self._optional():
+                    self._WS_()
+                self._NL_()
+            with self._option():
+                self._token('access-list')
+                self._WS_()
+                self._acl_id_()
+                self.name_last_node('id')
+                self._WS_()
+                self._token('webtype')
+                self.name_last_node('extended')
+                self._WS_()
+                self._acl_mode_()
+                self.name_last_node('mode')
+                self._WS_()
+                self._token('tcp')
+                self.name_last_node('protocol')
+                self._WS_()
+                self._node_()
+                self.name_last_node('dest')
+                with self._optional():
+                    self._WS_()
+                    self._acl_options_()
+                    self.name_last_node('options')
+                with self._optional():
+                    self._WS_()
+                self._NL_()
+            self._error('no available options')
+        self.ast._define(
+            ['dest', 'extended', 'id', 'mode', 'options', 'protocol', 'url'],
             []
         )
 
@@ -2099,6 +2165,7 @@ class fwsmParser(Parser):
                 self.name_last_node('id')
                 self._WS_()
                 self._token('standard')
+                self.name_last_node('extended')
                 self._WS_()
                 self._acl_mode_()
                 self.name_last_node('mode')
@@ -2107,6 +2174,7 @@ class fwsmParser(Parser):
                 self.name_last_node('source')
                 with self._optional():
                     self._WS_()
+                self._NL_()
             with self._option():
                 self._token('access-list')
                 self._WS_()
@@ -2114,6 +2182,7 @@ class fwsmParser(Parser):
                 self.name_last_node('id')
                 self._WS_()
                 self._token('standard')
+                self.name_last_node('extended')
                 self._WS_()
                 self._acl_mode_()
                 self.name_last_node('mode')
@@ -2122,9 +2191,129 @@ class fwsmParser(Parser):
                 self.name_last_node('source')
                 with self._optional():
                     self._WS_()
+                self._NL_()
+            with self._option():
+
+                def block49():
+                    self._access_list_remark_()
+                self._positive_closure(block49)
+                self.name_last_node('remark')
+                with self._choice():
+                    with self._option():
+                        self._token('access-list')
+                        self._WS_()
+                        self._acl_id_()
+                        self.name_last_node('id')
+                        self._WS_()
+                        self._token('webtype')
+                        self.name_last_node('extended')
+                        self._WS_()
+                        self._acl_mode_()
+                        self.name_last_node('mode')
+                        self._WS_()
+                        self._token('url')
+                        self.name_last_node('protocol')
+                        self._WS_()
+                        with self._group():
+                            with self._choice():
+                                with self._option():
+                                    self._string_()
+                                with self._option():
+                                    self._token('any')
+                                self._error('no available options')
+                        self.name_last_node('url')
+                        with self._optional():
+                            self._WS_()
+                            self._acl_options_()
+                            self.name_last_node('options')
+                        with self._optional():
+                            self._WS_()
+                        self._NL_()
+                    with self._option():
+                        self._token('access-list')
+                        self._WS_()
+                        self._acl_id_()
+                        self.name_last_node('id')
+                        self._WS_()
+                        self._token('webtype')
+                        self.name_last_node('extended')
+                        self._WS_()
+                        self._acl_mode_()
+                        self.name_last_node('mode')
+                        self._WS_()
+                        self._token('tcp')
+                        self.name_last_node('protocol')
+                        self._WS_()
+                        self._node_()
+                        self.name_last_node('dest')
+                        with self._optional():
+                            self._WS_()
+                            self._acl_options_()
+                            self.name_last_node('options')
+                        with self._optional():
+                            self._WS_()
+                        self._NL_()
+                    self._error('no available options')
+            with self._option():
+                with self._choice():
+                    with self._option():
+                        self._token('access-list')
+                        self._WS_()
+                        self._acl_id_()
+                        self.name_last_node('id')
+                        self._WS_()
+                        self._token('webtype')
+                        self.name_last_node('extended')
+                        self._WS_()
+                        self._acl_mode_()
+                        self.name_last_node('mode')
+                        self._WS_()
+                        self._token('url')
+                        self.name_last_node('protocol')
+                        self._WS_()
+                        with self._group():
+                            with self._choice():
+                                with self._option():
+                                    self._string_()
+                                with self._option():
+                                    self._token('any')
+                                self._error('no available options')
+                        self.name_last_node('url')
+                        with self._optional():
+                            self._WS_()
+                            self._acl_options_()
+                            self.name_last_node('options')
+                        with self._optional():
+                            self._WS_()
+                        self._NL_()
+                    with self._option():
+                        self._token('access-list')
+                        self._WS_()
+                        self._acl_id_()
+                        self.name_last_node('id')
+                        self._WS_()
+                        self._token('webtype')
+                        self.name_last_node('extended')
+                        self._WS_()
+                        self._acl_mode_()
+                        self.name_last_node('mode')
+                        self._WS_()
+                        self._token('tcp')
+                        self.name_last_node('protocol')
+                        self._WS_()
+                        self._node_()
+                        self.name_last_node('dest')
+                        with self._optional():
+                            self._WS_()
+                            self._acl_options_()
+                            self.name_last_node('options')
+                        with self._optional():
+                            self._WS_()
+                        self._NL_()
+                    self._error('no available options')
             self._error('no available options')
         self.ast._define(
-            ['dest', 'extended', 'icmp', 'id', 'mode', 'options', 'protocol', 'remark', 'source'],
+            ['dest', 'extended', 'icmp', 'id', 'mode', 'options', 'protocol', 'remark', 'source', 'url'],
             []
         )
 
@@ -2830,6 +3019,9 @@ class fwsmSemantics(object):
         return ast
 
     def access_list_rule_standard(self, ast):  # noqa
+        return ast
+
+    def access_list_rule_webtype(self, ast):  # noqa
         return ast
 
     def access_list(self, ast):  # noqa
