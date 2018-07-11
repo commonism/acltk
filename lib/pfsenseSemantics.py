@@ -28,7 +28,7 @@ class pfsenseParser(aclParser):
 		ast = []
 		if not root.tag in ('pfsense','opnsense'):
 			raise ValueError(root.tag)
-		for tag in ['aliases','interfaces','filter','system', 'filter/separator']:
+		for tag in ['revision','aliases','interfaces','filter','system', 'filter/separator']:
 
 			for e in root.findall(tag):
 				name = '_parse_{}'.format(tag.replace('/','_'))
@@ -37,8 +37,17 @@ class pfsenseParser(aclParser):
 					continue
 				obj = call(e)
 				ast.extend(obj)
-		print(self.interfaces)
 		return pfsenseConfig(ast)
+
+	def _parse_revision(self, root):
+		birth = None
+		for i in list(root):
+			if i.tag == 'time':
+				birth = datetime.datetime.fromtimestamp(int(i.text))
+				break
+		else:
+			birth = datetime.datetime.now()
+		return tatsu.ast.AST(**{'birth': birth})
 
 	def _parse_system(self, root):
 		ast = []
@@ -134,7 +143,7 @@ class pfsenseParser(aclParser):
 
 
 			elif values['type'] == 'port':
-				g = PortGroup(values['name'], Protocol('-'), values['descr'])
+				g = PortGroup(values['name'], Protocol('any'), values['descr'])
 				if values['address']:
 					for addr in values['address'].split(" "):
 						if ':' in addr:
