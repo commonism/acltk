@@ -129,9 +129,14 @@ acl_option
 	| ()
 	;
 
+
+(* [log [[disable|default]|level] interval secs] *)
+(* access-list access_list_name [extended] {deny|permit}...[log [[level] [interval secs] |disable|default]] *)
+
 acl_option_log_option
 	= ("debugging"|"disable"|"default"|"notifications"|"warnings")
 	| "interval" WS int
+	| ("0"|"1"|"2"|"3"|"4"|"5"|"6"|"7")
 	| ()
 	;
 
@@ -320,7 +325,6 @@ month
 	;
 
 # https://www.cisco.com/c/en/us/td/docs/security/asa/asa72/configuration/guide/conf_gd/ports.html#wp1021334%0A
-
 icmp_type
 	= "unreachable"
 	| "ttl-exceeded"
