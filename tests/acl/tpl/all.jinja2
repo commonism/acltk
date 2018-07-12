@@ -449,4 +449,12 @@ access-list inside_ether_access_in ethertype remark
 access-list inside_ether_access_in ethertype permit bpdu
 {% endblock %}
 
+{% block access_list_log_level %}
+access-list outside_ether_access_in extended deny ip any any log
+access-list outside_ether_access_in extended deny ip any any log 5 default
+access-list outside_ether_access_in extended deny ip any any log default 5
+access-list outside_ether_access_in extended deny ip any any log debugging 5 interval 300
+{% endblock %}
+
+
 {% endblock all %}

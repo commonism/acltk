@@ -147,6 +147,8 @@ class aclTestBlock(unittest.TestCase):
 	def test_block_access_list_rule_ethertype(self):
 		return self._test_block('access_list_rule_ethertype')
 
+	def test_block_access_list_log_level(self):
+		return self._test_block('access_list_log_level')
 
 	def test_all(self):
 		return self._test_block(None, tpl='all')
