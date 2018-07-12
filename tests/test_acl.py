@@ -64,8 +64,8 @@ class aclTestParse(unittest.TestCase):
 		cfg = ACLConfig.fromPath(name)
 
 	def _test_candidate(self):
-#		return self._test_single_acl('acl/private/fwsm-s5_nsc-003.conf')
-		return self._test_single_acl('acl/supportforums.cisco.com/run_config_asa.txt')
+		return self._test_single_acl('acl/private/fwsm-s5_nsc-003.conf')
+#		return self._test_single_acl('acl/supportforums.cisco.com/run_config_asa.txt')
 
 	def test_private(self):
 		for i in glob.glob('acl/private/*.conf'):
@@ -94,17 +94,22 @@ class aclTestBlock(unittest.TestCase):
 			self.tpl[name] = env.get_template(tpl)
 			self.ctx[name] = self.tpl[name].new_context({})
 
-	def _test_block(self, block, tpl='all', deps=None, trace=False):
-		blocks = [block]
-		if deps:
-			blocks.extend(deps)
-		data = ''
-		for b in blocks[::-1]:
-			data += concat(self.tpl[tpl].blocks[b](self.ctx[tpl]))
-			fname = 'acl/single/{tpl}-{block}.txt' if block != 'all' else 'acl/single/{tpl}.txt'
-			with open(fname.format(**{'tpl':tpl,'block':block}), 'wt') as f:
-				f.write(data)
-			cfg = fwsmConfig.fromString(data, trace=trace)
+	def _test_block(self, block, deps=None, tpl='all', trace=False):
+		if block is not None:
+			fname = 'acl/single/{tpl}-{block}.txt'
+			blocks = [block]
+			if deps:
+				blocks.extend(deps)
+			data = ''
+			for b in blocks[::-1]:
+				data += concat(self.tpl[tpl].blocks[b](self.ctx[tpl]))
+		else:
+			fname = 'acl/single/{tpl}.txt'
+			data = self.tpl[tpl].render()
+
+		with open(fname.format(**{'tpl':tpl,'block':block}), 'wt') as f:
+			f.write(data)
+		cfg = fwsmConfig.fromString(data, trace=trace)
 
 	def test_block_names(self):
 		return self._test_block('names')
@@ -137,10 +142,14 @@ class aclTestBlock(unittest.TestCase):
 		return self._test_block('object_protocol')
 
 	def test_block_access_list_rule_webtype(self):
-		return self._test_block('access_list_rule_webtype', trace=True)
+		return self._test_block('access_list_rule_webtype', trace=False)
+
+	def test_block_access_list_rule_ethertype(self):
+		return self._test_block('access_list_rule_ethertype')
+
 
 	def test_all(self):
-		return self._test_block('all')
+		return self._test_block(None, tpl='all')
 
-	def test_auto(self):
-		return self._test_block('all',tpl='auto')
+	def _test_auto(self):
+		return self._test_block(None, tpl='auto')

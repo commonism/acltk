@@ -44,7 +44,6 @@ name
 access_list_rule_extended
 	= "access-list" WS id:acl_id WS extended:acl_extended WS mode:acl_mode WS protocol:protocol_icmp WS source:acl_icmp_node WS dest:acl_icmp_node icmp:acl_icmp_options [WS options:acl_options] [WS] NL
 	| "access-list" WS id:acl_id WS extended:acl_extended WS mode:acl_mode WS protocol:acl_protocol WS source:node WS dest:node [WS options:acl_options] [WS] NL
-	| "access-list" WS id:acl_id WS protocol:"ethertype" TOEOL NL
 	;
 
 (* access-list access_list_name standard {deny | permit} {any | ip_address mask} *)
@@ -60,6 +59,13 @@ access_list_rule_webtype
     | "access-list" WS id:acl_id WS extended:"webtype" WS mode:acl_mode WS protocol:"tcp" WS dest:node [WS options:acl_options] [WS] NL
     ;
 
+(* access-list access_list_name ethertype {deny|permit} {ipx|bpdu|mpls-unicast|mpls-multicast|is-is|any|hex_number} *)
+
+access_list_rule_ethertype
+    = "access-list" WS id:acl_id WS extended:"ethertype" TOEOL NL
+    ;
+
+
 access_list
 	= remark:{access_list_remark}+ >access_list_rule_extended
 	| >access_list_rule_extended
@@ -67,6 +73,8 @@ access_list
 	| >access_list_rule_standard
 	| remark:{access_list_remark}+ >access_list_rule_webtype
 	| >access_list_rule_webtype
+	| remark:{access_list_remark}+ >access_list_rule_ethertype
+	| >access_list_rule_ethertype
 	;
 
 

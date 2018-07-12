@@ -28,6 +28,8 @@ class fwsmSemantics(aclSemantics, _fwsmSemantics):
 			return self.access_list_rule_standard(ast)
 		elif ast.extended == 'webtype':
 			return self.access_list_rule_webtype(ast)
+		elif ast.extended == 'ethertype':
+			return None
 		else:
 			assert (ast.extended is not None and ast.extended in ('extended','standard','webtype','ethertype')), "unexpected value {}".format(ast.type)
 

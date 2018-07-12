@@ -25,7 +25,7 @@ interface Ethernet0
 
 {% block interface_with_trailing_ws %}
 interface IfWithTrailingWS
- ip address 1.1.1.1 255.255.255.128 standby 2.2.2.2
+ ip address 1.1.1.1 255.255.255.128 standby 2.2.2.2 {{ '' }}
 !
 {% endblock %}
 
@@ -314,6 +314,8 @@ object-group protocol Nested0-PG
  group-object NestMe1-PG
 {% endblock %}
 
+
+
 access-list v6 extended permit tcp fe80::2aa:bbcc:ddee:ff01/64 fe80::2aa:bbcc:ddee:ff02/64
 access-list v6 extended permit udp object-group v6NetworkGroup object v6NetworkObject
 access-list v6 extended permit icmp any6 any6 echo
@@ -439,4 +441,12 @@ access-list webvpn_out webtype permit url ssh://mac.gflyg.se log default
 access-list webvpn_out webtype permit tcp host 127.0.0.1 range 80 81 log default
 access-list webvpn_out webtype permit tcp any lt 81 log default
 {% endblock access_list_rule_webtype%}
+
+
+{% block access_list_rule_ethertype %}
+access-list outside_ether_access_in ethertype permit bpdu
+access-list inside_ether_access_in ethertype remark
+access-list inside_ether_access_in ethertype permit bpdu
+{% endblock %}
+
 {% endblock all %}
