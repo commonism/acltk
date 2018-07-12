@@ -74,10 +74,8 @@ class iosSemantics(aclSemantics, _iosSemantics):
 				r.add(ACLRule(extended=ast.type, id=ast.name, **obj))
 		elif ast.type == 'standard':
 			for obj in ast.objects:
-				if not isinstance(obj.source, ACLNode):
-					src = ACLNode(host=obj.source)
-				else:
-					src = src
+				assert (not isinstance(obj.source, ACLNode))
+				src = ACLNode(host=obj.source)
 				r.add(ACLRule(extended=ast.type, id=ast.name, protocol=Protocol("ip"), mode=obj.mode, source=src, dest=ACLNode(NetworkAny()), options=obj.options, remark=obj.remark))
 		return r
 

@@ -21,23 +21,20 @@ class fwsmSemantics(aclSemantics, _fwsmSemantics):
 				remark.append(i.remark)
 			del ast['remark']
 			ast['remark'] = remark
-		assert( ast.extended is not None)
+
 		if ast.extended == 'extended':
 			return self.access_list_rule_extended(ast)
 		elif ast.extended == 'standard':
 			return self.access_list_rule_standard(ast)
 		elif ast.extended == 'webtype':
 			return self.access_list_rule_webtype(ast)
+		else:
+			assert (ast.extended is not None and ast.extended in ('extended','standard','webtype','ethertype')), "unexpected value {}".format(ast.type)
 
 	def access_list_rule_extended(self, ast):
-		if ast.protocol == 'ethertype':
-			return None
 		return ACLRule(**ast)
 
 	def access_list_rule_standard(self, ast):
-		if ast.protocol == 'ethertype':
-			return None
-
 		ast['dest'] = ACLNode(NetworkAny())
 		src = ast.source
 		del ast['source']

@@ -71,13 +71,14 @@ class aclSemantics:
 		return datetime.datetime(**ast)
 
 	def time_range_object(self, ast):
-		assert ast.type in ('no','absolute','periodic')
 		if ast.type == 'no':
 			return None
 		elif ast.type == 'absolute':
 			return TimeRangeObjectAbsolute(ast.start, ast.end)
 		elif ast.type == 'periodic':
 			return TimeRangeObjectPeriodic(ast.start, ast.days, ast.end, ast.edays)
+		else:
+			assert (ast.type in ('no','absolute','periodic')), "time-range type {} is not known".format(ast.type)
 
 	def time_range(self, ast):
 		t = TimeRange(ast.name)
@@ -146,8 +147,7 @@ class aclSemantics:
 		return Protocol(ast)
 
 	def network_group_object(self, ast):
-		if ast.type is None:
-			return None
+		assert (ast.type is not None), "object type is None"
 		if ast.type == 'network-object':
 			if ast.name == 'object':
 				# pdb.set_trace()
@@ -169,8 +169,7 @@ class aclSemantics:
 			return self.parser.network_groups[ast.object]
 
 	def service_group_object(self, ast):
-		if ast.type is None:
-			return None
+		assert (ast.type is not None), "object type is None"
 		if ast.type == 'service-object':
 			if ast.protocol == 'object':
 				return self.parser.service_objects[ast.object]
@@ -197,9 +196,7 @@ class aclSemantics:
 			return Port(ast[0], ast[1])
 
 	def port_group_object(self, ast):
-		if ast is None:
-			return
-		# pdb.set_trace()
+		assert (ast is not None), "object is None"
 		if ast[0] == 'port-object':
 			if ast[1] == 'range':
 				return PortRange(ast[2], ast[3])
@@ -209,16 +206,14 @@ class aclSemantics:
 			return self.parser.service_groups[ast[1]]
 
 	def protocol_group_object(self, ast):
-		if ast.type is None:
-			return None
+		assert (ast.type is not None), "object type is None"
 		if ast.type == 'protocol-object':
 			return Protocol(ast.name)
 		elif ast.type == 'group-object':
 			return self.parser.protocol_groups[ast.name]
 
 	def icmp_group_object(self, ast):
-		if ast.type is None:
-			return None
+		assert (ast.type is not None), "object type is None"
 		if ast.type == 'icmp-object':
 			return ICMP(ast.name, None)
 		elif ast.type == 'group-object':
@@ -280,7 +275,7 @@ class aclSemantics:
 	def acl_options(self, ast):
 		r = {}
 		for i in ast:
-			assert i.type is None or i.type in ('log','time-range','inactive')
+			assert (i.type is None or i.type in ('log','time-range','inactive')), "option {} is unknown".format(i.type)
 			if i.type is None:
 				continue
 			elif i.type == 'log':

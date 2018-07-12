@@ -3,14 +3,14 @@ from acltk.aclObjects import ACLRule, NetworkAny, NetworkAny4, NetworkAny6, ACLR
 
 class cafBlock:
 	def __init__(self, expr):
-		assert isinstance(expr, (ACLRule, cafBlock, cafOp))
+		assert isinstance(expr, (ACLRule, cafBlock, cafOp)), "unexpected type {} or class {}".format(type(expr), expr.__class__.__qualname__)
 		self.expr = expr
 
 	def __repr__(self):
 		return "{{ {} }}".format(self.expr)
 
 	def run(self, rules, verbose=False):
-		assert isinstance(rules, (ACLRules, cafOp, cafBlock)), type(rules)
+		assert isinstance(rules, (ACLRules, cafOp, cafBlock)), "unexpected type {} or class {}".format(type(rules), rules.__class__.__qualname__)
 		if isinstance(self.expr, ACLRule):
 			r = rules.filter([self.expr])
 			if verbose:
@@ -36,7 +36,7 @@ class cafBlock:
 
 	@classmethod
 	def fromString(cls, _data, filename=None, trace=False):
-		assert(isinstance(_data, str))
+		assert (isinstance(_data, str)), "unexpected type {} or class {}".format(type(_data), _data.__class__.__qualname__)
 		return cls._parse(_data, filename, trace)
 
 	@classmethod
@@ -56,8 +56,8 @@ class cafBlock:
 
 class cafOp:
 	def __init__(self, a, b):
-		assert isinstance(a, (cafBlock, cafOp, ACLRule))
-		assert isinstance(b, (cafBlock, cafOp, ACLRule))
+		assert isinstance(a, (cafBlock, cafOp, ACLRule)), "unexpected type {} or class {}".format(type(a), a.__class__.__qualname__)
+		assert isinstance(b, (cafBlock, cafOp, ACLRule)), "unexpected type {} or class {}".format(type(b), b.__class__.__qualname__)
 		def block(n):
 			if isinstance(n, ACLRule):
 				return cafBlock(n)
@@ -66,7 +66,7 @@ class cafOp:
 		self.b = block(b)
 
 	def run(self, rules, verbose=False):
-		assert isinstance(rules, (ACLRules, cafOp, cafBlock))
+		assert isinstance(rules, (ACLRules, cafOp, cafBlock)), "unexpected type {} or class {}".format(type(rules), rules.__class__.__qualname__)
 
 	def result(self, r, verbose=False):
 		if verbose:

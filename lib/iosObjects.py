@@ -4,8 +4,8 @@ from acltk.aclObjects import ACLConfig, ACLRules, ACLRule, Interface
 
 class Route:
 	def __init__(self, network, gw):
-		assert isinstance(network, ipaddress.IPv4Network)
-		assert isinstance(gw, (ipaddress.IPv4Address, Interface)), "unexpected type {}".format(type(gw))
+		assert isinstance(network, ipaddress.IPv4Network), "unexpected type {} or class {}".format(type(network), network.__class__.__qualname__)
+		assert isinstance(gw, (ipaddress.IPv4Address, Interface)), "unexpected type {} or class {}".format(type(gw), gw.__class__.__qualname__)
 		self.network = network
 		self.gw = gw
 
@@ -21,7 +21,7 @@ class iosConfig(ACLConfig):
 			elif isinstance(i, ACLRule):
 				self.rules.add(i)
 			else:
-				print(i)
+				assert (isinstance(i, (ACLRules, ACLRule))), "unexpected type {} or class {}".format(type(i), i.__class__.__qualname__)
 				continue
 
 		for i in ast:
