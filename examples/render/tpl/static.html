@@ -25,6 +25,8 @@
 VERIFY {{ obj.address }}/{{ obj.wildcard }}
 {%-  elif obj.__class__.__name__ == 'NetworkInterface' -%}
     <a href="#interface_{{ obj.name }}">{{ obj.name }}</a>
+{%- elif obj.__class__.__name__ == 'Webtype' -%}
+	{{ obj.url }}
 {%  else %}
 FIXME {{ obj.__class__.__name__ }}
 {%- endif -%}
