@@ -66,7 +66,7 @@ class iosSemantics(aclSemantics, _iosSemantics):
 			for obj in ast.objects:
 #				if obj.protocol.name == "icmp":
 #					print(ast)
-				for i in ["source","dest"]:
+				for i in ["src","dst"]:
 					if not isinstance(obj[i], ACLNode):
 						x = obj[i]
 						del obj[i]
@@ -74,9 +74,9 @@ class iosSemantics(aclSemantics, _iosSemantics):
 				r.add(ACLRule(extended=ast.type, id=ast.name, **obj))
 		elif ast.type == 'standard':
 			for obj in ast.objects:
-				assert (not isinstance(obj.source, ACLNode))
-				src = ACLNode(host=obj.source)
-				r.add(ACLRule(extended=ast.type, id=ast.name, protocol=Protocol("ip"), mode=obj.mode, source=src, dest=ACLNode(NetworkAny()), options=obj.options, remark=obj.remark))
+				assert (not isinstance(obj.src, ACLNode))
+				src = ACLNode(host=obj.src)
+				r.add(ACLRule(extended=ast.type, id=ast.name, protocol=Protocol("ip"), mode=obj.mode, src=src, dst=ACLNode(NetworkAny()), options=obj.options, remark=obj.remark))
 		return r
 
 	def access_list_ip_standard(self, ast):
@@ -89,11 +89,11 @@ class iosSemantics(aclSemantics, _iosSemantics):
 		return self.access_list_ip_standard_rule(ast)
 
 	def access_list_ip_standard_rule(self, ast):
-		if not isinstance(ast.source, ACLNode):
-			src = ACLNode(ast.source)
+		if not isinstance(ast.src, ACLNode):
+			src = ACLNode(ast.src)
 		else:
-			src = ast.source
-		return ACLRule(protocol=Protocol('ip'), dest=ACLNode(NetworkAny()), source=src, id=ast.id, mode=ast.mode, remark=ast.remark, options=ast.options)
+			src = ast.src
+		return ACLRule(protocol=Protocol('ip'), dst=ACLNode(NetworkAny()), src=src, id=ast.id, mode=ast.mode, remark=ast.remark, options=ast.options)
 
 	def access_list_ip_extended(self, ast):
 		if ast.remark:
@@ -105,7 +105,7 @@ class iosSemantics(aclSemantics, _iosSemantics):
 		return self.access_list_ip_extended_rule(ast)
 
 	def access_list_ip_extended_rule(self, ast):
-		return ACLRule(protocol=ast.protocol, dest=ast.dest, source=ast.source, id=ast.id, mode=ast.mode, remark=ast.remark, icmp=ast.icmp, options=ast.options)
+		return ACLRule(protocol=ast.protocol, dst=ast.dst, src=ast.src, id=ast.id, mode=ast.mode, remark=ast.remark, icmp=ast.icmp, options=ast.options)
 
 	def ignored(self, ast):
 		ast = None

@@ -37,19 +37,19 @@ class fwsmSemantics(aclSemantics, _fwsmSemantics):
 		return ACLRule(**ast)
 
 	def access_list_rule_standard(self, ast):
-		ast['dest'] = ACLNode(NetworkAny())
-		src = ast.source
-		del ast['source']
-		ast['source'] = ACLNode(src)
+		ast['dst'] = ACLNode(NetworkAny())
+		src = ast.src
+		del ast['src']
+		ast['src'] = ACLNode(src)
 		ast['protocol'] = Protocol('ip')
 		return ACLRule(**ast)
 
 	def access_list_rule_webtype(self, ast):
-		ast['source'] = ACLNode(NetworkAny())
+		ast['src'] = ACLNode(NetworkAny())
 		if ast.protocol == 'tcp':
 			pass
 		elif ast.protocol == 'url':
-			ast['dest'] = ACLNode(Webtype(ast.url))
+			ast['dst'] = ACLNode(Webtype(ast.url))
 		else:
 			raise ValueError(ast.protocol)
 		protocol = ast.protocol

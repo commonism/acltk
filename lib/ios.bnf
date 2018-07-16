@@ -91,7 +91,7 @@ ip_access_list_remark
 	;
 
 ip_access_list_standard_rule
-	= [seq:int WS] mode:acl_mode WS source:ios_host options:ip_access_list_standard_rule_options NL
+	= [seq:int WS] mode:acl_mode WS src:ios_host options:ip_access_list_standard_rule_options NL
 	;
 
 ios_host
@@ -125,9 +125,9 @@ ip_access_list_extended_rule_options
 	;
 
 ip_access_list_extended_rule
-	= [seq:int WS] mode:acl_mode WS protocol:protocol_icmp WS source:ios_host WS dest:ios_host icmp:acl_icmp_options options:ip_access_list_extended_rule_options NL
-	| [seq:int WS] mode:acl_mode WS protocol:acl_protocol WS source:ios_node WS dest:ios_node options:ip_access_list_extended_rule_options NL
-	| [seq:int WS] mode:acl_mode WS protocol:acl_protocol WS source:ios_host WS dest:ios_host options:ip_access_list_extended_rule_options NL
+	= [seq:int WS] mode:acl_mode WS protocol:protocol_icmp WS src:ios_host WS dst:ios_host icmp:acl_icmp_options options:ip_access_list_extended_rule_options NL
+	| [seq:int WS] mode:acl_mode WS protocol:acl_protocol WS src:ios_node WS dst:ios_node options:ip_access_list_extended_rule_options NL
+	| [seq:int WS] mode:acl_mode WS protocol:acl_protocol WS src:ios_host WS dst:ios_host options:ip_access_list_extended_rule_options NL
 	;
 
 ip_access_list_extended
@@ -141,7 +141,7 @@ host_wildcard
 
 (* access-list access-list-number { deny | permit } source [source-wildcard] [ log [word] ]  *)
 access_list_ip_standard_rule
-	=  "access-list" WS id:access_list_ip_standard_id WS mode:acl_mode WS source:ios_host options:ip_access_list_standard_rule_options NL
+	=  "access-list" WS id:access_list_ip_standard_id WS mode:acl_mode WS src:ios_host options:ip_access_list_standard_rule_options NL
 	;
 
 access_list_ip_standard
@@ -168,8 +168,8 @@ access_list
 
 
 access_list_ip_extended_rule
-	= "access-list" WS id:access_list_ip_extended_id WS mode:acl_mode WS protocol:protocol_icmp WS source:acl_icmp_node WS dest:acl_icmp_node icmp:acl_icmp_options options:ip_access_list_extended_rule_options NL
-	| "access-list" WS id:access_list_ip_extended_id WS mode:acl_mode WS protocol:acl_protocol  WS source:node WS dest:node options:ip_access_list_extended_rule_options NL
+	= "access-list" WS id:access_list_ip_extended_id WS mode:acl_mode WS protocol:protocol_icmp WS src:acl_icmp_node WS dst:acl_icmp_node icmp:acl_icmp_options options:ip_access_list_extended_rule_options NL
+	| "access-list" WS id:access_list_ip_extended_id WS mode:acl_mode WS protocol:acl_protocol  WS src:node WS dst:node options:ip_access_list_extended_rule_options NL
 	;
 
 access_list_ip_extended

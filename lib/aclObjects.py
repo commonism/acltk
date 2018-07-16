@@ -345,13 +345,13 @@ class Service:
 	def __init__(self, protocol=None, type=None, source=None, destination=None, icmp_type=None, icmp_code=None):
 		assert isinstance(protocol, Protocol)
 		self.protocol = protocol
-		self.source = source
-		self.destination = destination
+		self.src = source
+		self.dst = destination
 		self.icmp_type = icmp_type
 		self.icmp_code = icmp_code
 
 	def __repr__(self):
-		return "Service {self.protocol} src:{self.source} dst:{self.destination}".format(self=self)
+		return "Service {self.protocol} src:{self.src} dst:{self.dst}".format(self=self)
 
 
 class ServiceObject(Service):
@@ -361,7 +361,7 @@ class ServiceObject(Service):
 		self.description = description
 
 	def __repr__(self):
-		return "ServiceObject {self.name} {self.protocol} src:{self.source} dst:{self.destination} # {self.description}".format(
+		return "ServiceObject {self.name} {self.protocol} src:{self.src} dst:{self.dst} # {self.description}".format(
 			self=self)
 
 
@@ -491,7 +491,7 @@ class ACLRuleOptionInterface:
 		self.direction = direction
 
 class ACLRule:
-	def __init__(self, line=None, id=None, extended=None, mode=None, protocol=None, source=None, dest=None, remark=None, options=None, icmp=None, head=None,
+	def __init__(self, line=None, id=None, extended=None, mode=None, protocol=None, src=None, dst=None, remark=None, options=None, icmp=None, head=None,
 				 **kwargs):
 		self.line = line
 		self.id = id
@@ -499,10 +499,10 @@ class ACLRule:
 		self.mode = mode
 		assert protocol is None or isinstance(protocol, (Protocol, ProtocolGroup, Service, ServiceGroup))
 		self.protocol = protocol
-		assert isinstance(source, ACLNode)
-		self.src = source
-		assert isinstance(dest, ACLNode)
-		self.dst = dest
+		assert isinstance(src, ACLNode)
+		self.src = src
+		assert isinstance(dst, ACLNode)
+		self.dst = dst
 		self.remark = remark if remark else []
 		if options is None:
 			self.options = {}
@@ -749,7 +749,7 @@ class ACLConfig:
 			while True:
 				for obj in group.objects:
 					if isinstance(obj, ServiceObject):
-						group.objects.append(Service(obj.protocol, None, obj.source, obj.destination, obj.icmp_type, obj.icmp_code))
+						group.objects.append(Service(obj.protocol, None, obj.src, obj.dst, obj.icmp_type, obj.icmp_code))
 						group.objects.remove(obj)
 						break
 				else:

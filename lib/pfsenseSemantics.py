@@ -278,8 +278,8 @@ class pfsenseParser(aclParser):
 		return ACLRule(id=iface,
 						   mode={'pass': 'permit'}.get(values['type'], 'deny'),
 						   protocol=Protocol(values['protocol']),
-						   source=values['source'],
-						   dest=values['destination'],
+						   src=values['source'],
+						   dst=values['destination'],
 						   remark=[values['descr'], dates],
 						   options=options,
 						   icmp=icmp)

@@ -42,13 +42,13 @@ name
 	;
 
 access_list_rule_extended
-	= "access-list" WS id:acl_id WS extended:acl_extended WS mode:acl_mode WS protocol:protocol_icmp WS source:acl_icmp_node WS dest:acl_icmp_node icmp:acl_icmp_options [WS options:acl_options] [WS] NL
-	| "access-list" WS id:acl_id WS extended:acl_extended WS mode:acl_mode WS protocol:acl_protocol WS source:node WS dest:node [WS options:acl_options] [WS] NL
+	= "access-list" WS id:acl_id WS extended:acl_extended WS mode:acl_mode WS protocol:protocol_icmp WS src:acl_icmp_node WS dst:acl_icmp_node icmp:acl_icmp_options [WS options:acl_options] [WS] NL
+	| "access-list" WS id:acl_id WS extended:acl_extended WS mode:acl_mode WS protocol:acl_protocol WS src:node WS dst:node [WS options:acl_options] [WS] NL
 	;
 
 (* access-list access_list_name standard {deny | permit} {any | ip_address mask} *)
 access_list_rule_standard
-    = "access-list" WS id:acl_id WS extended:"standard" WS mode:acl_mode WS source:acl_host [WS] NL
+    = "access-list" WS id:acl_id WS extended:"standard" WS mode:acl_mode WS src:acl_host [WS] NL
     ;
 
 (* access-list access_list_name webtype {deny|permit} url [url_string|any] [log [[disable| default]|level] interval secs] [time_range name]] *)
@@ -56,7 +56,7 @@ access_list_rule_standard
 
 access_list_rule_webtype
     = "access-list" WS id:acl_id WS extended:"webtype" WS mode:acl_mode WS protocol:"url" WS url:(string|"any") [WS options:acl_options] [WS] NL
-    | "access-list" WS id:acl_id WS extended:"webtype" WS mode:acl_mode WS protocol:"tcp" WS dest:node [WS options:acl_options] [WS] NL
+    | "access-list" WS id:acl_id WS extended:"webtype" WS mode:acl_mode WS protocol:"tcp" WS dst:node [WS options:acl_options] [WS] NL
     ;
 
 (* access-list access_list_name ethertype {deny|permit} {ipx|bpdu|mpls-unicast|mpls-multicast|is-is|any|hex_number} *)

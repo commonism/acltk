@@ -408,8 +408,8 @@ thead			{ font-style: italic; }
 <td>{{ obj.icmp_type }}</td>
 <td>{{ obj.icmp_code }}</td>
 {%- else %}
-<td>{{ port(obj.source) }}</td>
-<td>{{ port(obj.destination) }}</td>
+<td>{{ port(obj.src) }}</td>
+<td>{{ port(obj.dst) }}</td>
 {%- endif %}
 <td>{%- if obj.description %}{{obj.description}} {%- endif %}</td>
 </tr>
@@ -457,8 +457,8 @@ thead			{ font-style: italic; }
 	<td>{{ item.icmp_type }}</td>
 	<td>{{ item.icmp_code }}</td>
 {%- else %}
-	<td>{{ port(item.source) }}</td>
-	<td>{{ port(item.destination) }}</td>
+	<td>{{ port(item.src) }}</td>
+	<td>{{ port(item.dst) }}</td>
 {%- endif %}
 {%- elif item.__class__.__name__ == 'ServiceObject' %}
 	<td></td>

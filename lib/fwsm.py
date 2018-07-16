@@ -518,6 +518,26 @@ class fwsmParser(Parser):
                 self._WS_()
                 self._int_()
             with self._option():
+                with self._group():
+                    with self._choice():
+                        with self._option():
+                            self._token('0')
+                        with self._option():
+                            self._token('1')
+                        with self._option():
+                            self._token('2')
+                        with self._option():
+                            self._token('3')
+                        with self._option():
+                            self._token('4')
+                        with self._option():
+                            self._token('5')
+                        with self._option():
+                            self._token('6')
+                        with self._option():
+                            self._token('7')
+                        self._error('no available options')
+            with self._option():
                 self._void()
             self._error('no available options')
 
@@ -1865,10 +1885,10 @@ class fwsmParser(Parser):
                 self.name_last_node('protocol')
                 self._WS_()
                 self._acl_icmp_node_()
-                self.name_last_node('source')
+                self.name_last_node('src')
                 self._WS_()
                 self._acl_icmp_node_()
-                self.name_last_node('dest')
+                self.name_last_node('dst')
                 self._acl_icmp_options_()
                 self.name_last_node('icmp')
                 with self._optional():
@@ -1894,10 +1914,10 @@ class fwsmParser(Parser):
                 self.name_last_node('protocol')
                 self._WS_()
                 self._node_()
-                self.name_last_node('source')
+                self.name_last_node('src')
                 self._WS_()
                 self._node_()
-                self.name_last_node('dest')
+                self.name_last_node('dst')
                 with self._optional():
                     self._WS_()
                     self._acl_options_()
@@ -1905,19 +1925,9 @@ class fwsmParser(Parser):
                 with self._optional():
                     self._WS_()
                 self._NL_()
-            with self._option():
-                self._token('access-list')
-                self._WS_()
-                self._acl_id_()
-                self.name_last_node('id')
-                self._WS_()
-                self._token('ethertype')
-                self.name_last_node('protocol')
-                self._TOEOL_()
-                self._NL_()
             self._error('no available options')
         self.ast._define(
-            ['dest', 'extended', 'icmp', 'id', 'mode', 'options', 'protocol', 'source'],
+            ['dst', 'extended', 'icmp', 'id', 'mode', 'options', 'protocol', 'src'],
             []
         )
 
@@ -1935,12 +1945,12 @@ class fwsmParser(Parser):
         self.name_last_node('mode')
         self._WS_()
         self._acl_host_()
-        self.name_last_node('source')
+        self.name_last_node('src')
         with self._optional():
             self._WS_()
         self._NL_()
         self.ast._define(
-            ['extended', 'id', 'mode', 'source'],
+            ['extended', 'id', 'mode', 'src'],
             []
         )
 
@@ -1993,7 +2003,7 @@ class fwsmParser(Parser):
                 self.name_last_node('protocol')
                 self._WS_()
                 self._node_()
-                self.name_last_node('dest')
+                self.name_last_node('dst')
                 with self._optional():
                     self._WS_()
                     self._acl_options_()
@@ -2003,7 +2013,23 @@ class fwsmParser(Parser):
                 self._NL_()
             self._error('no available options')
         self.ast._define(
-            ['dest', 'extended', 'id', 'mode', 'options', 'protocol', 'url'],
+            ['dst', 'extended', 'id', 'mode', 'options', 'protocol', 'url'],
+            []
+        )
+
+    @tatsumasu()
+    def _access_list_rule_ethertype_(self):  # noqa
+        self._token('access-list')
+        self._WS_()
+        self._acl_id_()
+        self.name_last_node('id')
+        self._WS_()
+        self._token('ethertype')
+        self.name_last_node('extended')
+        self._TOEOL_()
+        self._NL_()
+        self.ast._define(
+            ['extended', 'id'],
             []
         )
 
@@ -2033,10 +2059,10 @@ class fwsmParser(Parser):
                         self.name_last_node('protocol')
                         self._WS_()
                         self._acl_icmp_node_()
-                        self.name_last_node('source')
+                        self.name_last_node('src')
                         self._WS_()
                         self._acl_icmp_node_()
-                        self.name_last_node('dest')
+                        self.name_last_node('dst')
                         self._acl_icmp_options_()
                         self.name_last_node('icmp')
                         with self._optional():
@@ -2062,26 +2088,16 @@ class fwsmParser(Parser):
                         self.name_last_node('protocol')
                         self._WS_()
                         self._node_()
-                        self.name_last_node('source')
+                        self.name_last_node('src')
                         self._WS_()
                         self._node_()
-                        self.name_last_node('dest')
+                        self.name_last_node('dst')
                         with self._optional():
                             self._WS_()
                             self._acl_options_()
                             self.name_last_node('options')
                         with self._optional():
                             self._WS_()
-                        self._NL_()
-                    with self._option():
-                        self._token('access-list')
-                        self._WS_()
-                        self._acl_id_()
-                        self.name_last_node('id')
-                        self._WS_()
-                        self._token('ethertype')
-                        self.name_last_node('protocol')
-                        self._TOEOL_()
                         self._NL_()
                     self._error('no available options')
             with self._option():
@@ -2102,10 +2118,10 @@ class fwsmParser(Parser):
                         self.name_last_node('protocol')
                         self._WS_()
                         self._acl_icmp_node_()
-                        self.name_last_node('source')
+                        self.name_last_node('src')
                         self._WS_()
                         self._acl_icmp_node_()
-                        self.name_last_node('dest')
+                        self.name_last_node('dst')
                         self._acl_icmp_options_()
                         self.name_last_node('icmp')
                         with self._optional():
@@ -2131,10 +2147,10 @@ class fwsmParser(Parser):
                         self.name_last_node('protocol')
                         self._WS_()
                         self._node_()
-                        self.name_last_node('source')
+                        self.name_last_node('src')
                         self._WS_()
                         self._node_()
-                        self.name_last_node('dest')
+                        self.name_last_node('dst')
                         with self._optional():
                             self._WS_()
                             self._acl_options_()
@@ -2142,22 +2158,12 @@ class fwsmParser(Parser):
                         with self._optional():
                             self._WS_()
                         self._NL_()
-                    with self._option():
-                        self._token('access-list')
-                        self._WS_()
-                        self._acl_id_()
-                        self.name_last_node('id')
-                        self._WS_()
-                        self._token('ethertype')
-                        self.name_last_node('protocol')
-                        self._TOEOL_()
-                        self._NL_()
                     self._error('no available options')
             with self._option():
 
-                def block39():
+                def block35():
                     self._access_list_remark_()
-                self._positive_closure(block39)
+                self._positive_closure(block35)
                 self.name_last_node('remark')
                 self._token('access-list')
                 self._WS_()
@@ -2171,7 +2177,7 @@ class fwsmParser(Parser):
                 self.name_last_node('mode')
                 self._WS_()
                 self._acl_host_()
-                self.name_last_node('source')
+                self.name_last_node('src')
                 with self._optional():
                     self._WS_()
                 self._NL_()
@@ -2188,15 +2194,15 @@ class fwsmParser(Parser):
                 self.name_last_node('mode')
                 self._WS_()
                 self._acl_host_()
-                self.name_last_node('source')
+                self.name_last_node('src')
                 with self._optional():
                     self._WS_()
                 self._NL_()
             with self._option():
 
-                def block49():
+                def block45():
                     self._access_list_remark_()
-                self._positive_closure(block49)
+                self._positive_closure(block45)
                 self.name_last_node('remark')
                 with self._choice():
                     with self._option():
@@ -2245,7 +2251,7 @@ class fwsmParser(Parser):
                         self.name_last_node('protocol')
                         self._WS_()
                         self._node_()
-                        self.name_last_node('dest')
+                        self.name_last_node('dst')
                         with self._optional():
                             self._WS_()
                             self._acl_options_()
@@ -2302,7 +2308,7 @@ class fwsmParser(Parser):
                         self.name_last_node('protocol')
                         self._WS_()
                         self._node_()
-                        self.name_last_node('dest')
+                        self.name_last_node('dst')
                         with self._optional():
                             self._WS_()
                             self._acl_options_()
@@ -2311,9 +2317,34 @@ class fwsmParser(Parser):
                             self._WS_()
                         self._NL_()
                     self._error('no available options')
+            with self._option():
+
+                def block75():
+                    self._access_list_remark_()
+                self._positive_closure(block75)
+                self.name_last_node('remark')
+                self._token('access-list')
+                self._WS_()
+                self._acl_id_()
+                self.name_last_node('id')
+                self._WS_()
+                self._token('ethertype')
+                self.name_last_node('extended')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('access-list')
+                self._WS_()
+                self._acl_id_()
+                self.name_last_node('id')
+                self._WS_()
+                self._token('ethertype')
+                self.name_last_node('extended')
+                self._TOEOL_()
+                self._NL_()
             self._error('no available options')
         self.ast._define(
-            ['dest', 'extended', 'icmp', 'id', 'mode', 'options', 'protocol', 'remark', 'source', 'url'],
+            ['dst', 'extended', 'icmp', 'id', 'mode', 'options', 'protocol', 'remark', 'src', 'url'],
             []
         )
 
@@ -3022,6 +3053,9 @@ class fwsmSemantics(object):
         return ast
 
     def access_list_rule_webtype(self, ast):  # noqa
+        return ast
+
+    def access_list_rule_ethertype(self, ast):  # noqa
         return ast
 
     def access_list(self, ast):  # noqa
