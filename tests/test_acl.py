@@ -107,9 +107,12 @@ class aclTestBlock(unittest.TestCase):
 			fname = 'acl/single/{tpl}.txt'
 			data = self.tpl[tpl].render()
 
-		with open(fname.format(**{'tpl':tpl,'block':block}), 'wt') as f:
+		fname = fname.format(**{'tpl':tpl,'block':block})
+
+		with open(fname, 'wt') as f:
 			f.write(data)
-		cfg = fwsmConfig.fromString(data, trace=trace)
+
+		cfg = fwsmConfig.fromPath(fname, trace=trace)
 
 	def test_block_names(self):
 		return self._test_block('names')
