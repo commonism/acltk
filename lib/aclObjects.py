@@ -524,9 +524,7 @@ class ACLRule:
 
 			if name and pattern:
 				return fnmatch.fnmatchcase(name, pattern)
-			else:
-				return self.id == other.id
-			return False
+			return self.id == other.id
 		if self.src & other.src and self.dst & other.dst:
 			return True
 		return False
