@@ -111,7 +111,7 @@ class RealCafSemantics(cafSemantics):
                     nodes[k].add(i)
 #                raise ValueError("failed")
 
-        return ACLRule(id=ast.id, source=ACLNode(nodes['src']), dest=ACLNode(nodes['dst']))
+        return ACLRule(id=ast.id, src=ACLNode(nodes['src']), dst=ACLNode(nodes['dst']))
 
     def set_r(self, ast):
         if isinstance(ast, list) and len(ast) == 1 and ast[0] == None:
