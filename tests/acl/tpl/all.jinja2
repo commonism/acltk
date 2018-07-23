@@ -456,5 +456,10 @@ access-list outside_ether_access_in extended deny ip any any log default 5
 access-list outside_ether_access_in extended deny ip any any log debugging 5 interval 300
 {% endblock %}
 
+{% block access_list_rule_protocol %}
+access-list outside_ether_access_in extended deny tcp any any
+access-list outside_ether_access_in extended deny udp any any
+{% endblock %}
+
 
 {% endblock all %}

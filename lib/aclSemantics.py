@@ -174,6 +174,7 @@ class aclSemantics:
 			if ast.protocol == 'object':
 				return self.parser.service_objects[ast.object]
 			else:
+				assert isinstance(ast.protocol, Protocol), "protocol {} is unknown".format(ast.protocol)
 				del ast['type']
 				if 'object' in ast:
 					del ast['object']
@@ -228,8 +229,10 @@ class aclSemantics:
 					return self.parser.service_groups[ast.name]
 				else:
 					return self.parser.protocol_groups[ast.name]
+		elif hasattr(ast, 'name') and isinstance(ast.name, Protocol):
+			return ast.name
 		else:
-			return Protocol(ast.name)
+			raise ValueError(ast)
 
 	def acl_host(self, ast):
 		if hasattr(ast, 'type') and ast.type is not None:
