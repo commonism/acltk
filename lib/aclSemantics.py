@@ -229,10 +229,13 @@ class aclSemantics:
 					return self.parser.service_groups[ast.name]
 				else:
 					return self.parser.protocol_groups[ast.name]
-		elif hasattr(ast, 'name') and isinstance(ast.name, Protocol):
-			return ast.name
-		else:
-			raise ValueError(ast)
+		elif hasattr(ast, 'name'):
+			if isinstance(ast.name, Protocol):
+				return ast.name
+			else:
+				if 0 <= int(ast.name) <= 255:
+					return Protocol(ast.name)
+		raise ValueError(ast)
 
 	def acl_host(self, ast):
 		if hasattr(ast, 'type') and ast.type is not None:

@@ -156,6 +156,10 @@ class aclTestBlock(unittest.TestCase):
 	def test_block_access_list_rule_protocol(self):
 		return self._test_block('access_list_rule_protocol')
 
+	def test_block_access_list_rule_protocol_int(self):
+		return self._test_block('access_list_rule_protocol_int')
+
+
 	def test_all(self):
 		return self._test_block(None, tpl='all')
 
