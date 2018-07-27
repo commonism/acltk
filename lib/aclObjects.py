@@ -523,11 +523,15 @@ class ACLRule:
 				name = self.id
 
 			if name and pattern:
-				return fnmatch.fnmatchcase(name, pattern)
-			return self.id == other.id
-		if self.src & other.src and self.dst & other.dst:
-			return True
-		return False
+				if not fnmatch.fnmatchcase(name, pattern):
+					return False
+			elif self.id != other.id:
+				return False
+
+		if not (self.src & other.src and self.dst & other.dst):
+			return False
+
+		return True
 
 	def __repr__(self):
 		return "ACLRule {self.id} {self.mode} {self.protocol} src:{self.src} {self.dst} # {self.remark}".format(

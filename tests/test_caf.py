@@ -27,7 +27,7 @@ class cafTestParse(unittest.TestCase):
 				cafBlock.fromPath("caf/{}.caf".format(i))
 
 
-class cafTestFilter(unittest.TestCase):
+class cafTestParse(unittest.TestCase):
 	def setUp(self):
 		loader = FileSystemLoader('./acl/tpl/')
 		env = Environment(loader=loader, extensions=[])
@@ -102,3 +102,103 @@ class cafTestFilter(unittest.TestCase):
 			r = cfg.run(self.acls.rules, verbose=True)
 			self.assertTrue(len(r) >= 0)
 			self.acls.resolve(r)
+
+
+class cafTestFilter(unittest.TestCase):
+	def setUp(self):
+		loader = FileSystemLoader('./acl/tpl/')
+		env = Environment(loader=loader, extensions=[])
+		self.tpl = env.get_template('caf.jinja2')
+		data = self.tpl.render()
+		self.acls = fwsmConfig.fromString(data)
+
+	def rules_by_id(self, *_id):
+		return [i for i in filter(lambda x: x.id in set(_id), self.acls.rules.rules)]
+
+	def test_filter_(self):
+		cfg = cafBlock.fromString('id caf_filter_')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_'))
+
+	def test_filter_0(self):
+		cfg = cafBlock.fromString('id caf_filter_0 ip src 1.1.1.1 ip dst 2.2.2.2')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_0'))
+
+		cfg = cafBlock.fromString('id caf_filter_0 ip src 1.1.1.2 ip dst 2.2.2.2')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_'))
+
+		cfg = cafBlock.fromString('id caf_filter_0 ip src 1.1.1.1 ip dst 2.2.2.3')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_'))
+
+	def test_filter_1(self):
+		cfg = cafBlock.fromString('id caf_filter_1 ip src 1.1.1.1 ip dst 2.2.2.2')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_1'))
+
+		cfg = cafBlock.fromString('id caf_filter_1 ip src 1.1.1.2 ip dst 2.2.2.2')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_'))
+
+		cfg = cafBlock.fromString('id caf_filter_1 ip src 1.1.1.1 ip dst 2.2.2.3')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_'))
+
+	def test_filter_2(self):
+		cfg = cafBlock.fromString('id caf_filter_2 ip src 1.1.1.2 ip dst 2.2.2.3')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_2'))
+
+		cfg = cafBlock.fromString('id caf_filter_2 ip src 1.1.2.2 ip dst 2.2.2.3')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_'))
+
+		cfg = cafBlock.fromString('id caf_filter_2 ip src 1.1.1.2 ip dst 2.2.3.3')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_'))
+
+	def test_filter_3(self):
+		cfg = cafBlock.fromString('id caf_filter_3 ip src 1.1.1.1 ip dst 2.2.2.2')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_3'))
+
+		cfg = cafBlock.fromString('id caf_filter_3 ip src 1.1.2.2 ip dst 2.2.2.3')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_'))
+
+		cfg = cafBlock.fromString('id caf_filter_3 ip src 1.1.1.2 ip dst 2.2.3.3')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_'))
+
+	def test_filter_4(self):
+		cfg = cafBlock.fromString('id caf_filter_4 ip src 1.1.1.2 ip dst 2.2.2.3')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_4'))
+
+		cfg = cafBlock.fromString('id caf_filter_4 ip src 1.1.2.2 ip dst 2.2.2.3')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_'))
+
+		cfg = cafBlock.fromString('id caf_filter_4 ip src 1.1.1.2 ip dst 2.2.3.3')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_'))
+
+	def test_filter_5(self):
+		cfg = cafBlock.fromString('id caf_filter_5 ip src 1.1.1.2 ip dst 2.2.2.3')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_5'))
+
+		cfg = cafBlock.fromString('id caf_filter_5 ip src 1.1.2.2 ip dst 2.2.2.3')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_'))
+
+		cfg = cafBlock.fromString('id caf_filter_5 ip src 1.1.1.2 ip dst 2.2.3.3')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_'))
+
+		cfg = cafBlock.fromString('id caf_filter_5 ip src 1.1.1.0/24 ip dst 2.2.2.0/24')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_5'))
+
+	def test_op_intersect(self):
+		cfg = cafBlock.fromString('id caf_filter_5 intersect id caf_filter_5')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_5'))
+
+		cfg = cafBlock.fromString('id caf_filter_5 intersect id caf_filter_')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_'))
+
+	def test_op_union(self):
+		cfg = cafBlock.fromString('id caf_filter_5 union id caf_filter_4')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_5', 'caf_filter_4'))
+
+		cfg = cafBlock.fromString('id caf_filter_5 union id caf_filter_')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_5'))
+
+	def test_op_except(self):
+		cfg = cafBlock.fromString('id /caf_filter_[012345]/ except id /caf_filter_[01234]/')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_5'))
+
+		cfg = cafBlock.fromString('id caf_filter_5 except id caf_filter_')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_5'))
