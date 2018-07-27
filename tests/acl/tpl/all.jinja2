@@ -205,6 +205,11 @@ object-group service ObjectGroupWithIPServiceByName
  service-object tcp destination eq ssh
 {% endblock %}
 
+{% block object_group_service_int %}
+object-group service ObjectGroupWithIPServiceByInteger
+ service-object 17
+{% endblock %}
+
 {% block object_network %}
 object network NetworkObjectRange
  range 10.0.0.1 10.0.0.4

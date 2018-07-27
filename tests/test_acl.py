@@ -159,6 +159,8 @@ class aclTestBlock(unittest.TestCase):
 	def test_block_access_list_rule_protocol_int(self):
 		return self._test_block('access_list_rule_protocol_int')
 
+	def test_block_object_group_service_int(self):
+		return self._test_block('object_group_service_int')
 
 	def test_all(self):
 		return self._test_block(None, tpl='all')
