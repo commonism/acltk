@@ -202,3 +202,7 @@ class cafTestFilter(unittest.TestCase):
 
 		cfg = cafBlock.fromString('id caf_filter_5 except id caf_filter_')
 		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_5'))
+
+	def test_filter_6(self):
+		cfg = cafBlock.fromString('id /caf_filter_6[12]/ except (ip src ANY union ip dst ANY)')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_61'))
