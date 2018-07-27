@@ -237,7 +237,7 @@ class iosParser(Parser):
                         with self._option():
                             self._protocol_code_()
                         with self._option():
-                            self._int_()
+                            self._protocol_int_()
                         self._error('no available options')
                 self.name_last_node('name')
             self._error('no available options')
@@ -1549,6 +1549,10 @@ class iosParser(Parser):
             with self._option():
                 self._token('ah')
             self._error('no available options')
+
+    @tatsumasu()
+    def _protocol_int_(self):  # noqa
+        self._int_()
 
     @tatsumasu()
     def _port_code_(self):  # noqa
@@ -3256,6 +3260,9 @@ class iosSemantics(object):
         return ast
 
     def protocol_code(self, ast):  # noqa
+        return ast
+
+    def protocol_int(self, ast):  # noqa
         return ast
 
     def port_code(self, ast):  # noqa

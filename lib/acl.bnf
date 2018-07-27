@@ -53,7 +53,7 @@ acl_mode
 acl_protocol
 	= type:"object-group" WS name:(acl_object_group_service_id|acl_object_group_protocol_id)
 	| type:"object" WS name:acl_object_service_id
-	| name:(protocol_code|int)
+	| name:(protocol_code|protocol_int)
 	;
 
 node
@@ -407,6 +407,10 @@ protocol_code
 	| "ahp"
 	| "ah"
 	;
+
+protocol_int
+    = int
+    ;
 
 port_code
 	= "aol"

@@ -146,6 +146,11 @@ class aclSemantics:
 	def protocol_code(self, ast):
 		return Protocol(ast)
 
+	def protocol_int(self, ast):
+		assert (0 <= int(ast) <= 255), "invalid protocol {}".format(ast)
+		return Protocol(ast)
+
+
 	def network_group_object(self, ast):
 		assert (ast.type is not None), "object type is None"
 		if ast.type == 'network-object':
@@ -230,11 +235,8 @@ class aclSemantics:
 				else:
 					return self.parser.protocol_groups[ast.name]
 		elif hasattr(ast, 'name'):
-			if isinstance(ast.name, Protocol):
-				return ast.name
-			else:
-				if 0 <= int(ast.name) <= 255:
-					return Protocol(ast.name)
+			assert isinstance(ast.name, Protocol), "invalid type {}".format(type(ast.name))
+			return ast.name
 		raise ValueError(ast)
 
 	def acl_host(self, ast):
