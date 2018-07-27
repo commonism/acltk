@@ -201,8 +201,8 @@ class pfsenseParser(aclParser):
 		icmp = None
 		# EXML - pfsense ignorance of attributes & cardinality is a headache
 		values = {'protocol': 'any', 'source': ACLNode(NetworkAny()), 'destination': ACLNode(NetworkAny()),
-				  'created': now, 'updated': now, 'log': False}
-		valueable = ['tracker', 'type', 'interface', 'floating', 'direction', 'quick', 'protocol', 'descr', 'disabled']
+				  'created': now, 'updated': now, 'log': False, 'statetype':'keep state', 'floating':'no'}
+		valueable = ['tracker', 'type', 'interface', 'floating', 'direction', 'quick', 'protocol', 'descr', 'disabled','statetype']
 		for v in list(i):
 			if v.tag in valueable:
 				values[v.tag] = v.text
@@ -249,14 +249,14 @@ class pfsenseParser(aclParser):
 				icmp = ICMP(v.text, None)
 			elif v.tag in frozenset(
 					['id', 'ipprotocol', 'tag', 'tagged', 'max', 'max-src-nodes', 'max-src-conn', 'max-src-states',
-					 'statetimeout', 'statetype', 'os']):
+					 'statetimeout', 'os']):
 				continue
 			else:
 				raise ValueError("unknown data {}".format(v.tag))
 
 		options = {'xref': values.get('tracker', -1)}
 
-		if values.get('floating', 'no') == 'yes':
+		if values['floating'] == 'yes':
 			iface = 'floating'
 			options['floating'] = ACLRuleOptionInterface(values['interface'].split(','), values['direction'])
 		else:
@@ -269,6 +269,9 @@ class pfsenseParser(aclParser):
 
 		if values['log']:
 			options['log'] = ACLRuleOptionLog([])
+
+		if values['statetype'] != 'keep state':
+			options['statetype'] = values['statetype']
 
 		dates = "c: {} ({} days) / m: {} ({} days)".format(values['created'].strftime("%Y-%m-%d"),
 														   (now - values['created']).days,
