@@ -189,10 +189,7 @@ class aclSemantics:
 			return r
 
 	def service_object(self, ast):
-		if not isinstance(ast['protocol'], Protocol):
-			a = ast['protocol']
-			del ast['protocol']
-			ast['protocol'] = Protocol(a)
+		assert (isinstance(ast['protocol'], Protocol)), "invalid protocol {}".format(ast.protocol)
 		return ast
 
 	def service_object_op(self, ast):

@@ -77,9 +77,6 @@ object service ICMPEchoService2
 object service ICMPEchoService3
  service icmp
 
-object service ServiceByInt
- service 6
-
 object service ICMPObjectWithTypeAndCode
  service icmp echo 0
 
@@ -90,6 +87,10 @@ object service ICMPObjectWithTypeAndCode
 ! service eigrp
 {% endblock %}
 
+{% block object_service_int %}
+object service ServiceByInt
+ service 6
+{% endblock %}
 
 {% block object_group_icmp_type %}
 object-group icmp-type ICMPGroup

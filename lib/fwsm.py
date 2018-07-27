@@ -730,7 +730,7 @@ class fwsmParser(Parser):
                 self._token('service')
                 self.name_last_node('type')
                 self._WS_()
-                self._int_()
+                self._protocol_int_()
                 self.name_last_node('protocol')
                 self._NL_()
             self._error('no available options')
@@ -980,7 +980,7 @@ class fwsmParser(Parser):
                         with self._option():
                             self._protocol_code_()
                         with self._option():
-                            self._int_()
+                            self._protocol_int_()
                         self._error('no available options')
                 self.name_last_node('protocol')
                 self._NL_()
