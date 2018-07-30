@@ -120,7 +120,13 @@ class aclSemantics:
 			'protocol': (ProtocolGroup, self.parser.protocol_groups),
 		}
 
-		cls, groups = action[ast.type]
+		if isinstance(ast.type, str):
+			cls, groups = action[ast.type]
+		elif isinstance(ast.type, Protocol):
+			cls, groups = action[ast.type.name]
+		else:
+			assert isinstance(ast.type, (str, Protocol)), "unknown type {}".format(type(ast.type))
+
 		p = cls(ast.name, ast.description)
 		groups[ast.name] = p
 		for i in ast.objects:
@@ -140,7 +146,7 @@ class aclSemantics:
 	def protocol_icmp(self, ast):
 		return Protocol(ast)
 
-	def protocol(self, ast):
+	def protocol_tcp_udp(self, ast):
 		return Protocol(ast)
 
 	def protocol_code(self, ast):

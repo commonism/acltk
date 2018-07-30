@@ -713,7 +713,7 @@ class fwsmParser(Parser):
                 self._token('service')
                 self.name_last_node('type')
                 self._WS_()
-                self._protocol_()
+                self._protocol_tcp_udp_()
                 self.name_last_node('protocol')
                 with self._optional():
                     self._WS_()
@@ -804,11 +804,7 @@ class fwsmParser(Parser):
             self._error('no available options')
 
     @tatsumasu()
-    def _protocol_(self):  # noqa
-        self._port_group_protocol_()
-
-    @tatsumasu()
-    def _port_group_protocol_(self):  # noqa
+    def _protocol_tcp_udp_(self):  # noqa
         with self._group():
             with self._choice():
                 with self._option():
@@ -848,7 +844,7 @@ class fwsmParser(Parser):
                 self._obj_name_()
                 self.name_last_node('name')
                 self._WS_()
-                self._port_group_protocol_()
+                self._protocol_tcp_udp_()
                 self.name_last_node('type')
                 self._NL_()
                 with self._optional():
@@ -958,7 +954,7 @@ class fwsmParser(Parser):
                 self._token('service-object')
                 self.name_last_node('type')
                 self._WS_()
-                self._protocol_()
+                self._protocol_tcp_udp_()
                 self.name_last_node('protocol')
                 with self._optional():
                     self._WS_()
@@ -2966,10 +2962,7 @@ class fwsmSemantics(object):
     def protocol_icmp(self, ast):  # noqa
         return ast
 
-    def protocol(self, ast):  # noqa
-        return ast
-
-    def port_group_protocol(self, ast):  # noqa
+    def protocol_tcp_udp(self, ast):  # noqa
         return ast
 
     def object_group_type(self, ast):  # noqa

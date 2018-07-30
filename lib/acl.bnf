@@ -169,7 +169,7 @@ network_object
 
 service_object
 	= type:"service" WS protocol:protocol_icmp [WS icmp_type:(icmp_type|int) [WS icmp_code:int]] NL
-	| type:"service" WS protocol:protocol [WS] source:service_object_source [WS] destination:service_object_destination [WS] NL
+	| type:"service" WS protocol:protocol_tcp_udp [WS] source:service_object_source [WS] destination:service_object_destination [WS] NL
 	| type:"service" WS protocol:protocol_int NL
 	;
 
@@ -197,18 +197,14 @@ protocol_icmp
 	| "icmp6"
 	;
 
-protocol
-	= port_group_protocol
-	;
-
-port_group_protocol
+protocol_tcp_udp
 	= ("tcp-udp"|"tcp"|"udp")
 	;
 
 object_group_type
 	= type:"network" WS name:obj_name NL [SP >description] objects:{SP network_group_object}
 	(* PR 8.3 *)
-	| "service" WS name:obj_name WS type:port_group_protocol NL [SP >description] objects:{SP port_group_object}
+	| "service" WS name:obj_name WS type:protocol_tcp_udp NL [SP >description] objects:{SP port_group_object}
 	(* PR 9.3 *)
 	| type:"service" WS name:obj_name NL [SP >description] objects:{SP service_group_object}
 	| type:"icmp-type" WS name:obj_name NL [SP >description] objects:{SP icmp_group_object}
@@ -217,7 +213,7 @@ object_group_type
 
 service_group_object
 	= type:"service-object" WS protocol:protocol_icmp [WS icmp_type:(icmp_type|int) [WS icmp_code:int]] NL
-	| type:"service-object" WS protocol:protocol [WS] source:service_object_source [WS] destination:service_object_destination [WS] NL
+	| type:"service-object" WS protocol:protocol_tcp_udp [WS] source:service_object_source [WS] destination:service_object_destination [WS] NL
 	| type:"service-object" WS protocol:(protocol_code|protocol_int) NL
 	| type:"service-object" WS protocol:"object" WS object:acl_object_service_id NL
 	| type:"group-object" WS object:acl_object_group_service_id NL
