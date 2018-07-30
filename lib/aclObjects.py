@@ -13,7 +13,7 @@ class Names:
 		self.objects = []
 
 	def add(self, obj):
-		assert isinstance(obj, Name)
+		assert isinstance(obj, Name), "unexpected type {} or class {}".format(type(obj), obj.__class__.__qualname__)
 		self.objects.append(obj)
 
 	def __repr__(self):
@@ -87,7 +87,7 @@ class ProtocolGroup:
 		self.objects = []
 
 	def add(self, obj):
-		assert isinstance(obj, (Protocol, ProtocolGroup))
+		assert isinstance(obj, (Protocol, ProtocolGroup)), "unexpected type {} or class {}".format(type(obj), obj.__class__.__qualname__)
 		self.objects.append(obj)
 
 	def __repr__(self):
@@ -111,7 +111,7 @@ class ICMPGroup:
 		self.objects = []
 
 	def add(self, obj):
-		assert isinstance(obj, (ICMP, ICMPGroup))
+		assert isinstance(obj, (ICMP, ICMPGroup)), "unexpected type {} or class {}".format(type(obj), obj.__class__.__qualname__)
 		self.objects.append(obj)
 
 	def __repr__(self):
@@ -156,11 +156,11 @@ class NetworkObject:
 class Network:
 	def __init__(self, address, netmask, target=None):
 		self.network = ipaddress.ip_network("{}/{}".format(address, netmask), strict=False)
-		assert target is None or isinstance(target, Name)
+		assert (target is None or isinstance(target, Name)), "unexpected type {} or class {}".format(type(target), target.__class__.__qualname__)
 		self.target = target
 
 	def __and__(self, other):
-		assert isinstance(other, (Network, NetworkWildcard, NetworkHost, NetworkObject, NetworkGroup, NetworkAny, NetworkAny4, NetworkAny6))
+		assert isinstance(other, (Network, NetworkWildcard, NetworkHost, NetworkObject, NetworkGroup, NetworkAny, NetworkAny4, NetworkAny6)), "unexpected type {} or class {}".format(type(other), other.__class__.__qualname__)
 		if isinstance(other, NetworkHost):
 			return other.address in self.network
 		if isinstance(other, NetworkAny):
@@ -307,7 +307,7 @@ class NetworkAny6:
 class NetworkHost:
 	def __init__(self, address, target=None):
 		self.address = ipaddress.ip_address(address)
-		assert target is None or isinstance(target, Name)
+		assert (target is None or isinstance(target, Name)), "unexpected type {} or class {}".format(type(target), target.__class__.__qualname__)
 		self.target = target
 
 	def __and__(self, other):
@@ -327,7 +327,7 @@ class NetworkGroup:
 		self.objects = []
 
 	def add(self, obj):
-		assert isinstance(obj, (Network, NetworkGroup, NetworkHost, NetworkObject, NetworkAny, NetworkAny4, NetworkAny6))
+		assert isinstance(obj, (Network, NetworkGroup, NetworkHost, NetworkObject, NetworkAny, NetworkAny4, NetworkAny6)), "unexpected type {} or class {}".format(type(obj), obj.__class__.__qualname__)
 		self.objects.append(obj)
 
 	def __and__(self, other):
@@ -343,7 +343,7 @@ class NetworkGroup:
 
 class Service:
 	def __init__(self, protocol=None, type=None, source=None, destination=None, icmp_type=None, icmp_code=None):
-		assert isinstance(protocol, Protocol)
+		assert isinstance(protocol, Protocol), "unexpected type {} or class {}".format(type(protocol), protocol.__class__.__qualname__)
 		self.protocol = protocol
 		self.src = source
 		self.dst = destination
@@ -372,7 +372,7 @@ class ServiceGroup:
 		self.objects = []
 
 	def add(self, obj):
-		assert isinstance(obj, (Service, ServiceObject, ServiceGroup))
+		assert isinstance(obj, (Service, ServiceObject, ServiceGroup)), "unexpected type {} or class {}".format(type(obj), obj.__class__.__qualname__)
 		self.objects.append(obj)
 
 	def __repr__(self):
@@ -402,12 +402,12 @@ class PortGroup:
 	def __init__(self, name, protocol, description):
 		self.name = name
 		self.description = description
-		assert isinstance(protocol, Protocol)
+		assert isinstance(protocol, Protocol), "unexpected type {} or class {}".format(type(protocol), protocol.__class__.__qualname__)
 		self.protocol = protocol
 		self.objects = []
 
 	def add(self, obj):
-		assert isinstance(obj, (Port, PortRange, PortGroup))
+		assert isinstance(obj, (Port, PortRange, PortGroup)), "unexpected type {} or class {}".format(type(obj), obj.__class__.__qualname__)
 		self.objects.append(obj)
 
 	def __repr__(self):
@@ -421,7 +421,7 @@ class TimeRange:
 		self.objects = []
 
 	def add(self, obj):
-		assert isinstance(obj, (TimeRangeObjectAbsolute, TimeRangeObjectPeriodic))
+		assert isinstance(obj, (TimeRangeObjectAbsolute, TimeRangeObjectPeriodic)), "unexpected type {} or class {}".format(type(obj), obj.__class__.__qualname__)
 		self.objects.append(obj)
 
 	def __repr__(self):
@@ -463,9 +463,9 @@ class TimeRangeObjectPeriodic:
 
 class ACLNode:
 	def __init__(self, host=None, port=None):
-		assert isinstance(host, (Network, NetworkWildcard, NetworkAny, NetworkAny4, NetworkAny6, NetworkGroup, NetworkHost, NetworkObject)), "type {}".format(host)
+		assert isinstance(host, (Network, NetworkWildcard, NetworkAny, NetworkAny4, NetworkAny6, NetworkGroup, NetworkHost, NetworkObject)), "unexpected type {} or class {}".format(type(host), host.__class__.__qualname__)
 		self.host = host
-		assert port is None or isinstance(port, (Port, PortGroup, PortRange))
+		assert port is None or isinstance(port, (Port, PortGroup, PortRange)), "unexpected type {} or class {}".format(type(port), port.__class__.__qualname__)
 		self.port = port
 
 	def __and__(self, other):
@@ -497,11 +497,11 @@ class ACLRule:
 		self.id = id
 		self.extended = extended
 		self.mode = mode
-		assert protocol is None or isinstance(protocol, (Protocol, ProtocolGroup, Service, ServiceGroup))
+		assert protocol is None or isinstance(protocol, (Protocol, ProtocolGroup, Service, ServiceGroup)), "unexpected type {} or class {}".format(type(protocol), protocol.__class__.__qualname__)
 		self.protocol = protocol
-		assert isinstance(src, ACLNode)
+		assert isinstance(src, ACLNode), "unexpected type {} or class {}".format(type(src), src.__class__.__qualname__)
 		self.src = src
-		assert isinstance(dst, ACLNode)
+		assert isinstance(dst, ACLNode), "unexpected type {} or class {}".format(type(dst), dst.__class__.__qualname__)
 		self.dst = dst
 		self.remark = remark if remark else []
 		if options is None:
@@ -512,7 +512,7 @@ class ACLRule:
 		self.head = head
 
 	def __and__(self, other):
-		assert isinstance(other, ACLRule)
+		assert isinstance(other, ACLRule), "unexpected type {} or class {}".format(type(other), other.__class__.__qualname__)
 		if self.id and other.id:
 			pattern = name = None
 			if self.id[0] == self.id[-1] == '/':
@@ -655,7 +655,7 @@ class ACLConfig:
 
 	@classmethod
 	def fromString(cls, _data, filename=None, trace=False):
-		assert(isinstance(_data, str))
+		assert(isinstance(_data, str)), "unexpected type {} or class {}".format(type(_data), _data.__class__.__qualname__)
 		data = _data + '\n'
 		return cls._parse(data, filename, trace)
 
