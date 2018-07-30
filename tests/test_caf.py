@@ -204,5 +204,10 @@ class cafTestFilter(unittest.TestCase):
 		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_5'))
 
 	def test_filter_6(self):
-		cfg = cafBlock.fromString('id /caf_filter_6[12]/ except (ip src ANY union ip dst ANY)')
+		cfg = cafBlock.fromString('id /caf_filter_6[12]/ except (ip src ANY ANY4 ANY6 union ip dst ANY ANY4 ANY6)')
 		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_61'))
+
+		cfg = cafBlock.fromString('id caf_filter_62 ip src ANY ANY4 ANY6 ip dst ANY ANY4 ANY6')
+		a = cfg.run(self.acls.rules, verbose=True)
+		b = self.rules_by_id('caf_filter_62')
+		self.assertCountEqual(a, b)
