@@ -149,7 +149,7 @@ class pfsenseParser(aclParser):
 						if ':' in addr:
 							g.add(PortRange(*addr.split(':')))
 						else:
-							g.add(Port('=',addr))
+							g.add(Port('eq', addr))
 				self.port_groups[values['name']] = g
 			else:
 				raise ValueError(values['type'])
