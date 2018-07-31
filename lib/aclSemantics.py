@@ -156,6 +156,17 @@ class aclSemantics:
 		assert (0 <= int(ast) <= 255), "invalid protocol {}".format(ast)
 		return Protocol(ast)
 
+	def port_int(self, ast):
+		assert (0 <= int(ast) <= 2**16-1), "invalid port {}".format(ast)
+		return ast
+
+	def icmp_type_int(self, ast):
+		assert (0 <= int(ast) <= 2**8-1), "invalid icmp type {}".format(ast)
+		return ast
+
+	def icmp_code_int(self, ast):
+		assert (0 <= int(ast) <= 2**8-1), "invalid icmp code {}".format(ast)
+		return ast
 
 	def network_group_object(self, ast):
 		assert (ast.type is not None), "object type is None"

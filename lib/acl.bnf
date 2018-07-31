@@ -114,7 +114,7 @@ acl_port
 
 acl_icmp_options
 	= WS type:"object-group" WS object:acl_object_group_icmp_id
-	| WS type:(icmp_type|int) [WS code:int]
+	| WS type:(icmp_type|icmp_type_int) [WS code:icmp_code_int]
 	| ()
 	;
 
@@ -168,7 +168,7 @@ network_object
 	;
 
 service_object
-	= type:"service" WS protocol:protocol_icmp [WS icmp_type:(icmp_type|int) [WS icmp_code:int]] NL
+	= type:"service" WS protocol:protocol_icmp [WS icmp_type:(icmp_type|icmp_type_int) [WS icmp_code:icmp_code_int]] NL
 	| type:"service" WS protocol:protocol_tcp_udp [WS] source:service_object_source [WS] destination:service_object_destination [WS] NL
 	| type:"service" WS protocol:protocol_int NL
 	;
@@ -212,7 +212,7 @@ object_group_type
 	;
 
 service_group_object
-	= type:"service-object" WS protocol:protocol_icmp [WS icmp_type:(icmp_type|int) [WS icmp_code:int]] NL
+	= type:"service-object" WS protocol:protocol_icmp [WS icmp_type:(icmp_type|icmp_type_int) [WS icmp_code:icmp_code_int]] NL
 	| type:"service-object" WS protocol:protocol_tcp_udp [WS] source:service_object_source [WS] destination:service_object_destination [WS] NL
 	| type:"service-object" WS protocol:(protocol_code|protocol_int) NL
 	| type:"service-object" WS protocol:"object" WS object:acl_object_service_id NL
@@ -237,7 +237,7 @@ network_group_object
 	;
 
 icmp_group_object
-	= type:"icmp-object" WS name:(icmp_type|int) NL
+	= type:"icmp-object" WS name:(icmp_type|icmp_type_int) NL
 	| type:"group-object" WS name:acl_object_group_icmp_id NL
 	| ()
 	;
@@ -251,7 +251,7 @@ protocol_group_object
 	;
 
 port
-	= (port_code|int)
+	= (port_code|port_int)
 	;
 
 hour
@@ -379,6 +379,13 @@ icmp_type
 	| "address-mask-reply"
 	;
 
+icmp_type_int
+    = int
+    ;
+
+icmp_code_int
+    = int
+    ;
 
 protocol_code
 	= "udp"
@@ -485,3 +492,7 @@ port_code
 	| "www"
 	| "xdmcp"
 	;
+
+port_int
+    = int
+    ;

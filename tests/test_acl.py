@@ -168,5 +168,15 @@ class aclTestBlock(unittest.TestCase):
 	def test_all(self):
 		return self._test_block(None, tpl='all')
 
-	def _test_auto(self):
+	def test_bad(self):
+		for name in self.tpl['bad'].blocks.keys():
+			print("Processing {}".format(name))
+			with self.assertRaises(Exception) as e:
+				self._test_block(name, tpl='bad')
+
+			for i in str(e.exception).split('\n'):
+				print('>\t{}'.format(i))
+			print('')
+
+	def test_auto(self):
 		return self._test_block(None, tpl='auto')

@@ -443,12 +443,12 @@ class fwsmParser(Parser):
                         with self._option():
                             self._icmp_type_()
                         with self._option():
-                            self._int_()
+                            self._icmp_type_int_()
                         self._error('no available options')
                 self.name_last_node('type')
                 with self._optional():
                     self._WS_()
-                    self._int_()
+                    self._icmp_code_int_()
                     self.name_last_node('code')
             with self._option():
                 self._void()
@@ -701,12 +701,12 @@ class fwsmParser(Parser):
                             with self._option():
                                 self._icmp_type_()
                             with self._option():
-                                self._int_()
+                                self._icmp_type_int_()
                             self._error('no available options')
                     self.name_last_node('icmp_type')
                     with self._optional():
                         self._WS_()
-                        self._int_()
+                        self._icmp_code_int_()
                         self.name_last_node('icmp_code')
                 self._NL_()
             with self._option():
@@ -942,12 +942,12 @@ class fwsmParser(Parser):
                             with self._option():
                                 self._icmp_type_()
                             with self._option():
-                                self._int_()
+                                self._icmp_type_int_()
                             self._error('no available options')
                     self.name_last_node('icmp_type')
                     with self._optional():
                         self._WS_()
-                        self._int_()
+                        self._icmp_code_int_()
                         self.name_last_node('icmp_code')
                 self._NL_()
             with self._option():
@@ -1123,7 +1123,7 @@ class fwsmParser(Parser):
                         with self._option():
                             self._icmp_type_()
                         with self._option():
-                            self._int_()
+                            self._icmp_type_int_()
                         self._error('no available options')
                 self.name_last_node('name')
                 self._NL_()
@@ -1174,7 +1174,7 @@ class fwsmParser(Parser):
                 with self._option():
                     self._port_code_()
                 with self._option():
-                    self._int_()
+                    self._port_int_()
                 self._error('no available options')
 
     @tatsumasu()
@@ -1500,6 +1500,14 @@ class fwsmParser(Parser):
             self._error('no available options')
 
     @tatsumasu()
+    def _icmp_type_int_(self):  # noqa
+        self._int_()
+
+    @tatsumasu()
+    def _icmp_code_int_(self):  # noqa
+        self._int_()
+
+    @tatsumasu()
     def _protocol_code_(self):  # noqa
         with self._choice():
             with self._option():
@@ -1704,6 +1712,10 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('xdmcp')
             self._error('no available options')
+
+    @tatsumasu()
+    def _port_int_(self):  # noqa
+        self._int_()
 
     @tatsumasu()
     def _grammar_(self):  # noqa
@@ -3022,6 +3034,12 @@ class fwsmSemantics(object):
     def icmp_type(self, ast):  # noqa
         return ast
 
+    def icmp_type_int(self, ast):  # noqa
+        return ast
+
+    def icmp_code_int(self, ast):  # noqa
+        return ast
+
     def protocol_code(self, ast):  # noqa
         return ast
 
@@ -3029,6 +3047,9 @@ class fwsmSemantics(object):
         return ast
 
     def port_code(self, ast):  # noqa
+        return ast
+
+    def port_int(self, ast):  # noqa
         return ast
 
     def grammar(self, ast):  # noqa

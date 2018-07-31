@@ -1,0 +1,94 @@
+{%  block names %}
+names
+name 427.1.0.1 localhorst
+!
+{%  endblock %}
+
+{% block object_service_tcp_range %}
+object service TCPSourceService
+ service tcp source range 1 1000000
+ description low ports
+{%  endblock %}
+
+{% block object_service_src_dst %}
+object service TCPBothService
+ service tcp source eq 100000
+{%  endblock %}
+
+{% block object_service_icmp %}
+object service ICMPService
+ service icmp 800
+{%  endblock %}
+
+{% block object_service_int %}
+object service ServiceByInt
+ service 600
+{% endblock %}
+
+{% block object_group_icmp_type %}
+object-group icmp-type ICMPGroup
+ description icmp group
+ icmp-object 3000
+{% endblock %}
+
+{% block object_group_service_port_range %}
+object-group service NestMe1-SG udp
+ port-object range 1024 200048
+{% endblock %}
+
+{% block object_group_service_port %}
+object-group service Nested0-SG udp
+ port-object eq 70000
+{% endblock %}
+
+{% block object_group_service_service %}
+object-group service ServiceGroupForNesting
+ service-object udp destination eq 530000
+{% endblock %}
+
+{% block object_group_service_int %}
+object-group service ObjectGroupWithIPServiceByInteger
+ service-object 400
+{% endblock %}
+
+{% block object_network_range %}
+object network NetworkObjectRange
+ range 310.0.0.1 10.0.0.4
+ description Network Range Object
+{% endblock %}
+
+{% block object_network_subnet %}
+object network NetworkObjectSubnet
+ subnet 127.0.1.0 355.255.255.0
+{% endblock %}
+
+{% block object_network_subnet6 %}
+object network Network6SubnetObject
+ subnet ::/129
+{% endblock %}
+
+{% block object_group_network_host %}
+object-group network NetworkGroupHost
+ network-object host 427.0.0.1
+{% endblock %}
+
+{% block object_group_network_network %}
+object-group network NetworkGroupNet
+ network-object 127.0.0.1 355.255.255.0
+{% endblock %}
+
+{%  block acl_rule_src_host %}
+access-list outside_access_in extended permit tcp host 427.0.0.1 host 127.0.0.2
+{%  endblock %}
+
+{%  block acl_rule_dst_host %}
+access-list outside_access_in extended permit tcp host 127.0.0.1 host 999.0.0.2
+{%  endblock %}
+
+{%  block acl_rule_src_port %}
+access-list outside_access_in extended permit tcp host 127.0.0.1 eq 80000 127.0.0.2 255.255.255.0
+{%  endblock %}
+
+{%  block acl_rule_src_port_range %}
+access-list outside_access_in extended permit tcp host 127.0.0.1 range 1 80000 127.0.0.2 255.255.255.0
+{%  endblock %}
