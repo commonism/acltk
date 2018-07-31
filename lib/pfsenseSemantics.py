@@ -258,7 +258,8 @@ class pfsenseParser(aclParser):
 
 		if values['floating'] == 'yes':
 			iface = 'floating'
-			options['floating'] = ACLRuleOptionInterface(values['interface'].split(','), values['direction'])
+			ifname = [self.interface_map.get(i,i) for i in values['interface'].split(',')]
+			options['floating'] = ACLRuleOptionInterface(ifname, values['direction'])
 		else:
 			iface = values['interface']
 
