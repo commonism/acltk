@@ -16,13 +16,11 @@ class iosConfig(ACLConfig):
 		ACLConfig.__init__(self, ast)
 		self.rules.rules = []
 		for i in rules:
+			assert (isinstance(i, (ACLRules, ACLRule))), "unexpected type {} or class {}".format(type(i), i.__class__.__qualname__)
 			if isinstance(i, ACLRules):
 				self.rules.rules.extend(i.rules)
 			elif isinstance(i, ACLRule):
 				self.rules.add(i)
-			else:
-				assert (isinstance(i, (ACLRules, ACLRule))), "unexpected type {} or class {}".format(type(i), i.__class__.__qualname__)
-				continue
 
 		for i in ast:
 			if isinstance(i, ACLRules):

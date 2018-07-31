@@ -22,6 +22,7 @@ class fwsmSemantics(aclSemantics, _fwsmSemantics):
 			del ast['remark']
 			ast['remark'] = remark
 
+		assert (ast.extended is not None and ast.extended in frozenset(['extended', 'standard', 'webtype', 'ethertype'])), "unexpected value {}".format(ast.type)
 		if ast.extended == 'extended':
 			return self.access_list_rule_extended(ast)
 		elif ast.extended == 'standard':
@@ -30,8 +31,8 @@ class fwsmSemantics(aclSemantics, _fwsmSemantics):
 			return self.access_list_rule_webtype(ast)
 		elif ast.extended == 'ethertype':
 			return None
-		else:
-			assert (ast.extended is not None and ast.extended in ('extended','standard','webtype','ethertype')), "unexpected value {}".format(ast.type)
+
+
 
 	def access_list_rule_extended(self, ast):
 		return ACLRule(**ast)

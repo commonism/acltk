@@ -71,14 +71,14 @@ class aclSemantics:
 		return datetime.datetime(**ast)
 
 	def time_range_object(self, ast):
+		assert (ast.type in frozenset(['no', 'absolute', 'periodic'])), "time-range type {} is not known".format(ast.type)
 		if ast.type == 'no':
 			return None
 		elif ast.type == 'absolute':
 			return TimeRangeObjectAbsolute(ast.start, ast.end)
 		elif ast.type == 'periodic':
 			return TimeRangeObjectPeriodic(ast.start, ast.days, ast.end, ast.edays)
-		else:
-			assert (ast.type in ('no','absolute','periodic')), "time-range type {} is not known".format(ast.type)
+
 
 	def time_range(self, ast):
 		t = TimeRange(ast.name)
@@ -120,12 +120,12 @@ class aclSemantics:
 			'protocol': (ProtocolGroup, self.parser.protocol_groups),
 		}
 
+		assert isinstance(ast.type, (str, Protocol)), "unknown type {}".format(type(ast.type))
 		if isinstance(ast.type, str):
 			cls, groups = action[ast.type]
 		elif isinstance(ast.type, Protocol):
 			cls, groups = action[ast.type.name]
-		else:
-			assert isinstance(ast.type, (str, Protocol)), "unknown type {}".format(type(ast.type))
+
 
 		p = cls(ast.name, ast.description)
 		groups[ast.name] = p
@@ -297,7 +297,7 @@ class aclSemantics:
 	def acl_options(self, ast):
 		r = {}
 		for i in ast:
-			assert (i.type is None or i.type in ('log','time-range','inactive')), "option {} is unknown".format(i.type)
+			assert (i.type is None or i.type in frozenset(['log','time-range','inactive'])), "option {} is unknown".format(i.type)
 			if i.type is None:
 				continue
 			elif i.type == 'log':
