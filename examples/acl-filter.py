@@ -1,5 +1,5 @@
 from acltk.acl import aclParser
-from acltk.aclObjects import NetworkAny, NetworkHost, ACLNode, ACLRule, Network, ACLConfig
+from acltk.aclObjects import NetworkAny, NetworkHost, ACLNode, ACLRule, Network, ACLConfig, ACLParserOptions
 
 
 def main():
@@ -12,7 +12,7 @@ def main():
 	args = parser.parse_args()
 
 
-	config = ACLConfig.fromPath(args.filename, trace=args.trace)
+	config = ACLConfig.fromPath(args.filename, options=ACLParserOptions(trace=args.trace))
 
 	anyany = set()
 	for acl in config.rules.rules:

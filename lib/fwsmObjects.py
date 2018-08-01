@@ -11,7 +11,7 @@ class fwsmConfig(ACLConfig):
 		ACLConfig.__init__(self, ast)
 
 	@classmethod
-	def _parse(cls, data, filename=None, trace=False):
+	def _parse(cls, data, filename, options):
 		"""
 
 		:rtype : fwsmConfig
@@ -23,8 +23,8 @@ class fwsmConfig(ACLConfig):
 			data,
 			"grammar",
 			filename=filename,
-			trace=trace,
-			colorize=trace,
+			trace=options.trace if options else False,
+			colorize=options.trace if options else False,
 			whitespace='',
 			nameguard=True,
 			semantics=semantics)

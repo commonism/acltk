@@ -9,7 +9,7 @@ from jinja2.utils import concat
 from acltk.fwsmObjects import fwsmConfig
 from acltk.iosObjects import iosConfig
 from acltk.pfsenseObjects import pfsenseConfig
-from acltk.aclObjects import NetworkWildcard, NetworkHost, Network, ACLConfig
+from acltk.aclObjects import NetworkWildcard, NetworkHost, Network, ACLConfig, ACLParserOptions
 
 
 class aclTestObjects(unittest.TestCase):
@@ -112,7 +112,7 @@ class aclTestBlock(unittest.TestCase):
 		with open(fname, 'wt') as f:
 			f.write(data)
 
-		cfg = fwsmConfig.fromPath(fname, trace=trace)
+		cfg = fwsmConfig.fromPath(fname, options=ACLParserOptions(trace=False))
 
 	def test_block_names(self):
 		return self._test_block('names')

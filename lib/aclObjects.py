@@ -581,6 +581,9 @@ class ACLVersion:
 import tatsu.ast
 #from acltk.fwsmObjects import Names
 
+class ACLParserOptions:
+	def __init__(self, trace=False):
+		self.trace = trace
 
 class ACLConfig:
 	def __init__(self, ast):
@@ -641,35 +644,36 @@ class ACLConfig:
 		return "{}.{}".format(self.hostname, self.domainname)
 
 	@classmethod
-	def _parse(cls, data, filename=None, trace=False):
+	def _parse(cls, data, filename, options):
+		assert isinstance(options, (None.__class__, ACLParserOptions)), "unexpected type {} or class {}".format(type(options), options.__class__.__qualname__)
 		from acltk.fwsmObjects import fwsmConfig
 		from acltk.iosObjects import iosConfig
 		from acltk.pfsenseObjects import pfsenseConfig
 
 		for i in [fwsmConfig, iosConfig, pfsenseConfig]:
 			try:
-				return i._parse(data, filename, trace)
+				return i._parse(data, filename, options)
 			except Exception as e:
 				log.exception(e)
 		raise ValueError("Invalid Config?")
 
 	@classmethod
-	def fromString(cls, _data, filename=None, trace=False):
+	def fromString(cls, _data, filename=None, options=None):
 		assert(isinstance(_data, str)), "unexpected type {} or class {}".format(type(_data), _data.__class__.__qualname__)
 		data = _data + '\n'
-		return cls._parse(data, filename, trace)
+		return cls._parse(data, filename, options)
 
 	@classmethod
-	def fromFile(cls, f, trace=False):
+	def fromFile(cls, f, options=None):
 		data = f.read()
 		data = data.decode('utf-8-sig')
-		return cls.fromString(data, getattr(f, 'name', 'stdin'), trace)
+		return cls.fromString(data, getattr(f, 'name', 'stdin'), options)
 
 
 	@classmethod
-	def fromPath(cls, path, trace=False):
+	def fromPath(cls, path, options=None):
 		with open(path, 'rb') as f:
-			return cls.fromFile(f, trace)
+			return cls.fromFile(f, options)
 		return None
 
 	def resolve(self, r):

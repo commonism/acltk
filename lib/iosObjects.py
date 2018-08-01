@@ -38,7 +38,7 @@ class iosConfig(ACLConfig):
 							iface.routes.add(r)
 
 	@classmethod
-	def _parse(cls, data, filename=None, trace=False):
+	def _parse(cls, data, filename, options):
 		"""
 
 		:rtype : ACLConfig
@@ -50,8 +50,8 @@ class iosConfig(ACLConfig):
 			data,
 			"grammar",
 			filename=filename,
-			trace=trace,
-			colorize=trace,
+			trace=options.trace if options else False,
+			colorize=options.trace if options else False,
 			whitespace='',
 			nameguard=True,
 			semantics=semantics,

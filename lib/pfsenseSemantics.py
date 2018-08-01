@@ -5,17 +5,13 @@ import urllib.error
 import urllib.request
 import ipaddress
 from acltk.aclSemantics import aclSemantics, aclParser
-from acltk.aclObjects import Interface, ACLConfig, ACLRuleOptionInterface, ACLRuleOptionLog, ACLRuleOptionInActive, NetworkAny, NetworkInterface, ACLRule, ACLCaption, ACLNode, Protocol, Network, NetworkHost, NetworkGroup, PortGroup, Port, PortRange, ICMP
-from acltk.pfsenseObjects import pfsenseConfig
+from acltk.aclObjects import Interface, ACLConfig, ACLParserOptions, ACLRuleOptionInterface, ACLRuleOptionLog, ACLRuleOptionInActive, NetworkAny, NetworkInterface, ACLRule, ACLCaption, ACLNode, Protocol, Network, NetworkHost, NetworkGroup, PortGroup, Port, PortRange, ICMP
+from acltk.pfsenseObjects import pfsenseConfig, pfsenseParserOptions
 import tatsu.ast
 import xml.etree.ElementTree as ET
 import logging
 
 log = logging.getLogger('acltk.pfsense')
-
-class pfsenseParserOptions:
-	def __init__(self, fetch_urltable=True):
-		self.fetch_urltable = fetch_urltable
 
 class pfsenseParser(aclParser):
 	def __init__(self, options = None):

@@ -3,6 +3,7 @@ render_template, flash
 
 import flask_shelve as shelve
 from acltk import ACLConfig, cafBlock
+from acltk.pfsenseSemantics import pfsenseParserOptions
 
 app = Flask(__name__, template_folder='tpl')
 app.jinja_env.add_extension('jinja2.ext.loopcontrols')
@@ -16,11 +17,11 @@ def add():
 	if request.method == 'POST':
 		file = request.files['file']
 		try:
-			cfg = ACLConfig.fromFile(file.stream)
+			cfg = ACLConfig.fromFile(file.stream, options=pfsenseParserOptions(fetch_urltable=False))
 			db = shelve.get_shelve()
 			db[cfg.name] = cfg
 			return redirect(url_for('show', config=cfg.name))
-		except ValueError:
+		except TypeError:
 			return redirect(url_for('index'))
 
 
