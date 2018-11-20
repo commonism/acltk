@@ -718,11 +718,11 @@ class iosParser(Parser):
                 with self._optional():
                     self._WS_()
                 self._service_object_source_()
-                self.name_last_node('source')
+                self.name_last_node('src')
                 with self._optional():
                     self._WS_()
                 self._service_object_destination_()
-                self.name_last_node('destination')
+                self.name_last_node('dst')
                 with self._optional():
                     self._WS_()
                 self._NL_()
@@ -735,7 +735,7 @@ class iosParser(Parser):
                 self._NL_()
             self._error('no available options')
         self.ast._define(
-            ['destination', 'icmp_code', 'icmp_type', 'protocol', 'source', 'type'],
+            ['dst', 'icmp_code', 'icmp_type', 'protocol', 'src', 'type'],
             []
         )
 
@@ -959,11 +959,11 @@ class iosParser(Parser):
                 with self._optional():
                     self._WS_()
                 self._service_object_source_()
-                self.name_last_node('source')
+                self.name_last_node('src')
                 with self._optional():
                     self._WS_()
                 self._service_object_destination_()
-                self.name_last_node('destination')
+                self.name_last_node('dst')
                 with self._optional():
                     self._WS_()
                 self._NL_()
@@ -1001,7 +1001,7 @@ class iosParser(Parser):
                 self._void()
             self._error('no available options')
         self.ast._define(
-            ['destination', 'icmp_code', 'icmp_type', 'object', 'protocol', 'source', 'type'],
+            ['dst', 'icmp_code', 'icmp_type', 'object', 'protocol', 'src', 'type'],
             []
         )
 

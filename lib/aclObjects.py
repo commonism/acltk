@@ -342,11 +342,12 @@ class NetworkGroup:
 
 
 class Service:
-	def __init__(self, protocol=None, type=None, source=None, destination=None, icmp_type=None, icmp_code=None):
+	def __init__(self, protocol=None, src=None, dst=None, icmp_type=None, icmp_code=None, **kwargs):
 		assert isinstance(protocol, Protocol), "unexpected type {} or class {}".format(type(protocol), protocol.__class__.__qualname__)
+		assert len(kwargs.keys()) == 0 or set(kwargs.keys()) == set(['type']), "unexpected kwargs {}".format(kwargs.keys())
 		self.protocol = protocol
-		self.src = source
-		self.dst = destination
+		self.src = src
+		self.dst = dst
 		self.icmp_type = icmp_type
 		self.icmp_code = icmp_code
 
