@@ -72,6 +72,40 @@ class Interface:
 		return "Interface {}".format(self.alias)
 
 
+class _Group:
+	_allowed = None.__class__
+	def __init__(self, name, description):
+		self.name = name
+		self.description = description
+		self.objects = []
+
+	def add(self, obj):
+		assert isinstance(obj, self._allowed) or isinstance(obj, self.__class__), "unexpected type {} or class {}".format(type(obj), obj.__class__.__qualname__)
+		self.objects.append(obj)
+
+	def _expand(self):
+
+		def expand_r(l):
+			r = []
+			for obj in l:
+				if isinstance(obj, self.__class__):
+					r.extend(expand_r(obj.objects))
+				else:
+					r.append(obj)
+			return r
+
+		return expand_r(self.objects)
+
+	def expand(self, replace=True):
+		if replace:
+			self.objects = self._expand()
+			return self
+		else:
+			obj = self.__class__(self.name, self.description)
+			obj.objects = self._expand()
+			obj.expand()
+			return obj
+
 class Protocol:
 	def __init__(self, p):
 		self.name = p
@@ -80,15 +114,10 @@ class Protocol:
 		return "Protocol {}".format(self.name)
 
 
-class ProtocolGroup:
+class ProtocolGroup(_Group):
+	_allowed = Protocol
 	def __init__(self, name, description):
-		self.name = name
-		self.description = description
-		self.objects = []
-
-	def add(self, obj):
-		assert isinstance(obj, (Protocol, ProtocolGroup)), "unexpected type {} or class {}".format(type(obj), obj.__class__.__qualname__)
-		self.objects.append(obj)
+		_Group.__init__(self, name, description)
 
 	def __repr__(self):
 		return "ProtocolGroup {} ({}) # {}".format(self.name, ", ".join([repr(i) for i in self.objects]),
@@ -104,15 +133,10 @@ class ICMP:
 		return "ICMP {} {}".format(self.type, self.code)
 
 
-class ICMPGroup:
+class ICMPGroup(_Group):
+	_allowed = ICMP
 	def __init__(self, name, description):
-		self.name = name
-		self.description = description
-		self.objects = []
-
-	def add(self, obj):
-		assert isinstance(obj, (ICMP, ICMPGroup)), "unexpected type {} or class {}".format(type(obj), obj.__class__.__qualname__)
-		self.objects.append(obj)
+		_Group.__init__(self, name, description)
 
 	def __repr__(self):
 		return "ICMPGroup {} ({}) # {}".format(self.name, ", ".join([repr(i) for i in self.objects]), self.description)
@@ -320,15 +344,23 @@ class NetworkHost:
 		return "NetworkHost {}".format(str(self.address))
 
 
-class NetworkGroup:
+class NetworkGroup(_Group):
+	_allowed = (Network, NetworkHost, NetworkObject, NetworkAny, NetworkAny4, NetworkAny6)
 	def __init__(self, name, description):
-		self.name = name
-		self.description = description
-		self.objects = []
+		_Group.__init__(self, name, description)
 
-	def add(self, obj):
-		assert isinstance(obj, (Network, NetworkGroup, NetworkHost, NetworkObject, NetworkAny, NetworkAny4, NetworkAny6)), "unexpected type {} or class {}".format(type(obj), obj.__class__.__qualname__)
-		self.objects.append(obj)
+	def expand(self, replace=True):
+		ng = super().expand(replace)
+
+		# replace NetworkObjects with addresses
+		n = []
+		for obj in ng.objects:
+			if isinstance(obj, NetworkObject):
+				n.extend(obj.addresses)
+			else:
+				n.append(obj)
+		ng.objects = n
+		return ng
 
 	def __and__(self, other):
 		for i in self.objects:
@@ -366,15 +398,23 @@ class ServiceObject(Service):
 			self=self)
 
 
-class ServiceGroup:
+class ServiceGroup(_Group):
+	_allowed =  (Service, ServiceObject)
 	def __init__(self, name, description):
-		self.name = name
-		self.description = description
-		self.objects = []
+		_Group.__init__(self, name, description)
 
-	def add(self, obj):
-		assert isinstance(obj, (Service, ServiceObject, ServiceGroup)), "unexpected type {} or class {}".format(type(obj), obj.__class__.__qualname__)
-		self.objects.append(obj)
+	def expand(self, replace=True):
+		sg = super().expand(replace)
+
+		# replace ServiceObject with Service
+		n = []
+		for obj in sg.objects:
+			if isinstance(obj, ServiceObject):
+				n.append(Service(obj.protocol, obj.src, obj.dst, obj.icmp_type, obj.icmp_code))
+			else:
+				n.append(obj)
+		sg.object = n
+		return sg
 
 	def __repr__(self):
 		return "ServiceGroup {} ({}) # {}".format(self.name, ", ".join([repr(i) for i in self.objects]),
@@ -399,17 +439,21 @@ class PortRange:
 		return "PortRange {self.start}:{self.stop}".format(self=self)
 
 
-class PortGroup:
+class PortGroup(_Group):
+	_allowed = (Port, PortRange)
 	def __init__(self, name, protocol, description):
-		self.name = name
-		self.description = description
+		_Group.__init__(self, name, description)
 		assert isinstance(protocol, Protocol), "unexpected type {} or class {}".format(type(protocol), protocol.__class__.__qualname__)
 		self.protocol = protocol
-		self.objects = []
 
-	def add(self, obj):
-		assert isinstance(obj, (Port, PortRange, PortGroup)), "unexpected type {} or class {}".format(type(obj), obj.__class__.__qualname__)
-		self.objects.append(obj)
+	def expand(self, replace=True):
+		if replace:
+			self.objects = self._expand()
+			return self
+		else:
+			obj = self.__class__(self.name, self.protocol, self.description)
+			obj.objects = self._expand()
+			return obj
 
 	def __repr__(self):
 		return "PortGroup {} {} ({}) # {}".format(self.name, self.protocol, ", ".join([repr(i) for i in self.objects]),
@@ -730,34 +774,7 @@ class ACLConfig:
 			(self.groups.protocol, ProtocolGroup),
 			(self.groups.icmp, ICMPGroup)
 		]
-
 		for (l,n) in todo:
 			for group in l.values():
-				while True:
-					for obj in group.objects:
-						if isinstance(obj, n):
-							group.objects.extend(obj.objects)
-							group.objects.remove(obj)
-							break
-					else:
-						break
+				group.expand()
 
-		for group in self.groups.network.values():
-			while True:
-				for obj in group.objects:
-					if isinstance(obj, NetworkObject):
-						group.objects.extend(obj.addresses)
-						group.objects.remove(obj)
-						break
-				else:
-					break
-
-		for group in self.groups.service.values():
-			while True:
-				for obj in group.objects:
-					if isinstance(obj, ServiceObject):
-						group.objects.append(Service(obj.protocol, None, obj.src, obj.dst, obj.icmp_type, obj.icmp_code))
-						group.objects.remove(obj)
-						break
-				else:
-					break
