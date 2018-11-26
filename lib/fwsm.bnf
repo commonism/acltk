@@ -2,9 +2,9 @@
 #include :: "acl.bnf"
 
 grammar
-    =
-    @:{command ~}+ $
-    ;
+	=
+	@:{command ~}+ $
+	;
 
 version
 	= version:?/ASA Version [^\n]*/? NL
@@ -25,7 +25,7 @@ command
 	| access_group
 	| ignored
 	| unmatched NL
-    ;
+	;
 
 interface_detail
 	= type:"description" WS value:TOEOL NL
@@ -48,22 +48,22 @@ access_list_rule_extended
 
 (* access-list access_list_name standard {deny | permit} {any | ip_address mask} *)
 access_list_rule_standard
-    = "access-list" WS id:acl_id WS extended:"standard" WS mode:acl_mode WS src:acl_host [WS] NL
-    ;
+	= "access-list" WS id:acl_id WS extended:"standard" WS mode:acl_mode WS src:acl_host [WS] NL
+	;
 
 (* access-list access_list_name webtype {deny|permit} url [url_string|any] [log [[disable| default]|level] interval secs] [time_range name]] *)
 (* access-list access_list_name webtype {deny|permit} tcp [host ip_address|ip_address subnet_mask|any] [oper port [port]] [log [[disable|default]|level] interval secs] [time_range name]] *)
 
 access_list_rule_webtype
-    = "access-list" WS id:acl_id WS extended:"webtype" WS mode:acl_mode WS protocol:"url" WS url:(string|"any") [WS options:acl_options] [WS] NL
-    | "access-list" WS id:acl_id WS extended:"webtype" WS mode:acl_mode WS protocol:"tcp" WS dst:node [WS options:acl_options] [WS] NL
-    ;
+	= "access-list" WS id:acl_id WS extended:"webtype" WS mode:acl_mode WS protocol:"url" WS url:(string|"any") [WS options:acl_options] [WS] NL
+	| "access-list" WS id:acl_id WS extended:"webtype" WS mode:acl_mode WS protocol:"tcp" WS dst:node [WS options:acl_options] [WS] NL
+	;
 
 (* access-list access_list_name ethertype {deny|permit} {ipx|bpdu|mpls-unicast|mpls-multicast|is-is|any|hex_number} *)
 
 access_list_rule_ethertype
-    = "access-list" WS id:acl_id WS extended:"ethertype" TOEOL NL
-    ;
+	= "access-list" WS id:acl_id WS extended:"ethertype" TOEOL NL
+	;
 
 
 access_list

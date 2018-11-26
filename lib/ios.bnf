@@ -2,9 +2,9 @@
 #include :: "acl.bnf"
 
 grammar
-    =
-    @:{command ~}+ ("line"|"end"|$)
-    ;
+	=
+	@:{command ~}+ ("line"|"end"|$)
+	;
 
 version
 	= "version" version:TOEOL NL
@@ -29,27 +29,27 @@ interface_detail
 	;
 
 banner
-    = "banner" WS banner_cmd
-    ;
+	= "banner" WS banner_cmd
+	;
 
 
 banner_cmd
-    = "motd" WS delim_start delim_msg delim_stop NL
-    ;
+	= "motd" WS delim_start delim_msg delim_stop NL
+	;
 
 
 delim_start
-    = "^C"
-    | ?/./?
-    ;
+	= "^C"
+	| ?/./?
+	;
 
 delim_msg
-    = ()
-    ;
+	= ()
+	;
 
 delim_stop
-    = ()
-    ;
+	= ()
+	;
 
 ip
 	= "ip" WS cmd:ip_command

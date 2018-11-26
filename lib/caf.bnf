@@ -1,8 +1,8 @@
 #include :: "ip.bnf"
 
 grammar
-    = @:expr $
-    ;
+	= @:expr $
+	;
 
 string = ?/[A-Za-z0-9_\-\.]+/?;
 
@@ -11,8 +11,8 @@ pattern = ?/[A-Za-z0-9_\-\.\?\*\[\]\!\/]+/?;
 int = ?/[0-9]+/?;
 
 comments
-    = {comment}+
-    ;
+	= {comment}+
+	;
 
 comment
 	= "/*" ?/([^*]|(\*[^/]))*/? "*/"
