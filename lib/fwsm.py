@@ -1562,155 +1562,155 @@ class fwsmParser(Parser):
     def _port_code_(self):  # noqa
         with self._choice():
             with self._option():
-                self._token('aol')
+                self._token('xdmcp')
             with self._option():
-                self._token('bgp')
+                self._token('www')
             with self._option():
-                self._token('biff')
+                self._token('whois')
             with self._option():
-                self._token('bootpc')
+                self._token('who')
             with self._option():
-                self._token('bootps')
+                self._token('uucp')
             with self._option():
-                self._token('chargen')
+                self._token('time')
             with self._option():
-                self._token('citrix-ica')
+                self._token('tftp')
             with self._option():
-                self._token('cmd')
+                self._token('telnet')
             with self._option():
-                self._token('ctiqbe')
+                self._token('talk')
             with self._option():
-                self._token('daytime')
+                self._token('tacacs')
             with self._option():
-                self._token('discard')
+                self._token('syslog')
             with self._option():
-                self._token('domain')
+                self._token('sunrpc')
             with self._option():
-                self._token('dnsix')
+                self._token('ssh')
             with self._option():
-                self._token('echo')
+                self._token('sqlnet')
             with self._option():
-                self._token('exec')
+                self._token('snmptrap')
             with self._option():
-                self._token('finger')
+                self._token('snmp')
             with self._option():
-                self._token('ftp-data')
+                self._token('smtp')
             with self._option():
-                self._token('ftp')
+                self._token('sip')
             with self._option():
-                self._token('gopher')
-            with self._option():
-                self._token('https')
-            with self._option():
-                self._token('h323')
-            with self._option():
-                self._token('hostname')
-            with self._option():
-                self._token('ident')
-            with self._option():
-                self._token('imap4')
-            with self._option():
-                self._token('irc')
-            with self._option():
-                self._token('isakmp')
-            with self._option():
-                self._token('kerberos')
-            with self._option():
-                self._token('klogin')
-            with self._option():
-                self._token('kshell')
-            with self._option():
-                self._token('ldap')
-            with self._option():
-                self._token('ldaps')
-            with self._option():
-                self._token('lpd')
-            with self._option():
-                self._token('login')
-            with self._option():
-                self._token('lotusnotes')
-            with self._option():
-                self._token('mobile-ip')
-            with self._option():
-                self._token('nameserver')
-            with self._option():
-                self._token('netbios-ns')
-            with self._option():
-                self._token('netbios-dgm')
-            with self._option():
-                self._token('netbios-ssn')
-            with self._option():
-                self._token('netbios-ss')
-            with self._option():
-                self._token('nfs')
-            with self._option():
-                self._token('nntp')
-            with self._option():
-                self._token('non500-isakmp')
-            with self._option():
-                self._token('ntp')
-            with self._option():
-                self._token('pcanywhere-status')
-            with self._option():
-                self._token('pcanywhere-data')
-            with self._option():
-                self._token('pim-auto-rp')
-            with self._option():
-                self._token('pop2')
-            with self._option():
-                self._token('pop3')
-            with self._option():
-                self._token('pptp')
-            with self._option():
-                self._token('radius')
-            with self._option():
-                self._token('radius-acct')
-            with self._option():
-                self._token('rip')
-            with self._option():
-                self._token('rpc')
+                self._token('secureid-udp')
             with self._option():
                 self._token('rtsp')
             with self._option():
                 self._token('rsh')
             with self._option():
-                self._token('secureid-udp')
+                self._token('rpc')
             with self._option():
-                self._token('sip')
+                self._token('rip')
             with self._option():
-                self._token('smtp')
+                self._token('radius-acct')
             with self._option():
-                self._token('snmp')
+                self._token('radius')
             with self._option():
-                self._token('snmptrap')
+                self._token('pptp')
             with self._option():
-                self._token('sqlnet')
+                self._token('pop3')
             with self._option():
-                self._token('ssh')
+                self._token('pop2')
             with self._option():
-                self._token('sunrpc')
+                self._token('pim-auto-rp')
             with self._option():
-                self._token('syslog')
+                self._token('pcanywhere-status')
             with self._option():
-                self._token('tacacs')
+                self._token('pcanywhere-data')
             with self._option():
-                self._token('talk')
+                self._token('ntp')
             with self._option():
-                self._token('telnet')
+                self._token('non500-isakmp')
             with self._option():
-                self._token('tftp')
+                self._token('nntp')
             with self._option():
-                self._token('time')
+                self._token('nfs')
             with self._option():
-                self._token('uucp')
+                self._token('netbios-ssn')
             with self._option():
-                self._token('who')
+                self._token('netbios-ss')
             with self._option():
-                self._token('whois')
+                self._token('netbios-ns')
             with self._option():
-                self._token('www')
+                self._token('netbios-dgm')
             with self._option():
-                self._token('xdmcp')
+                self._token('nameserver')
+            with self._option():
+                self._token('mobile-ip')
+            with self._option():
+                self._token('lpd')
+            with self._option():
+                self._token('lotusnotes')
+            with self._option():
+                self._token('login')
+            with self._option():
+                self._token('ldaps')
+            with self._option():
+                self._token('ldap')
+            with self._option():
+                self._token('kshell')
+            with self._option():
+                self._token('klogin')
+            with self._option():
+                self._token('kerberos')
+            with self._option():
+                self._token('isakmp')
+            with self._option():
+                self._token('irc')
+            with self._option():
+                self._token('imap4')
+            with self._option():
+                self._token('ident')
+            with self._option():
+                self._token('https')
+            with self._option():
+                self._token('hostname')
+            with self._option():
+                self._token('h323')
+            with self._option():
+                self._token('gopher')
+            with self._option():
+                self._token('ftp-data')
+            with self._option():
+                self._token('ftp')
+            with self._option():
+                self._token('finger')
+            with self._option():
+                self._token('exec')
+            with self._option():
+                self._token('echo')
+            with self._option():
+                self._token('domain')
+            with self._option():
+                self._token('dnsix')
+            with self._option():
+                self._token('discard')
+            with self._option():
+                self._token('daytime')
+            with self._option():
+                self._token('ctiqbe')
+            with self._option():
+                self._token('cmd')
+            with self._option():
+                self._token('citrix-ica')
+            with self._option():
+                self._token('chargen')
+            with self._option():
+                self._token('bootps')
+            with self._option():
+                self._token('bootpc')
+            with self._option():
+                self._token('biff')
+            with self._option():
+                self._token('bgp')
+            with self._option():
+                self._token('aol')
             self._error('no available options')
 
     @tatsumasu()

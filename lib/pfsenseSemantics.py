@@ -4,12 +4,14 @@ import urllib
 import urllib.error
 import urllib.request
 import ipaddress
+import html.parser
 from acltk.aclSemantics import aclSemantics, aclParser
 from acltk.aclObjects import Interface, ACLConfig, ACLParserOptions, ACLRuleOptionInterface, ACLRuleOptionLog, ACLRuleOptionInActive, NetworkAny, NetworkInterface, ACLRule, ACLCaption, ACLNode, Protocol, Network, NetworkHost, NetworkGroup, PortGroup, Port, PortRange, ICMP
 from acltk.pfsenseObjects import pfsenseConfig, pfsenseParserOptions
 import tatsu.ast
 import xml.etree.ElementTree as ET
 import logging
+
 
 log = logging.getLogger('acltk.pfsense')
 
@@ -74,9 +76,9 @@ class pfsenseParser(aclParser):
 			alias = i.tag
 			if alias.startswith('opt'):
 				details.append(tatsu.ast.AST(**{'type': 'description', 'value': alias}))
-				alias = values.get('descr', alias)
+				alias = html.parser.unescape(values.get('descr', alias))
 			else:
-				details.append(tatsu.ast.AST(**{'type': 'description', 'value': values.get('descr', '')}))
+				details.append(tatsu.ast.AST(**{'type': 'description', 'value': html.parser.unescape(values.get('descr', ''))}))
 
 			obj = Interface(alias=alias, details=details)
 			ast.append(obj)
@@ -174,7 +176,7 @@ class pfsenseParser(aclParser):
 							iface = self.interface_map.get(iface, iface)
 						# EXML - pfsense uses "fr{idx}" to denote the rows number
 						row = int(values['row'][2:])
-						separators[iface][row].append(ACLCaption(bg=values['color'], text=values['text']))
+						separators[iface][row].append(ACLCaption(bg=values['color'], text=html.parser.unescape(values['text'])))
 
 
 				ifname = None
@@ -201,7 +203,10 @@ class pfsenseParser(aclParser):
 		valueable = ['tracker', 'type', 'interface', 'floating', 'direction', 'quick', 'protocol', 'descr', 'disabled','statetype']
 		for v in list(i):
 			if v.tag in valueable:
-				values[v.tag] = v.text
+				if v.tag == 'descr':
+					values[v.tag] = html.parser.unescape(v.text)
+				else:
+					values[v.tag] = v.text
 			elif v.tag == 'log':
 				values['log'] = True
 			elif v.tag in ['source', 'destination']:

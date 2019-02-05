@@ -41,6 +41,12 @@ object-group service Nested0-SG udp
  port-object eq 70000
 {% endblock %}
 
+{% block object_group_service_port_range_order %}
+object-group service Nested0-SG udp
+ port-object range 2 1
+{% endblock %}
+
+
 {% block object_group_service_service %}
 object-group service ServiceGroupForNesting
  service-object udp destination eq 530000
@@ -56,6 +62,13 @@ object network NetworkObjectRange
  range 310.0.0.1 10.0.0.4
  description Network Range Object
 {% endblock %}
+
+{% block object_network_range_order %}
+object network NetworkObjectRange
+ range 10.0.0.2 10.0.0.1
+ description Network Range Object
+{% endblock %}
+
 
 {% block object_network_subnet %}
 object network NetworkObjectSubnet

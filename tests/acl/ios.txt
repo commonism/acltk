@@ -8,9 +8,10 @@ interface Example_If
  bandwidth 1000001
  ip address 127.0.0.1 255.255.254.0 secondary
  ip address 127.0.0.2 255.255.254.0
- ip access-group example_in in
- ip access-group example_out out
+ ip access-group example_out in
+ ip access-group 102 out
 !
+
 
 ip access-list extended example_out
  permit tcp host 127.0.0.1 host 127.0.0.2

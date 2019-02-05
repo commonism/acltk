@@ -4,7 +4,8 @@ from acltk.aclObjects import ACLConfig, ACLParserOptions, ACLVersion
 
 class pfsenseParserOptions(ACLParserOptions):
 	def __init__(self, fetch_urltable=True, **kwargs):
-		ACLParserOptions.__init__(self, kwargs)
+		ACLParserOptions.__init__(self, **kwargs)
+		assert isinstance(fetch_urltable, bool), "unexpected type {} or class {}".format(type(fetch_urltable), fetch_urltable.__class__.__qualname__)
 		self.fetch_urltable = fetch_urltable
 
 class pfsenseConfig(ACLConfig):

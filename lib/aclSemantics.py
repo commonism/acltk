@@ -120,6 +120,8 @@ class aclSemantics:
 			'protocol': (ProtocolGroup, self.parser.protocol_groups),
 		}
 
+		# only tcp & udp can be of type Protocol
+		# everything else, e.g. "icmp-type" definitions are of type str
 		assert isinstance(ast.type, (str, Protocol)), "unknown type {}".format(type(ast.type))
 		if isinstance(ast.type, str):
 			cls, groups = action[ast.type]
@@ -197,9 +199,8 @@ class aclSemantics:
 				return self.parser.service_objects[ast.object]
 			else:
 				assert isinstance(ast.protocol, Protocol), "protocol {} is unknown".format(ast.protocol)
-				del ast['type']
-				if 'object' in ast:
-					del ast['object']
+				for i in frozenset(['type', 'object']) & set(ast.keys()):
+					del ast[i]
 				return Service(**ast)
 		elif ast.type == 'group-object':
 			r = self.parser.service_groups[ast.object]
@@ -207,6 +208,12 @@ class aclSemantics:
 
 	def service_object(self, ast):
 		assert (isinstance(ast['protocol'], Protocol)), "invalid protocol {}".format(ast.protocol)
+		return ast
+
+	def service_object_source(self, ast):
+		return ast
+
+	def service_object_destination(self, ast):
 		return ast
 
 	def service_object_op(self, ast):

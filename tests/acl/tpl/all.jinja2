@@ -107,7 +107,60 @@ object-group icmp-type NestMe1-IG
 object-group icmp-type Nested0-IG
  group-object NestMe0-IG
  group-object NestMe1-IG
+
+{% endblock -%}
+
+
+{% block object_group_expand %}
+object-group service p0123 tcp
+ port-object eq 0
+ port-object eq 1
+ port-object eq 2
+ port-object eq 3
+
+object-group service p4567 tcp
+ port-object eq 4
+ port-object eq 5
+ port-object eq 6
+ port-object eq 7
+
+object-group service p89
+ service-object tcp source lt 8
+ service-object tcp destination gt  9
+
+object-group service p01
+ service-object tcp source eq 0
+ service-object tcp source eq 1
+
+object-group service p23
+ service-object tcp destination eq 2
+ service-object tcp destination eq 3
+
+object-group service p01p23
+ service-object tcp source eq 0 destination eq 1
+ service-object tcp source eq 1 destination eq 2
+
+object-group service p32 tcp
+{%- for i in range(1,15) %}
+ port-object eq {{ i }}
+{%- endfor %}
+ port-object range 1 15
+ port-object eq 16
 {% endblock %}
+
+{% block object_group_names %}
+object-group service AllKnownNames2
+{%- for serv in services|sort(attribute='name') -%}
+{%- if serv.protocol == 'ICMP' %}
+ service-object icmp {{ serv.name }}
+{%- elif serv.protocol in ('UDP','TCP') %}
+ service-object {{ serv.protocol|lower }} source eq {{ serv.name }}
+{%- endif -%}
+{%- endfor %}
+
+{% endblock %}
+
+
 
 
 {% block object_group_service %}
@@ -247,7 +300,6 @@ object network v6NetworkObject
  host fe80::2aa:bbcc:ddee:ff03
 {% endblock %}
 
-
 {% block object_group_network %}
 object-group network NetworkGroupHost
  network-object host 127.0.0.1
@@ -319,7 +371,6 @@ object-group protocol Nested0-PG
  group-object NestMe0-PG
  group-object NestMe1-PG
 {% endblock %}
-
 
 
 access-list v6 extended permit tcp fe80::2aa:bbcc:ddee:ff01/64 fe80::2aa:bbcc:ddee:ff02/64
@@ -411,18 +462,34 @@ access-list outside_access_in remark remark
 access-list outside_access_in extended permit tcp any4 any
 
 
+access-list outside_access_in remark permit object-group ServiceGroupWithOutProtocol any4 any
 access-list outside_access_in extended permit object-group ServiceGroupWithOutProtocol any4 any
 
+access-list outside_access_in remark permit object ICMPEchoService0 any4 any
 access-list outside_access_in extended permit object ICMPEchoService0 any4 any
+
+access-list outside_access_in remark permit tcp object-group NetworkObjectsGroup any
 access-list outside_access_in extended permit tcp object-group NetworkObjectsGroup any
 
+access-list outside_access_in remark permit udp any4 any4 eq 53
 access-list outside_access_in extended permit udp any4 any4 eq 53
+
+access-list outside_access_in remark permit tcp object NetworkObjectHost any
 access-list outside_access_in extended permit tcp object NetworkObjectHost any
 
+access-list outside_access_in remark permit object-group Nested0-PG host 127.0.0.2 host 127.0.0.2 time-range anytime
 access-list outside_access_in extended permit object-group Nested0-PG host 127.0.0.2 host 127.0.0.2 time-range anytime
+
+access-list outside_access_in remark permit icmp host 127.0.0.2 host 127.0.0.2 object-group ICMPGroup
 access-list outside_access_in extended permit icmp host 127.0.0.2 host 127.0.0.2 object-group ICMPGroup
+
+access-list outside_access_in remark permit udp host 127.0.0.2 host 127.0.0.2 object-group Nested0-SG
 access-list outside_access_in extended permit udp host 127.0.0.2 host 127.0.0.2 object-group Nested0-SG
+
+access-list outside_access_in remark permit object-group ServiceGroupWithOutProtocol host 127.0.0.2 host 127.0.0.2
 access-list outside_access_in extended permit object-group ServiceGroupWithOutProtocol host 127.0.0.2 host 127.0.0.2
+
+access-list outside_access_in remark permit udp host localbernd host 127.0.0.2 eq 51
 access-list outside_access_in extended permit udp host localbernd host 127.0.0.2 eq 51
 
 
@@ -433,6 +500,7 @@ access-list interface_icmp extended permit icmp any any
 access-group outside_access_in in interface outside
 access-group inside_access_out global
 
+access-list outside_access_in remark permit tcp 127.0.0.1 255.255.255.0 127.0.0.1 255.255.255.192 eq 4711 time-range time_range_test0 inactive
 access-list outside_access_in extended permit tcp 127.0.0.1 255.255.255.0 127.0.0.1 255.255.255.192 eq 4711 time-range time_range_test0 inactive
 
 access-list Neuberger-GLT-Fernwartung_splitTunnelAcl standard permit 172.16.200.0 255.255.255.0
@@ -471,6 +539,16 @@ access-list outside_ether_access_in extended deny udp any any
 access-list access_in extended deny 0 any any
 access-list access_in extended deny 10 any any
 access-list access_in extended deny 255 any any
+{% endblock %}
+
+{% block access_list_rule_expand %}
+access-list ports extended permit tcp any object-group p0123 any object-group p4567
+access-list ports extended permit tcp any object-group p32 any object-group p32
+access-list ports extended permit object-group p89 any any
+access-list ports extended permit object-group p01 any any
+access-list ports extended permit object-group p23 any any
+access-list ports extended permit object-group p01p23 any any
+
 {% endblock %}
 
 {% endblock all %}

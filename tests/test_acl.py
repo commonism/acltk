@@ -8,8 +8,8 @@ from jinja2.utils import concat
 
 from acltk.fwsmObjects import fwsmConfig
 from acltk.iosObjects import iosConfig
-from acltk.pfsenseObjects import pfsenseConfig
-from acltk.aclObjects import NetworkWildcard, NetworkHost, Network, ACLConfig, ACLParserOptions
+from acltk.pfsenseObjects import pfsenseConfig, pfsenseParserOptions
+from acltk.aclObjects import NetworkWildcard, NetworkHost, Network, ACLConfig, ACLParserOptions, PortUtil
 
 
 class aclTestObjects(unittest.TestCase):
@@ -38,14 +38,23 @@ class aclTestParse(unittest.TestCase):
 			i.__repr__()
 
 	def test_pfsense(self):
-		cfg = pfsenseConfig.fromPath("acl/pfsense.xml")
+		for i in [{'fetch_urltable':False},{'fetch_urltable':True}]:
+			cfg = pfsenseConfig.fromPath("acl/pfsense.xml", options=pfsenseParserOptions(**i))
+			self.assertIsNotNone(cfg)
+			cfg.names.__repr__()
+			for i in cfg.interfaces.values():
+				i.__repr__()
+			for i in cfg.rules.rules:
+				i.__repr__()
+
+	def test_pf_1_s5(self):
+		cfg = pfsenseConfig.fromPath("acl/config-pf-1-s5.xml")
 		self.assertIsNotNone(cfg)
 		cfg.names.__repr__()
 		for i in cfg.interfaces.values():
 			i.__repr__()
 		for i in cfg.rules.rules:
 			i.__repr__()
-
 
 	def test_ignored(self):
 		cfg = fwsmConfig.fromPath("acl/ignored.txt")
@@ -63,8 +72,8 @@ class aclTestParse(unittest.TestCase):
 	def _test_single_acl(self, name):
 		cfg = ACLConfig.fromPath(name)
 
-	def _test_candidate(self):
-		return self._test_single_acl('acl/private/fwsm-s5_nsc-003.conf')
+	def test_candidate(self):
+		return self._test_single_acl('acl/private/fwsm.conf')
 #		return self._test_single_acl('acl/supportforums.cisco.com/run_config_asa.txt')
 
 	def test_private(self):
@@ -87,14 +96,16 @@ class aclTestBlock(unittest.TestCase):
 	def setUp(self):
 		loader = FileSystemLoader('./acl/tpl/')
 		env = Environment(loader=loader, extensions=[])
+		self.tplargs = {'services':list(PortUtil.services())}
 		self.tpl = {}
 		self.ctx = {}
 		for tpl in env.list_templates():
 			name = os.path.splitext(tpl)[0]
 			self.tpl[name] = env.get_template(tpl)
-			self.ctx[name] = self.tpl[name].new_context({})
+			self.ctx[name] = self.tpl[name].new_context(self.tplargs)
 
 	def _test_block(self, block, deps=None, tpl='all', trace=False):
+#		print(self.tpl[tpl].blocks.keys())
 		if block is not None:
 			fname = 'acl/single/{tpl}-{block}.txt'
 			blocks = [block]
@@ -105,7 +116,7 @@ class aclTestBlock(unittest.TestCase):
 				data += concat(self.tpl[tpl].blocks[b](self.ctx[tpl]))
 		else:
 			fname = 'acl/single/{tpl}.txt'
-			data = self.tpl[tpl].render()
+			data = self.tpl[tpl].render(**self.tplargs)
 
 		fname = fname.format(**{'tpl':tpl,'block':block})
 
@@ -158,6 +169,9 @@ class aclTestBlock(unittest.TestCase):
 
 	def test_block_access_list_rule_protocol_int(self):
 		return self._test_block('access_list_rule_protocol_int')
+
+	def test_block_access_list_rule_expand(self):
+		return self._test_block('access_list_rule_expand', ['object_group_expand'])
 
 	def test_block_object_group_service_int(self):
 		return self._test_block('object_group_service_int')

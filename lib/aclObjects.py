@@ -1,11 +1,16 @@
+import collections
 import datetime
 import ipaddress
 import math
 import fnmatch
 import logging
-
+import socket
 
 log = logging.getLogger()
+
+def nstrsum(x):
+#	return sum([ord(v) * 2 ** idx for idx, v in enumerate(x)])
+	return sum([(ord(v)-255) * 2 ** idx for idx, v in enumerate(x)])
 
 
 class Names:
@@ -96,8 +101,16 @@ class _Group:
 
 		return expand_r(self.objects)
 
-	def expand(self, replace=True):
-		if replace:
+	def expand(self, insitu=True):
+		"""
+		Expand the _Group - resolve all _Groups and use their objects
+
+		:param insitu: True - replace objects with expanded objects
+		False - create new _Group with expanded objects
+		:return: the _Group with the expanded objects
+		:rtype: _Group
+		"""
+		if insitu:
 			self.objects = self._expand()
 			return self
 		else:
@@ -106,6 +119,9 @@ class _Group:
 			obj.expand()
 			return obj
 
+	def sort(self, insitu=True):
+		raise NotImplementedError("not implemented for {}".format(self.__class__.__qualname__))
+
 class Protocol:
 	def __init__(self, p):
 		self.name = p
@@ -113,6 +129,8 @@ class Protocol:
 	def __repr__(self):
 		return "Protocol {}".format(self.name)
 
+	def __iter__(self):
+		return [self.name].__iter__()
 
 class ProtocolGroup(_Group):
 	_allowed = Protocol
@@ -349,8 +367,8 @@ class NetworkGroup(_Group):
 	def __init__(self, name, description):
 		_Group.__init__(self, name, description)
 
-	def expand(self, replace=True):
-		ng = super().expand(replace)
+	def expand(self, insitu=True):
+		ng = super().expand(insitu)
 
 		# replace NetworkObjects with addresses
 		n = []
@@ -361,6 +379,68 @@ class NetworkGroup(_Group):
 				n.append(obj)
 		ng.objects = n
 		return ng
+
+	def collapse(self, insitu=True):
+		"""
+		Collapse the NetworkGroups Addresses
+
+		:param insitu: True - in place, modify this object
+		False - create new object
+
+		:return: collapsed NetworkGroup
+		"""
+		# expansion required?
+		if any(filter(lambda o: not isinstance(o, (Network, NetworkObject)), self.objects)):
+			if insitu:
+				raise ValueError("expansion required")
+			obj = self.expand(insitu)
+		else:
+			obj = self
+		return obj._collapse()
+
+	def _collapse(self):
+		# FIXME - remove NetworkAny
+		if any(filter(lambda o: isinstance(o, (NetworkAny, NetworkAny4, NetworkAny6)), self.objects)):
+			self.objects = list(filter(lambda o: not isinstance(o, (NetworkAny, NetworkAny4, NetworkAny6)), self.objects))
+
+		# NetworkGroup is assumed to be expanded, contains only Network and NetworkHost
+		addresses = [
+			{
+				Network:lambda x: x.network,
+				NetworkHost:lambda x: x.address
+			}[h.__class__](h) for h in self.objects
+		]
+
+		self.objects.clear()
+
+		for h in ipaddress.collapse_addresses(addresses):
+			if not isinstance(h, (ipaddress.IPv4Network, ipaddress.IPv6Network)):
+				raise ValueError("unexpected type {}".format(h))
+			if h.num_addresses > 1:
+				h_ = Network(h.network_address, h.netmask)
+			else:
+				h_ = NetworkHost(h.network_address)
+			self.add(h_)
+		return self
+
+	def sort(self, insitu=True):
+		if insitu:
+			obj = self
+		else:
+			obj = self.collapse(insitu=False)
+
+		def key_of(o):
+			if isinstance(o, Network):
+				return int(o.network.network_address)
+			elif isinstance(o, NetworkHost):
+				return int(o.address)
+			elif isinstance(o, NetworkGroup):
+				return nstrsum(o.name)
+			else:
+				raise ValueError("unsortable {}".format(o.__class__.__qualname__))
+		obj.objects = sorted(self.objects, key=key_of)
+
+		return obj
 
 	def __and__(self, other):
 		for i in self.objects:
@@ -421,6 +501,114 @@ class ServiceGroup(_Group):
 												  self.description)
 
 
+class PortUtil:
+	_servnames = """
+	aol			|	TCP      	|	5190 	|	America Online
+	bgp			|	TCP      	|	179  	|	Border Gateway Protocol, RFC 1163
+	biff			|	UDP      	|	512  	|	Used by mail system to notify users that new mail is received
+	bootpc			|	UDP      	|	68   	|	Bootstrap Protocol Client
+	bootps			|	UDP      	|	67   	|	Bootstrap Protocol Server
+	chargen			|	TCP      	|	19   	|	Character Generator
+	citrix-ica		|	TCP      	|	1494 	|	Citrix Independent Computing Architecture (ICA) protocol
+	cmd			|	TCP      	|	514  	|	Similar to exec except that cmd has automatic authentication
+	ctiqbe			|	TCP      	|	2748 	|	Computer Telephony Interface Quick Buffer Encoding
+	daytime			|	TCP      	|	13   	|	Day time, RFC 867
+	discard			|	TCP,UDP  	|	9    	|	Discard
+	domain			|	TCP,UDP  	|	53   	|	DNS
+	dnsix			|	UDP      	|	195  	|	DNSIX Session Management Module Audit Redirector
+	echo			|	TCP,UDP  	|	7    	|	Echo
+	exec			|	TCP      	|	512  	|	Remote process execution
+	finger			|	TCP      	|	79   	|	Finger
+	ftp			|	TCP      	|	21   	|	File Transfer Protocol (control port)
+	ftp-data		|	TCP      	|	20   	|	File Transfer Protocol (data port)
+	gopher			|	TCP      	|	70   	|	Gopher
+	https			|	TCP      	|	443  	|	HTTP over SSL
+	h323              	|	TCP      	|	1720 	|	H.323 call signalling
+	hostname          	|	TCP      	|	101  	|	NIC Host Name Server
+	ident             	|	TCP      	|	113  	|	Ident authentication service
+	imap4             	|	TCP      	|	143  	|	Internet Message Access Protocol, version 4
+	irc               	|	TCP      	|	194  	|	Internet Relay Chat protocol
+	isakmp            	|	UDP      	|	500  	|	Internet Security Association and Key Management Protocol
+	kerberos          	|	TCP,UDP  	|	750  	|	Kerberos
+	klogin            	|	TCP      	|	543  	|	KLOGIN
+	kshell            	|	TCP      	|	544  	|	Korn Shell
+	ldap              	|	TCP      	|	389  	|	Lightweight Directory Access Protocol
+	ldaps             	|	TCP      	|	636  	|	Lightweight Directory Access Protocol (SSL)
+	lpd               	|	TCP      	|	515  	|	Line Printer Daemon - printer spooler
+	login             	|	TCP      	|	513  	|	Remote login
+	lotusnotes        	|	TCP      	|	1352 	|	IBM Lotus Notes
+	mobile-ip         	|	UDP      	|	434  	|	MobileIP-Agent
+	nameserver        	|	UDP      	|	42   	|	Host Name Server
+	netbios-ns        	|	UDP      	|	137  	|	NetBIOS Name Service
+	netbios-dgm       	|	UDP      	|	138  	|	NetBIOS Datagram Service
+	netbios-ssn       	|	TCP      	|	139  	|	NetBIOS Session Service
+	nntp              	|	TCP      	|	119  	|	Network News Transfer Protocol
+	ntp               	|	UDP      	|	123  	|	Network Time Protocol
+	pcanywhere-status 	|	UDP      	|	5632 	|	pcAnywhere status
+	pcanywhere-data   	|	TCP      	|	5631 	|	pcAnywhere data
+	pim-auto-rp       	|	TCP,UDP  	|	496  	|	Protocol Independent Multicast, reverse path flooding, dense mode
+	pop2              	|	TCP      	|	109  	|	Post Office Protocol - Version 2
+	pop3              	|	TCP      	|	110  	|	Post Office Protocol - Version 3
+	pptp              	|	TCP      	|	1723 	|	Point-to-Point Tunneling Protocol
+	radius            	|	UDP      	|	1645 	|	Remote Authentication Dial-In User Service
+	radius-acct       	|	UDP      	|	1646 	|	Remote Authentication Dial-In User Service (accounting)
+	rip               	|	UDP      	|	520  	|	Routing Information Protocol
+	secureid-udp      	|	UDP      	|	5510 	|	SecureID over UDP
+	smtp              	|	TCP      	|	25   	|	Simple Mail Transport Protocol
+	snmp              	|	UDP      	|	161  	|	Simple Network Management Protocol
+	snmptrap          	|	UDP      	|	162  	|	Simple Network Management Protocol - Trap
+	sqlnet       		|	TCP      	|	1521 	|	Structured Query Language Network
+	ssh          		|	TCP      	|	22   	|	Secure Shell
+	sunrpc (rpc) 		|	TCP,UDP  	|	111  	|	Sun Remote Procedure Call
+	syslog       		|	UDP      	|	514  	|	System Log
+	tacacs       		|	TCP,UDP  	|	49   	|	Terminal Access Controller Access Control System Plus
+	talk         		|	TCP,UDP  	|	517  	|	Talk
+	telnet       		|	TCP      	|	23   	|	RFC 854 Telnet
+	tftp         		|	UDP      	|	69   	|	Trivial File Transfer Protocol
+	time         		|	UDP      	|	37   	|	Time
+	uucp         		|	TCP      	|	540  	|	UNIX-to-UNIX Copy Program
+	who          		|	UDP      	|	513  	|	Who
+	whois        		|	TCP      	|	43   	|	Who Is
+	www          		|	TCP      	|	80  	|	World Wide Web
+	xdmcp        		|	UDP      	|	177  	|	X Display Manager Control Protocol
+	echo			|	ICMP		|	8	| 
+	echo-reply		| 	ICMP 		| 	0 	| 
+	information-reply 	| 	ICMP 		| 	16 	| 
+	information-request	| 	ICMP 		| 	15 	| 
+	mask-reply		| 	ICMP 		|  	18 	| 
+	mask-request 		| 	ICMP		|  	17 	| 
+	mobile-redirect 	| 	ICMP		|  	32 	| 
+	parameter-problem 	|	ICMP		|  	12 	| 
+	redirect		|	ICMP		|  	5 	| 
+	router-advertisement	|	ICMP		|  	9 	| 
+	router-solicitation	|	ICMP		|  	10 	| 
+	source-quench		|	ICMP		|  	4 	| 
+	time-exceeded		|	ICMP		|  	11 	| 
+	timestamp-reply 	|	ICMP		|  	14 	| 
+	timestamp-request 	|	ICMP		|  	13 	| 
+	unreachable 		|	ICMP		|  	3 	| 
+	traceroute		|	ICMP		| 	30	| 
+	"""
+	_serv = collections.namedtuple('serv',field_names=['name','protocol','port','description'])
+
+	@classmethod
+	def getservbyname(cls, name, proto=None):
+		for s in cls.services():
+			if s.name == name and (proto is None or proto.toupper() == s.protocol):
+				return int(s.port)
+		return None
+
+	@classmethod
+	def services(cls):
+		for line in cls._servnames.split('\n'):
+			line = line.strip()
+			if not line:
+				continue
+			name, protocol, port, description = map(lambda x: x.strip(), line.split("|"))
+			for p in protocol.split(","):
+				yield cls._serv(name.split(' ')[0], p, int(port), description)
+
+
 class Port:
 	def __init__(self, op, num):
 		self.op = op
@@ -432,6 +620,12 @@ class Port:
 
 class PortRange:
 	def __init__(self, start, stop):
+		try:
+			int(start)
+			int(stop)
+			assert start < stop, "last Port must be greater than first"
+		except ValueError:
+			pass
 		self.start = start
 		self.stop = stop
 
@@ -446,14 +640,41 @@ class PortGroup(_Group):
 		assert isinstance(protocol, Protocol), "unexpected type {} or class {}".format(type(protocol), protocol.__class__.__qualname__)
 		self.protocol = protocol
 
-	def expand(self, replace=True):
-		if replace:
+	def expand(self, insitu=True):
+		if insitu:
 			self.objects = self._expand()
 			return self
 		else:
 			obj = self.__class__(self.name, self.protocol, self.description)
 			obj.objects = self._expand()
 			return obj
+
+	def sort(self, insitu=True):
+		if insitu:
+			obj = self
+		else:
+			obj = self.expand(insitu=False)
+
+		def key_of(o):
+			def _key(x):
+				try:
+					return int(x)
+				except ValueError:
+					pass
+				try:
+					return socket.getservbyname(x)
+				except OSError:
+					pass
+				return nstrsum(x)
+			if isinstance(o, Port):
+				return _key(o.num)
+			elif isinstance(o, PortRange):
+				return _key(o.start)
+			else:
+				raise ValueError("can not compare")
+
+		obj.objects = sorted(obj.objects, key=key_of)
+		return obj
 
 	def __repr__(self):
 		return "PortGroup {} {} ({}) # {}".format(self.name, self.protocol, ", ".join([repr(i) for i in self.objects]),
@@ -579,9 +800,8 @@ class ACLRule:
 		return True
 
 	def __repr__(self):
-		return "ACLRule {self.id} {self.mode} {self.protocol} src:{self.src} {self.dst} # {self.remark}".format(
+		return "ACLRule {self.id} {self.mode} {self.protocol} src:{self.src} dst:{self.dst} # {self.remark}".format(
 			self=self)
-
 
 class ACLCaption:
 	def __init__(self, text, bg):
@@ -628,6 +848,7 @@ import tatsu.ast
 
 class ACLParserOptions:
 	def __init__(self, trace=False):
+		assert isinstance(trace, bool), "unexpected type {} or class {}".format(type(trace), trace.__class__.__qualname__)
 		self.trace = trace
 
 class ACLConfig:

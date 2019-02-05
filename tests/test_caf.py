@@ -26,8 +26,25 @@ class cafTestParse(unittest.TestCase):
 			with self.assertRaises(tatsu.exceptions.FailedParse):
 				cafBlock.fromPath("caf/{}.caf".format(i))
 
+	def test_private(self):
+		for i in glob.glob("acl/private/*.conf"):
+			print(i)
+			acl = ACLConfig.fromPath(i)
+			for j in glob.glob('caf/private/*.caf'):
+				print(j)
+				cfg = cafBlock.fromPath(j)
+				r = cfg.run(acl.rules, verbose=True)
+				self.assertTrue(len(r) >= 0)
+				acl.resolve(r)
+			for i in cafTestParse.good:
+				cfg = cafBlock.fromPath("caf/{}.caf".format(i))
+				r = cfg.run(acl.rules, verbose=True)
+				self.assertTrue(len(r) >= 0)
+				acl.resolve(r)
 
-class cafTestParse(unittest.TestCase):
+
+
+class cafTestRun(unittest.TestCase):
 	def setUp(self):
 		loader = FileSystemLoader('./acl/tpl/')
 		env = Environment(loader=loader, extensions=[])
@@ -79,21 +96,6 @@ class cafTestParse(unittest.TestCase):
 	def test_expand(self):
 		self.acls.expand()
 
-	def test_private(self):
-		for i in glob.glob("acl/private/*.conf"):
-			print(i)
-			acl = ACLConfig.fromPath(i)
-			for j in glob.glob('caf/private/*.caf'):
-				print(j)
-				cfg = cafBlock.fromPath(j)
-				r = cfg.run(acl.rules, verbose=True)
-				self.assertTrue(len(r) >= 0)
-				acl.resolve(r)
-			for i in cafTestParse.good:
-				cfg = cafBlock.fromPath("caf/{}.caf".format(i))
-				r = cfg.run(acl.rules, verbose=True)
-				self.assertTrue(len(r) >= 0)
-				acl.resolve(r)
 
 	def test_public(self):
 		for i in cafTestParse.good:
