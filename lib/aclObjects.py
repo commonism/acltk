@@ -483,8 +483,8 @@ class ServiceGroup(_Group):
 	def __init__(self, name, description):
 		_Group.__init__(self, name, description)
 
-	def expand(self, replace=True):
-		sg = super().expand(replace)
+	def expand(self, insitu=True):
+		sg = super().expand(insitu)
 
 		# replace ServiceObject with Service
 		n = []
@@ -493,7 +493,7 @@ class ServiceGroup(_Group):
 				n.append(Service(obj.protocol, obj.src, obj.dst, obj.icmp_type, obj.icmp_code))
 			else:
 				n.append(obj)
-		sg.object = n
+		sg.objects = n
 		return sg
 
 	def __repr__(self):
