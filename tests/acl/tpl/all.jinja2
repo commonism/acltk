@@ -298,6 +298,10 @@ object network NetworkObjectEmpty
 
 object network v6NetworkObject
  host fe80::2aa:bbcc:ddee:ff03
+
+object network theNATObject
+ host 1.1.1.1
+
 {% endblock %}
 
 {% block object_group_network %}
@@ -551,4 +555,319 @@ access-list ports extended permit object-group p01p23 any any
 
 {% endblock %}
 
+{% block nat %} 
+
+{% block network_object_dynamic_nat %}
+{# The following example configures dynamic NAT that hides 192.168.2.0 network behind a range of outside addresses 10.2.2.1 through 10.2.2.10: #}
+object network my-range-obj
+ range 10.2.2.1 10.2.2.10
+
+object network my-inside-net
+ subnet 192.168.2.0 255.255.255.0
+ nat (inside,outside) dynamic my-range-obj
+
+{% endblock %}
+
+{% block network_object_dynamic_nat_backup_pat %}
+{# The following example configures dynamic NAT with dynamic PAT backup. #}
+object network nat-range1
+ range 10.10.10.10 10.10.10.20
+ 
+object network pat-ip1
+ host 10.10.10.21
+ 
+object-group network nat-pat-grp
+ network-object object nat-range1
+ network-object object pat-ip1
+ 
+object network my_net_obj5
+ subnet 10.76.11.0 255.255.255.0
+ nat (inside,outside) dynamic nat-pat-grp interface
+{% endblock %}
+
+{% block network_object_dynamic_nat_pat_v6_via_v4 %}
+{# The following example configures dynamic NAT with dynamic PAT backup to translate IPv6 hosts to IPv4. #}
+object network IPv4_NAT_RANGE
+ range 209.165.201.1 209.165.201.30
+ 
+object network IPv4_PAT
+ host 209.165.201.31
+ 
+object-group network IPv4_GROUP
+ network-object object IPv4_NAT_RANGE
+ network-object object IPv4_PAT
+ 
+object network my_net_obj5
+ subnet 2001:DB8::/96
+ nat (inside,outside) dynamic IPv4_GROUP interface
+{% endblock %}
+
+{% block network_object_dynamic_pat %}
+{# The following example configures dynamic PAT that hides the 192.168.2.0 network behind address 10.2.2.2: #}
+object network my-inside-net
+ subnet 192.168.2.0 255.255.255.0
+ nat (inside,outside) dynamic 10.2.2.2
+{% endblock %} 
+
+{% block network_object_dynamic_pat_interface %}
+{# The following example configures dynamic PAT that hides the 192.168.2.0 network behind the outside interface address: #}
+object network my-inside-net
+ subnet 192.168.2.0 255.255.255.0
+ nat (inside,outside) dynamic interface
+{% endblock %} 
+
+{% block network_object_dynamic_nat_pat6 %}
+{#  The following example configures dynamic PAT with a PAT pool to translate the inside IPv6 network to an outside IPv4 network: #}
+object network IPv4_POOL
+ range 203.0.113.1 203.0.113.254
+
+object network IPv6_INSIDE
+ subnet 2001:DB8::/96
+ nat (inside,outside) dynamic pat-pool IPv4_POOL
+
+{% endblock %}
+
+{% block network_object_static_nat %}
+{# The following example configures static NAT for the real host 10.1.1.1 on the inside to 10.2.2.2 on the outside with DNS rewrite enabled. #}
+object network my-host-obj1
+ host 10.1.1.1
+ nat (inside,outside) static 10.2.2.2 dns
+{% endblock %}
+
+
+{% block network_object_static_nat_mapped %}
+{# The following example configures static NAT for the real host 10.1.1.1 on the inside to 10.2.2.2 on the outside using a mapped object. #}
+object network my-mapped-obj
+ host 10.2.2.2
+ 
+ object network my-host-obj1
+ host 10.1.1.1
+ nat (inside,outside) static my-mapped-obj
+{% endblock %}
+
+{% block network_object_static_nat_pat %}
+{# The following example configures static NAT-with-port-translation for 10.1.1.1 at TCP port 21 to the outside interface at port 2121. #}
+ 
+object network my-ftp-server
+ host 10.1.1.1
+ nat (inside,outside) static interface service tcp 21 2121
+{% endblock %}
+
+{% block network_object_static_nat_v4viav6 %}
+{# The following example maps an inside IPv4 network to an outside IPv6 network. #}
+object network inside_v4_v6
+ subnet 10.1.1.0 255.255.255.0
+ nat (inside,outside) static 2001:DB8::/96
+{% endblock %}
+
+{% block network_object_static_nat6 %}
+{# The following example maps an inside IPv6 network to an outside IPv6 network. #}
+object network inside_v6
+ subnet 2001:DB8:AAAA::/96
+ nat (inside,outside) static 2001:DB8:BBBB::/96
+{% endblock %}
+
+{% block network_object_identity_nat_address %}
+(* The following example maps a host address to itself using an inline mapped address: *)
+
+object network my-host-obj1
+ host 10.1.1.1
+ nat (inside,outside) static 10.1.1.1
+ 
+{% endblock %}
+
+{% block network_object_identity_nat_object %}
+{# The following example maps a host address to itself using a network object: #}
+
+object network my-host-obj1-identity
+ host 10.1.1.1
+ 
+object network my-host-obj1
+ host 10.1.1.1
+ nat (inside,outside) static my-host-obj1-identity 
+{% endblock %}
+
+
+{% block twice_dynamic_nat %}
+{# The following example configures dynamic NAT for inside network 10.1.1.0/24 when accessing servers on the 209.165.201.1/27 network as well as servers on the 203.0.113.0/24 network: #}
+
+object network INSIDE_NW
+ subnet 10.1.1.0 255.255.255.0
+
+object network MAPPED_1
+ range 209.165.200.225 209.165.200.254
+
+object network MAPPED_2
+ range 209.165.202.129 209.165.200.158
+
+object network SERVERS_1
+ subnet 209.165.201.0 255.255.255.224
+
+object network SERVERS_2
+ subnet 203.0.113.0 255.255.255.0
+
+nat (inside,outside) source dynamic INSIDE_NW MAPPED_1 destination static SERVERS_1 SERVERS_1
+
+nat (inside,outside) source dynamic INSIDE_NW MAPPED_2 destination static SERVERS_2 SERVERS_2
+
+{% endblock %}
+
+{% block twice_dynamic_nat6via4 %}
+{# The following example configures dynamic NAT for an IPv6 inside network 2001:DB8:AAAA::/96 when accessing servers on the IPv4 209.165.201.1/27 network as well as servers on the 203.0.113.0/24 network #}
+
+object network INSIDE_NW
+ subnet 2001:DB8:AAAA::/96
+
+object network MAPPED_1
+ range 209.165.200.225 209.165.200.254
+
+object network MAPPED_2
+ range 209.165.202.129 209.165.200.158
+
+object network SERVERS_1
+ subnet 209.165.201.0 255.255.255.224
+
+object network SERVERS_2
+ subnet 203.0.113.0 255.255.255.0
+
+nat (inside,outside) source dynamic INSIDE_NW MAPPED_1 destination static SERVERS_1 SERVERS_1
+nat (inside,outside) source dynamic INSIDE_NW MAPPED_2 destination static SERVERS_2 SERVERS_2
+
+{% endblock %}
+
+{% block twice_dynamic_pat %}
+
+{# 
+The following example configures interface PAT for inside network 192.168.1.0/24 when accessing outside Telnet server 209.165.201.23, and Dynamic PAT using a PAT pool when accessing any server on the 203.0.113.0/24 network. #}
+
+object network INSIDE_NW
+ subnet 192.168.1.0 255.255.255.0
+
+object network PAT_POOL
+ range 209.165.200.225 209.165.200.254
+
+object network TELNET_SVR
+ host 209.165.201.23
+
+object service TELNET
+ service tcp destination eq 23
+
+object network SERVERS
+ subnet 203.0.113.0 255.255.255.0
+
+nat (inside,outside) source dynamic INSIDE_NW interface destination static TELNET_SVR TELNET_SVR service TELNET TELNET
+
+nat (inside,outside) source dynamic INSIDE_NW pat-pool PAT_POOL destination static SERVERS SERVERS
+ 
+{% endblock %}
+
+{% block twice_dynamic_pat6via4 %}
+{# The following example configures interface PAT for inside network 192.168.1.0/24 when accessing outside IPv6 Telnet server 2001:DB8::23, and Dynamic PAT using a PAT pool when accessing any server on the 2001:DB8:AAAA::/96 network. #}
+object network INSIDE_NW
+ subnet 192.168.1.0 255.255.255.0
+ 
+object network PAT_POOL
+ range 2001:DB8:AAAA::1 2001:DB8:AAAA::200
+ 
+object network TELNET_SVR
+ host 2001:DB8::23
+ 
+object service TELNET
+ciscoasa(config-service-object)# service tcp destination eq 23
+ 
+object network SERVERS
+ subnet 2001:DB8:AAAA::/96
+ 
+nat (inside,outside) source dynamic INSIDE_NW interface ipv6 destination static TELNET_SVR TELNET_SVR service TELNET TELNET
+nat (inside,outside) source dynamic INSIDE_NW pat-pool PAT_POOL destination static SERVERS SERVERS
+ 
+{% endblock %}
+
+
+{% block twice_static_nat %}
+{# The following example shows the use of static interface NAT with port translation. #} 
+
+object service FTP_PASV_PORT_RANGE
+ service tcp source range 65000 65004
+
+object network HOST_FTP_SERVER
+ host 192.168.10.100
+
+nat (inside,outside) source static HOST_FTP_SERVER interface service FTP_PASV_PORT_RANGE FTP_PASV_PORT_RANGE
+{% endblock %}
+
+
+{% block twice_static_nat_pat %}
+{# The following example shows a static translation of one IPv6 network to another IPv6 when accessing an IPv6 network, and the dynamic PAT translation to an IPv4 PAT pool when accessing the IPv4 network: #}
+
+object network INSIDE_NW
+ subnet 2001:DB8:AAAA::/96
+ 
+object network MAPPED_IPv6_NW
+ subnet 2001:DB8:BBBB::/96
+ 
+object network OUTSIDE_IPv6_NW
+ subnet 2001:DB8:CCCC::/96
+ 
+object network OUTSIDE_IPv4_NW
+ subnet 10.1.1.0 255.255.255.0
+ 
+object network MAPPED_IPv4_POOL
+ range 10.1.2.1 10.1.2.254
+ 
+
+nat (inside,outside) source static INSIDE_NW MAPPED_IPv6_NW destination static OUTSIDE_IPv6_NW OUTSIDE_IPv6_NW
+
+nat (inside,outside) source dynamic INSIDE_NW pat-pool MAPPED_IPv4_POOL destination static OUTSIDE_IPv4_NW OUTSIDE_IPv4_NW 
+{% endblock %}
+
+{% block twice_dynamic_pat_dest_host %}
+object network myInsideNetwork
+ subnet 10.1.2.0 255.255.255.0
+ 
+object network DMZnetwork1
+ subnet 209.165.201.0 255.255.255.224
+ 
+object network PATaddress1
+ host 209.165.202.129
+ 
+nat (inside,dmz) source dynamic myInsideNetwork PATaddress1 destination static DMZnetwork1 DMZnetwork1
+
+
+object network DMZnetwork2
+ subnet 209.165.200.224 255.255.255.224
+ 
+object network PATaddress2
+ host 209.165.202.130
+ 
+nat (inside,dmz) source dynamic myInsideNetwork PATaddress2 destination static DMZnetwork2 DMZnetwork2 
+{% endblock %}
+
+
+{% block twice_dynamic_pat_dest_host_port %}
+object network myInsideNetwork
+ subnet 10.1.2.0 255.255.255.0
+ 
+object network TelnetWebServer
+ host 209.165.201.11
+ 
+object network PATaddress1
+ host 209.165.202.129
+ 
+object service TelnetObj
+ service tcp destination eq telnet
+ 
+nat (inside,outside) source dynamic myInsideNetwork PATaddress1 destination static TelnetWebServer TelnetWebServer service TelnetObj TelnetObj
+
+object network PATaddress2
+ host 209.165.202.130
+ 
+object service HTTPObj
+ service tcp destination eq http
+ 
+nat (inside,outside) source dynamic myInsideNetwork PATaddress2 destination static TelnetWebServer TelnetWebServer service HTTPObj HTTPObj
+ 
+{% endblock %}
+
+{% endblock nat %}
 {% endblock all %}
