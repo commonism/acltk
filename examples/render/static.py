@@ -12,6 +12,7 @@ def main():
 	parser.add_argument('--show-not-selected', action="store_true", default=False)
 	parser.add_argument('--expand', action="store_true", default=False)
 	parser.add_argument('--output', '-o', help="the output file", default='render.html')
+	parser.add_argument('--sort', help="sort group members", default=False, action='store_true')
 	parser.add_argument('acls', help="the ACLs")
 
 	args = parser.parse_args()
@@ -34,6 +35,12 @@ def main():
 		r = caf.run(aclconfig.rules, verbose=True)
 		caffilter = open(args.caf).read()
 		selection = aclconfig.resolve(r)
+
+	if args.sort:
+		for i in ['network','service','port','protocol']:
+			grps = getattr(aclconfig.groups, i)
+			for grp in grps.values():
+				grp.sort()
 
 	args.time = datetime.datetime.now()
 

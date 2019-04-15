@@ -137,6 +137,26 @@ class ProtocolGroup(_Group):
 	def __init__(self, name, description):
 		_Group.__init__(self, name, description)
 
+	@staticmethod
+	def key_of(o):
+		if isinstance(o, Protocol):
+			try:
+				return int(o.name)
+			except ValueError:
+				return nstrsum(o.name)
+		else:
+			raise ValueError("unsortable {}".format(o.__class__.__qualname__))
+
+	def sort(self, insitu=True):
+		if insitu:
+			obj = self
+		else:
+			obj = self.collapse(insitu=False)
+
+		obj.objects = sorted(self.objects, key=ProtocolGroup.key_of)
+
+		return obj
+
 	def __repr__(self):
 		return "ProtocolGroup {} ({}) # {}".format(self.name, ", ".join([repr(i) for i in self.objects]),
 												   self.description)
@@ -423,22 +443,27 @@ class NetworkGroup(_Group):
 			self.add(h_)
 		return self
 
+	@staticmethod
+	def key_of(o):
+		if isinstance(o, Network):
+			return int(o.network.network_address)
+		elif isinstance(o, NetworkHost):
+			return int(o.address)
+		elif isinstance(o, NetworkGroup):
+			return nstrsum(o.name)
+		elif isinstance(o, (NetworkAny,NetworkAny4, NetworkAny6)):
+			return nstrsum(o.__class__.__name__)
+		else:
+			raise ValueError("unsortable {}".format(o.__class__.__qualname__))
+
+
 	def sort(self, insitu=True):
 		if insitu:
 			obj = self
 		else:
 			obj = self.collapse(insitu=False)
 
-		def key_of(o):
-			if isinstance(o, Network):
-				return int(o.network.network_address)
-			elif isinstance(o, NetworkHost):
-				return int(o.address)
-			elif isinstance(o, NetworkGroup):
-				return nstrsum(o.name)
-			else:
-				raise ValueError("unsortable {}".format(o.__class__.__qualname__))
-		obj.objects = sorted(self.objects, key=key_of)
+		obj.objects = sorted(self.objects, key=NetworkGroup.key_of)
 
 		return obj
 
@@ -482,6 +507,25 @@ class ServiceGroup(_Group):
 	_allowed =  (Service, ServiceObject)
 	def __init__(self, name, description):
 		_Group.__init__(self, name, description)
+
+
+	@staticmethod
+	def key_of(o):
+		if isinstance(o, (Service,ServiceObject)):
+			return (o.protocol.name, PortGroup.key_of(o.src) if o.src else 0, PortGroup.key_of(o.dst) if o.dst else 0, o.icmp_code or '', o.icmp_type or '')
+		elif isinstance(o, Protocol):
+			return (o.name, 0, 0, '', '')
+		else:
+			raise ValueError("unsortable {} {}".format(o.__class__.__qualname__, o))
+
+	def sort(self, insitu=True):
+		if insitu:
+			obj = self
+		else:
+			obj = self.collapse(insitu=False)
+
+		obj.objects = sorted(self.objects, key=ServiceGroup.key_of)
+		return obj
 
 	def expand(self, insitu=True):
 		sg = super().expand(insitu)
@@ -608,7 +652,9 @@ class PortUtil:
 			for p in protocol.split(","):
 				yield cls._serv(name.split(' ')[0], p, int(port), description)
 
+from functools import total_ordering
 
+@total_ordering
 class Port:
 	def __init__(self, op, num):
 		self.op = op
@@ -617,6 +663,23 @@ class Port:
 	def __repr__(self):
 		return "Port {self.op} {self.num}".format(self=self)
 
+	def __eq__(self, o):
+		if o is None:
+			c = ('',-1)
+		else:
+			c = (o.op or '', o.num)
+		return (self.op or '',self.num) == c
+
+	def __ne__(self, o):
+		return not self == o
+
+	def __lt__(self, o):
+		if o is None:
+			c = ('',-1)
+		else:
+			c = (o.op or '', o.num)
+
+		return (self.op or '', self.num) < c
 
 class PortRange:
 	def __init__(self, start, stop):
@@ -649,31 +712,33 @@ class PortGroup(_Group):
 			obj.objects = self._expand()
 			return obj
 
+	@staticmethod
+	def key_of(o):
+		def _key(x):
+			try:
+				return int(x)
+			except ValueError:
+				pass
+			try:
+				return socket.getservbyname(x)
+			except OSError:
+				pass
+			return nstrsum(x)
+
+		if isinstance(o, Port):
+			return _key(o.num)
+		elif isinstance(o, PortRange):
+			return _key(o.start)
+		else:
+			raise ValueError("can not compare")
+
 	def sort(self, insitu=True):
 		if insitu:
 			obj = self
 		else:
 			obj = self.expand(insitu=False)
 
-		def key_of(o):
-			def _key(x):
-				try:
-					return int(x)
-				except ValueError:
-					pass
-				try:
-					return socket.getservbyname(x)
-				except OSError:
-					pass
-				return nstrsum(x)
-			if isinstance(o, Port):
-				return _key(o.num)
-			elif isinstance(o, PortRange):
-				return _key(o.start)
-			else:
-				raise ValueError("can not compare")
-
-		obj.objects = sorted(obj.objects, key=key_of)
+		obj.objects = sorted(obj.objects, key=PortGroup.key_of)
 		return obj
 
 	def __repr__(self):
