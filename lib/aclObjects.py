@@ -77,6 +77,11 @@ class Interface:
 		return "Interface {}".format(self.alias)
 
 
+class NATObject:
+	def __init__(self, args):
+		pass
+
+
 class _Group:
 	_allowed = None.__class__
 	def __init__(self, name, description):

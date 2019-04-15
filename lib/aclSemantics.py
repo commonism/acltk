@@ -6,7 +6,7 @@ from tatsu.parsing import tatsumasu
 from acltk.aclObjects import TimeRangeObjectAbsolute, TimeRangeObjectPeriodic, TimeRange, \
 	NetworkObject, ServiceObject, NetworkGroup, PortGroup, ServiceGroup, ProtocolGroup, ICMPGroup, Protocol, ICMP, \
 	NetworkHost, Network, Service, PortRange, Port, ACLNode, NetworkAny, Interface, NetworkAny4, NetworkAny6, \
-	ACLRuleOptionInActive, ACLRuleOptionLog, NetworkInterface, ACLVersion
+	ACLRuleOptionInActive, ACLRuleOptionLog, NetworkInterface, ACLVersion, NATObject
 import tatsu.ast
 
 
@@ -100,7 +100,12 @@ class aclSemantics:
 			ast['args'] = {}
 		cls, groups = action[ast.type]
 		p = cls(ast.name, ast.description, **ast['args'])
-		groups[ast.name] = p
+
+		# NAT
+		if ast.name in groups and ast.type == 'network':
+			setattr(groups[ast.name], 'nat', NATObject(ast['nat']))
+		else:
+			groups[ast.name] = p
 		return p
 
 	def object(self, ast):
