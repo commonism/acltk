@@ -123,7 +123,7 @@ class aclTestBlock(unittest.TestCase):
 		with open(fname, 'wt') as f:
 			f.write(data)
 
-		cfg = fwsmConfig.fromPath(fname, options=ACLParserOptions(trace=False))
+		cfg = fwsmConfig.fromPath(fname, options=ACLParserOptions(trace=trace))
 
 	def test_block_names(self):
 		return self._test_block('names')
@@ -178,6 +178,12 @@ class aclTestBlock(unittest.TestCase):
 
 	def test_block_object_service_int(self):
 		return self._test_block('object_service_int')
+
+	def test_block_nat(self):
+		return self._test_block('nat', trace=True)
+
+	def test_block_network_object_dynamic_nat(self):
+		return self._test_block('network_object_dynamic_nat', trace=True)
 
 	def test_all(self):
 		return self._test_block(None, tpl='all')
