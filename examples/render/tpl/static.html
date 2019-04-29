@@ -224,8 +224,12 @@ thead			{ font-style: italic; }
 {%- continue %}
 {%- endif %}
 	<tr {{ visible(obj) }}>
-		<td><a name="interface_{{ name }}" id="interface_{{ name }}">{{name}}</a></td>
-		<td colspan="2">{{ obj.description }}</td>
+		<td><a name="interface_{{ name }}" id="interface_{{ name }}">{{name}}</a>
+{% if obj.nameif %}
+            <a name="interface_{{ obj.nameif }}" id="interface_{{ obj.nameif }}"></a>
+{% endif %}
+        </td>
+		<td colspan="2">{{ obj.description or '' }}</td>
 	</tr>
 {% for addr in obj.addresses %}
 	<tr {{ visible(obj) }}>
