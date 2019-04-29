@@ -215,6 +215,8 @@ class ProtocolGroup(_Group):
 				return int(o.name)
 			except ValueError:
 				return nstrsum(o.name)
+		elif isinstance(o, ProtocolGroup):
+			return nstrsum(o.name)
 		else:
 			raise ValueError("unsortable {}".format(o.__class__.__qualname__))
 
@@ -531,6 +533,8 @@ class NetworkGroup(_Group):
 			return nstrsum(o.name)
 		elif isinstance(o, (NetworkAny,NetworkAny4, NetworkAny6)):
 			return nstrsum(o.__class__.__name__)
+		elif isinstance(o, NetworkObject):
+			return nstrsum(o.name)
 		else:
 			raise ValueError("unsortable {}".format(o.__class__.__qualname__))
 
@@ -592,6 +596,8 @@ class ServiceGroup(_Group):
 		if isinstance(o, (Service,ServiceObject)):
 			return (o.protocol.name, PortGroup.key_of(o.src) if o.src else 0, PortGroup.key_of(o.dst) if o.dst else 0, o.icmp_code or '', o.icmp_type or '')
 		elif isinstance(o, Protocol):
+			return (o.name, 0, 0, '', '')
+		elif isinstance(o, ServiceGroup):
 			return (o.name, 0, 0, '', '')
 		else:
 			raise ValueError("unsortable {} {}".format(o.__class__.__qualname__, o))
@@ -759,6 +765,9 @@ class Port:
 
 		return (self.op or '', self.num) < c
 
+	def __hash__(self):
+		return id(self)
+
 class PortRange:
 	def __init__(self, start, stop):
 		try:
@@ -807,8 +816,10 @@ class PortGroup(_Group):
 			return _key(o.num)
 		elif isinstance(o, PortRange):
 			return _key(o.start)
+		elif isinstance(o, PortGroup):
+			return nstrsum(o.name)
 		else:
-			raise ValueError("can not compare")
+			raise ValueError("can not compare {}".format(type(o)))
 
 	def sort(self, insitu=True):
 		if insitu:
