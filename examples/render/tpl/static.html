@@ -296,7 +296,7 @@ thead			{ font-style: italic; }
 	<tr {{ visible(obj) }}>
 		<td><a name="name_alias_{{ obj.hostname }}" id="name_alias_{{ obj.hostname }}">{{obj.hostname}}</a></td>
 		<td>{{obj.address}}</td>
-		<td>{{obj.description}}</td>
+		<td>{{obj.description or ''}}</td>
 	</tr>
 {%- endfor %}
 </table>
@@ -326,7 +326,7 @@ thead			{ font-style: italic; }
 	</a>
 </td>
 <td>{%- for i in obj.addresses %} {{ host(i) }} {%- endfor %}</td>
-<td>{%- if obj.description %}{{obj.description}} {%- endif %}</td>
+<td>{{obj.description or ''}}</td>
 </tr>
 {%- endfor %}
 </table>
