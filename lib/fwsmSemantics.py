@@ -1,7 +1,7 @@
 from acltk.fwsm import fwsmSemantics as _fwsmSemantics, fwsmParser as _fwsmParser
 from acltk.aclSemantics import aclSemantics, aclParser
 from acltk.aclObjects import ACLConfig, ACLRule, Names, Name, ACLVersion, InterfaceAccessGroup, ACLNode, NetworkAny, \
-	Protocol
+	Protocol, NATObject, NATMapped, NATMappedSource, NATMappedSourceFallback, NATMappedDestination, NATReal, NATRealNode, NetworkInterface
 from acltk.fwsmObjects import Webtype
 
 class fwsmSemantics(aclSemantics, _fwsmSemantics):
@@ -64,6 +64,103 @@ class fwsmSemantics(aclSemantics, _fwsmSemantics):
 			return InterfaceAccessGroup(**ast)
 		else:
 			return None
+
+	def nat(self, ast):
+		real = {}
+		mapped = {}
+		options = {}
+		description = None
+
+		if ast.service:
+			real['service'] = ast.service[1]
+			mapped['service'] = ast.service[2]
+
+		for i in ast.options:
+			if i.type == 'description':
+				description = i.value
+			else:
+				options[i.type] = True
+
+		for i in ['src','dst', 'iface']:
+			obj = ast.get(i, None)
+			if obj is None:
+				real[i] = mapped[i] = None
+			else:
+				real[i] = obj.get('real', None)
+				mapped[i]= obj.get('mapped', None)
+
+		# src or dst is "interface" - lookup the interface and replace
+		for k,i in {'real':real,'mapped':mapped}.items():
+			ifname = i['iface'].nameif or i['iface'].alias
+			if i['src'] and i['src'].node == 'interface':
+				i['src'].node = NetworkInterface(ifname)
+			if i['dst'] and i['dst'].node == 'interface':
+				i['dst'].node = NetworkInterface(ifname)
+
+		if mapped['src'] and getattr(mapped['src'], 'fallback', None):
+			ifname = mapped['iface'].nameif or mapped['iface'].alias
+			mapped['src'].fallback.interface = NetworkInterface(ifname)
+
+
+		if ast.pos: # and ast.pos[0] == 'after-auto':
+			options['after-auto'] = True
+
+		r = NATObject(NATReal(real['iface'],
+								  real['src'],
+								  real['dst'],
+								  real.get('service', None)
+								  ),
+					  NATMapped(mapped['iface'],
+									mapped['src'],
+									mapped['dst'],
+									mapped.get('service', None)
+									),
+					  description,
+					  options)
+		return r
+
+	def nat_real_node(self, ast):
+		if ast.type == 'any':
+			return NetworkAny()
+		elif ast.type in ('object','group'):
+			return ast.node
+		else:
+			return ValueError()
+
+	def nat_mapped_node(self, ast):
+		return self.nat_mapped_src_dynamic_node(ast)
+
+
+	def nat_src(self, ast):
+		obj = ast.mapped
+		mapped = None
+		fallback = None
+
+		if obj.type == 'object':
+			mapped = obj.name
+		elif obj.type == 'interface':
+			mapped = 'interface'
+		elif obj.type == 'pool':
+			mapped = obj.pool.range
+		elif obj.type == 'any':
+			mapped = NetworkAny()
+
+		return {'real': NATRealNode(ast['real']), 'mapped': NATMappedSource(ast['type'], mapped, obj.fallback)}
+
+	def nat_dst(self, ast):
+		mapped = None
+		obj = ast.mapped
+		if obj.type == 'object':
+			mapped = obj.name
+		elif obj.type == 'interface':
+			mapped = 'interface'
+		elif obj.type == 'pool':
+			mapped = obj.pool
+		elif obj.type == 'any':
+			mapped = NetworkAny()
+
+		return {'real':NATRealNode(ast['real']), 'mapped':NATMappedDestination(mapped)}
+
 
 	def grammar(self, ast):
 		# pdb.set_trace()

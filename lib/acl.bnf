@@ -188,33 +188,104 @@ network_object
 	| type:"range" WS start:ip4 WS stop:ip4 NL
 	| type:"range" WS start:ip6 WS stop:ip6 NL
 	| type:"fqdn" WS [limit:("v4"|"v6") WS] fqdn:string NL
-(*	| type:"nat" TOEOL NL]  *)
+	| type:`nat` nat:network_object_nat
 	;
 
 
-(* Network Object NAT *)
-(* nat [ ( real_ifc , mapped_ifc ) ] dynamic mapped_obj [ interface [ ipv6 ]] [ dns ] *)
-(* nat [ ( real_ifc , mapped_ifc ) ] dynamic { mapped_inline_host_ip | mapped_obj | pat-pool mapped_obj [ round-robin ] [ extended ] [ flat [ include-reserve ]] | interface [ ipv6 ]} [ interface [ ipv6 ]] [ dns ] *)
-(* nat [ ( real_ifc , mapped_ifc ) ] static { mapped_inline_ip | mapped_obj | interface [ ipv6 ]} [ net-to-net ] [ dns | service { tcp | udp } real_port mapped_port ] [ no-proxy-arp ] *)
-(* nat [ ( real_ifc , mapped_ifc ) ] static { mapped_inline_ip | mapped_obj } [ no-proxy-arp ] [ route-lookup ] *)
+(* Network Object NAT
 
-nat_interfaces
-	= "(" real:obj_name "," mapped:obj_name ")"
-	;
+    Configuring Dynamic NAT
+ nat
+    [ ( real_ifc , mapped_ifc ) ]
+    dynamic
+    mapped_obj
+    [ interface [ ipv6 ]]
+    [ dns ]
 
-network_nat_map
-	= acl_object_network_id
-	| acl_object_group_network_id
-	| ip4
-	| ip6 ["/" int]
-	| "interface"
-	| "pat-pool" WS (acl_object_network_id|acl_object_group_network_id)
-	;
+
+    Configuring Dynamic PAT (Hide)
+ nat
+    [ ( real_ifc , mapped_ifc ) ]
+    dynamic
+    { mapped_inline_host_ip | mapped_obj | pat-pool mapped_obj [ round-robin ] [ extended ] [ flat [ include-reserve ]] | interface [ ipv6 ]}
+    [ interface [ ipv6 ]]
+    [ dns ]
+
+
+    Configuring Static NAT or Static NAT-with-Port-Translation
+ nat
+    [ ( real_ifc , mapped_ifc ) ]
+    static
+    { mapped_inline_ip | mapped_obj | interface [ ipv6 ]}
+    [ net-to-net ]
+    [ dns | service { tcp | udp } real_port mapped_port ]
+    [ no-proxy-arp ]
+
+
+    Configuring Identity NAT
+ nat
+    [ ( real_ifc , mapped_ifc ) ]
+    static
+    { mapped_inline_ip | mapped_obj }
+    [ no-proxy-arp ]
+    [ route-lookup ]
+
+*)
 
 network_object_nat
-	= "nat" WS nat_interfaces WS "dynamic" WS network_nat_map [WS "interface" [WS "ipv6"]|WS "dns"] [WS] NL
-	| "nat" WS nat_interfaces WS "static" WS network_nat_map [WS ("dns"|"service" WS ("tcp"|"udp") WS port WS port)] [WS] NL
+	= "nat" WS iface:nat_interfaces WS type:"dynamic" WS mapped:network_nat_mapped options:{WS network_object_nat_options}* [WS] NL
+	| "nat" WS iface:nat_interfaces WS type:"static" WS mapped:network_nat_mapped [WS service:network_object_nat_service] options:{WS network_object_nat_options}* [WS] NL
 	;
+
+nat_interfaces
+	= "(" real:acl_interface "," mapped:acl_interface ")"
+	;
+
+network_nat_mapped
+	= type:`object` object:acl_object_network [WS fallback:nat_mapped_fallback]
+	| type:`group` object:acl_object_group_network [WS fallback:nat_mapped_fallback]
+	| type:`address` address:ip4 [WS fallback:nat_mapped_fallback]
+	| type:`address` address:ip6 ["/" mask:int] [WS fallback:nat_mapped_fallback]
+	| type:"interface" option:[WS "ipv6"]
+	| type:`pool` pool:pat_pool [WS fallback:nat_mapped_fallback]
+	;
+
+nat_mapped_fallback
+    = interface:"interface" [WS ipv6:"ipv6"]
+    ;
+
+network_object_nat_options
+    = "route-lookup"
+    | "no-proxy-arp"
+    | "dns"
+    ;
+
+network_object_nat_service
+    = type:"service" WS protocol:("tcp"|"udp") WS real:port WS mapped:port
+    | type:"dns"
+    ;
+
+
+pat_pool_option
+	= "round-robin"
+	| "extended"
+	| "flat" [WS "include-reserve"]
+	;
+
+pat_pool_options
+	= {WS pat_pool_option}*
+	;
+
+pat_pool_range
+    = &(acl_object_group_network (WS|NL)) acl_object_group_network
+    | &(acl_object_network (WS|NL)) acl_object_network
+    ;
+
+pat_pool
+	= "pat-pool" WS range:pat_pool_range [options:pat_pool_options]
+	;
+
+
 
 service_object
 	= type:"service" WS protocol:protocol_icmp [WS icmp_type:(icmp_type|icmp_type_int) [WS icmp_code:icmp_code_int]] NL

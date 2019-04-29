@@ -6,7 +6,7 @@ from tatsu.parsing import tatsumasu
 from acltk.aclObjects import TimeRangeObjectAbsolute, TimeRangeObjectPeriodic, TimeRange, \
 	NetworkObject, ServiceObject, NetworkGroup, PortGroup, ServiceGroup, ProtocolGroup, ICMPGroup, Protocol, ICMP, \
 	NetworkHost, Network, Service, PortRange, Port, ACLNode, NetworkAny, Interface, NetworkAny4, NetworkAny6, \
-	ACLRuleOptionInActive, ACLRuleOptionLog, NetworkInterface, ACLVersion, NATObject
+	ACLRuleOptionInActive, ACLRuleOptionLog, NetworkInterface, ACLVersion, NATObject, NATMapped, NATMappedSource, NATMappedSourceFallback, NATMappedDestination, NATReal, NATRealNode, Name
 import tatsu.ast
 
 
@@ -98,20 +98,35 @@ class aclSemantics:
 			'network': (NetworkObject, self.parser.network_objects),
 			'service': (ServiceObject, self.parser.service_objects),
 		}
-		# TODO nat parsing
-		if ast.args and ast.args.type == 'nat':
-			return None
+		nat = None
+
 		if ast.args is None:
 			del ast['args']
 			ast['args'] = {}
+
+		# NAT - specified single line item with the object - default
+		if 'nat' in ast.args:
+			nat = ast.args.nat
+			del ast.args['nat']
+
+
 		cls, groups = action[ast.type]
 		p = cls(ast.name, ast.description, **ast['args'])
 
-		# NAT
-		if ast.name in groups and ast.type == 'network':
-			setattr(groups[ast.name], 'nat', NATObject(ast['nat']))
-		else:
-			groups[ast.name] = p
+
+		# NAT - specified with the initial object definition
+		# simplifies testing -
+		if nat is None and 'nat' in ast:
+			nat = ast.nat
+
+		if ast.name not in groups:
+			self._learn(ast.name, p)
+
+		if nat:
+			nat.real.src.node = p
+			setattr(p, 'nat', nat)
+
+
 		return p
 
 	def object(self, ast):
@@ -339,6 +354,83 @@ class aclSemantics:
 
 	def acl_object_service(self, ast):
 		return self.parser.service_objects[ast.name]
+
+	def network_nat_mapped(self, ast):
+		# mapped src
+		mapped = ast
+		type = mapped['type']
+		value = mapped[mapped['type']]
+		if type == 'object' or type == 'group':
+			src = mapped['object']
+		elif type == 'address':
+			if mapped['mask'] is None:
+				src = NetworkHost(value)
+			else:
+				src = Network(value, mapped['mask'])
+		elif type == 'interface':
+			src = 'interface'
+		elif type == 'pool':
+			src = value['range']
+		else:
+			raise ValueError(ast['type'])
+
+		return NATMappedSource('dummy',src, ast.fallback)
+
+	def network_object_nat(self, ast):
+		real = {}
+		mapped = {}
+		service = None
+		options = {'auto': True}
+
+		# iface
+		real['iface'] = ast['iface']['real']
+		mapped['iface'] = ast['iface']['mapped']
+
+		# mapped src
+		real['dst'] = mapped['dst'] = NetworkAny()
+		real['src'] = mapped['src'] = ast['mapped'].node
+
+		if mapped['src'] == 'interface':
+			mapped['src'] = NetworkInterface(mapped['iface'].nameif or mapped['iface'].alias)
+
+		fallback = ast['mapped'].fallback
+
+		if fallback and fallback.interface == 'interface':
+			fallback.interface = mapped['src'] if isinstance(mapped['src'], NetworkInterface) else NetworkInterface(mapped['iface'].nameif or mapped['iface'].alias)
+
+		if ast.service is not None:
+			if ast.service == 'dns':
+				options['dns'] = True
+			elif isinstance(ast.service, Service):
+				real['service'] = Service(ast.service.protocol, None, ast.service.dst)
+				mapped['service'] = Service(ast.service.protocol, None, ast.service.src)
+			else:
+				raise ValueError(ast.service)
+
+		for i in ast.options:
+			options[i] = True
+
+		r = NATObject(NATReal(real['iface'],
+							  NATRealNode(real['src']),
+							  NATRealNode(real['dst']),
+							  mapped.get('service', None)
+					),
+					  NATMapped(mapped['iface'],
+								NATMappedSource(ast.type, mapped['src'], fallback),
+								NATMappedDestination(mapped['dst']),
+								mapped.get('service',None)), options=options)
+
+		return r
+#		return None
+
+	def network_object_nat_service(self, ast):
+		if ast.type == 'dns':
+			return "dns"
+		elif ast.type == 'service':
+			return Service(Protocol(ast.protocol), ast.real, ast.mapped)
+
+	def nat_mapped_fallback(self, ast):
+		return NATMappedSourceFallback(ast.interface, ast.ipv6)
 
 class aclParser:
 	def __init__(self):

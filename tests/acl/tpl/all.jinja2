@@ -29,6 +29,18 @@ interface IfWithTrailingWS
 !
 {% endblock %}
 
+{% block nat_interfaces %}
+interface inside
+!
+
+interface outside
+!
+
+interface dmz
+!
+
+{% endblock %}
+
 {% endblock %}
 
 {% block time_ranges %}
@@ -685,7 +697,7 @@ object network my-host-obj1-identity
 
 object network my-host-obj1
  host 10.1.1.1
- nat (inside,outside) static my-host-obj1-identity 
+ nat (inside,outside) static my-host-obj1-identity
 {% endblock %}
 
 
@@ -738,7 +750,7 @@ nat (inside,outside) source dynamic INSIDE_NW MAPPED_2 destination static SERVER
 
 {% block twice_dynamic_pat %}
 
-{# 
+{#
 The following example configures interface PAT for inside network 192.168.1.0/24 when accessing outside Telnet server 209.165.201.23, and Dynamic PAT using a PAT pool when accessing any server on the 203.0.113.0/24 network. #}
 
 object network INSIDE_NW
@@ -757,9 +769,9 @@ object network SERVERS
  subnet 203.0.113.0 255.255.255.0
 
 nat (inside,outside) source dynamic INSIDE_NW interface destination static TELNET_SVR TELNET_SVR service TELNET TELNET
-
-nat (inside,outside) source dynamic INSIDE_NW pat-pool PAT_POOL destination static SERVERS SERVERS
-
+{% for fallback in ['','interface ','interface ipv6 '] %}
+nat (inside,outside) source dynamic INSIDE_NW pat-pool PAT_POOL {{ fallback }}destination static SERVERS SERVERS
+{% endfor %}
 {% endblock %}
 
 {% block twice_dynamic_pat6via4 %}
@@ -780,7 +792,9 @@ object network SERVERS
  subnet 2001:DB8:AAAA::/96
 
 nat (inside,outside) source dynamic INSIDE_NW interface ipv6 destination static TELNET_SVR TELNET_SVR service TELNET TELNET
-nat (inside,outside) source dynamic INSIDE_NW pat-pool PAT_POOL destination static SERVERS SERVERS
+{% for fallback in ['','interface','interface ipv6'] %}
+nat (inside,outside) source dynamic INSIDE_NW pat-pool PAT_POOL {{ fallback }} destination static SERVERS SERVERS
+{% endfor %}
 
 {% endblock %}
 
@@ -816,10 +830,12 @@ object network OUTSIDE_IPv4_NW
 object network MAPPED_IPv4_POOL
  range 10.1.2.1 10.1.2.254
 
-
 nat (inside,outside) source static INSIDE_NW MAPPED_IPv6_NW destination static OUTSIDE_IPv6_NW OUTSIDE_IPv6_NW
 
-nat (inside,outside) source dynamic INSIDE_NW pat-pool MAPPED_IPv4_POOL destination static OUTSIDE_IPv4_NW OUTSIDE_IPv4_NW 
+{% for fallback in ['','interface','interface ipv6'] %}
+nat (inside,outside) source dynamic INSIDE_NW pat-pool MAPPED_IPv4_POOL {{ fallback }} destination static OUTSIDE_IPv4_NW OUTSIDE_IPv4_NW
+{% endfor %}
+
 {% endblock %}
 
 {% block twice_dynamic_pat_dest_host %}
@@ -832,8 +848,9 @@ object network DMZnetwork1
 object network PATaddress1
  host 209.165.202.129
 
-nat (inside,dmz) source dynamic myInsideNetwork PATaddress1 destination static DMZnetwork1 DMZnetwork1
-
+{% for fallback in ['','interface','interface ipv6'] %}
+nat (inside,dmz) source dynamic myInsideNetwork PATaddress1 {{ fallback }} destination static DMZnetwork1 DMZnetwork1
+{% endfor %}
 
 object network DMZnetwork2
  subnet 209.165.200.224 255.255.255.224
@@ -841,7 +858,9 @@ object network DMZnetwork2
 object network PATaddress2
  host 209.165.202.130
 
-nat (inside,dmz) source dynamic myInsideNetwork PATaddress2 destination static DMZnetwork2 DMZnetwork2 
+{% for fallback in ['','interface','interface ipv6'] %}
+nat (inside,dmz) source dynamic myInsideNetwork PATaddress2 {{ fallback }} destination static DMZnetwork2 DMZnetwork2
+{% endfor %}
 {% endblock %}
 
 
@@ -858,7 +877,10 @@ object network PATaddress1
 object service TelnetObj
  service tcp destination eq telnet
 
-nat (inside,outside) source dynamic myInsideNetwork PATaddress1 destination static TelnetWebServer TelnetWebServer service TelnetObj TelnetObj
+
+{% for fallback in ['','interface','interface ipv6'] %}
+nat (inside,outside) source dynamic myInsideNetwork PATaddress1 {{ fallback }} destination static TelnetWebServer TelnetWebServer service TelnetObj TelnetObj
+{% endfor %}
 
 object network PATaddress2
  host 209.165.202.130
@@ -866,8 +888,27 @@ object network PATaddress2
 object service HTTPObj
  service tcp destination eq http
 
-nat (inside,outside) source dynamic myInsideNetwork PATaddress2 destination static TelnetWebServer TelnetWebServer service HTTPObj HTTPObj
+{% for fallback in ['','interface','interface ipv6'] %}
+nat (inside,outside) source dynamic myInsideNetwork PATaddress2 {{ fallback }} destination static TelnetWebServer TelnetWebServer service HTTPObj HTTPObj
+{% endfor %}
+{% endblock %}
 
+
+{% block nat_and_interfaces %}
+{#  https://community.cisco.com/t5/firewalls/nat-inside-outside-real-mapped-mapped-real/td-p/2314050  #}
+
+object network LAN
+ subnet 10.10.10.0 255.255.255.0
+
+object network NAT-POOL
+ range 1.1.1.1 1.1.1.2
+
+object network REMOTE-NETWORK
+ subnet 3.3.3.0 255.255.255.0
+
+{% for fallback in ['','interface','interface ipv6'] %}
+nat (inside,outside) after-auto source dynamic LAN NAT-POOL {{ fallback }} destination static REMOTE-NETWORK REMOTE-NETWORK
+{% endfor %}
 {% endblock %}
 
 {% endblock nat %}

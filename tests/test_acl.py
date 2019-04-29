@@ -180,10 +180,25 @@ class aclTestBlock(unittest.TestCase):
 		return self._test_block('object_service_int')
 
 	def test_block_nat(self):
-		return self._test_block('nat', trace=True)
+		return self._test_block('nat', ['nat_interfaces'], trace=True)
 
 	def test_block_network_object_dynamic_nat(self):
 		return self._test_block('network_object_dynamic_nat', trace=True)
+
+	def test_block_nat_and_interfaces(self):
+		return self._test_block('nat_and_interfaces', ['nat_interfaces'], trace=True)
+
+	def test_block_nat_twice_pat(self):
+		return self._test_block('twice_dynamic_pat', ['nat_interfaces'], trace=True)
+
+	def test_block_nat_twice_static_nat(self):
+		return self._test_block('twice_static_nat', ['nat_interfaces'], trace=True)
+
+	def test_block_nat_twice_dynamic_pat_dest_host_port(self):
+		return self._test_block('twice_dynamic_pat_dest_host_port', ['nat_interfaces'], trace=True)
+
+	def test_block_network_object_dynamic_nat_backup_pat(self):
+		return self._test_block('network_object_dynamic_nat_backup_pat', ['nat_interfaces'], trace=True)
 
 	def test_all(self):
 		return self._test_block(None, tpl='all')

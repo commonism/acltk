@@ -89,62 +89,119 @@ access_group
 	;
 
 
-(* Twice NAT *)
-(* nat [ ( real_ifc , mapped_ifc ) ] [ line | { after-auto [ line ]}] source dynamic { real_obj | any } { mapped_obj [ interface [ ipv6 ]]} [ destination static { mapped_obj | interface [ ipv6 ]} real_obj ] [ service mapped_dest_svc_obj real_dest_svc_obj ] [ dns ] [ unidirectional ] [ inactive ] [ description desc ] *)
-(*  nat [ ( real_ifc , mapped_ifc ) ] [ line | { after-auto [ line ]}] source dynamic { real-obj | any } { mapped_obj [ interface [ ipv6 ]] | [ pat-pool mapped_obj [ round-robin ] [ extended ] [ flat [ include-reserve ]] [ interface [ ipv6 ]] | interface [ ipv6 ]} [ destination static { mapped_obj | interface [ ipv6 ]} real_obj ] [ service mapped_dest_svc_obj real_dest_svc_obj ] [ dns ] [ unidirectional ] [ inactive ] [ description desc ] *)
-(* nat [ ( real_ifc , mapped_ifc ) ] [ line | { after-object [ line ]}] source static real_ob [ mapped_obj | interface [ ipv6 ]] [ destination static { mapped_obj | interface [ ipv6 ]} real_obj ] [ service real_src_mapped_dest_svc_obj mapped_src_real_dest_svc_obj ][ net-to-net ] [ dns ] [ unidirectional | no-proxy-arp ] [ inactive ] [ description desc ] *)
+(* Twice NAT
+
+    https://www.cisco.com/c/en/us/td/docs/security/asa/asa91/configuration/firewall/asa_91_firewall_config/nat_rules.html
+
+    Configuring Dynamic NAT
+ nat
+    [ ( real_ifc , mapped_ifc ) ]
+    [ line | { after-auto [ line ]}]
+    source dynamic
+    { real_obj | any }
+    { mapped_obj [ interface [ ipv6 ]]}
+    [ destination static { mapped_obj | interface [ ipv6 ]} real_obj ]
+    [ service mapped_dest_svc_obj real_dest_svc_obj ]
+    [ dns ]
+    [ unidirectional ]
+    [ inactive ]
+    [ description desc ]
 
 
-(* https://www.cisco.com/c/en/us/td/docs/security/asa/asa91/configuration/firewall/asa_91_firewall_config/nat_rules.html *)
+    Configuring Dynamic PAT (Hide)
+ nat
+    [ ( real_ifc , mapped_ifc ) ]
+    [ line | { after-auto [ line ]}]
+    source dynamic
+    { real-obj | any }
+    { mapped_obj [ interface [ ipv6 ]] | [ pat-pool mapped_obj [ round-robin ] [ extended ] [ flat [ include-reserve ]] [ interface [ ipv6 ]] | interface [ ipv6 ]}
+    [ destination static { mapped_obj | interface [ ipv6 ]} real_obj ]
+    [ service mapped_dest_svc_obj real_dest_svc_obj ]
+    [ dns ]
+    [ unidirectional ]
+    [ inactive ]
+    [ description desc ]
 
 
-pat_pool_option
-	= "round-robin"
-	| "extended"
-	| "flat" [WS "include-reserve"]
-	;
+    Configuring Static NAT or Static NAT-with-Port-Translation
+ nat
+    [ ( real_ifc , mapped_ifc ) ]
+    [ line | { after-object [ line ]}]
+    source static
+    real_ob
+    [ mapped_obj | interface [ ipv6 ]]
+    [ destination static { mapped_obj | interface [ ipv6 ]} real_obj ]
+    [ service real_src_mapped_dest_svc_obj mapped_src_real_dest_svc_obj ]
+    [ net-to-net ]
+    [ dns ]
+    [ unidirectional | no-proxy-arp ]
+    [ inactive ]
+    [ description desc ]
 
-pat_pool_options
-	= {WS pat_pool_option}*
-	;
 
-pat_pool
-	= "pat-pool" WS (acl_object_group_network_id|acl_object_network_id) pat_pool_options
+    Configuring Identity NAT
+ nat
+    [ ( real_ifc , mapped_ifc ) ]
+    [ line | { after-object [ line ]}]
+    source static
+    { nw_obj nw_obj | any any }
+    [ destination static { mapped_obj | interface [ ipv6 ]} real_obj ]
+    [ service real_src_mapped_dest_svc_obj mapped_src_real_dest_svc_obj ]
+    [ no-proxy-arp ]
+    [ route-lookup ]
+    [ inactive ]
+    [ description desc ]
+
+*)
+
+
+nat
+	= "nat" WS iface:nat_interfaces [WS pos:nat_pos] WS src:nat_src [WS dst:nat_dst] [WS service:nat_srv] options:{WS nat_options}* [WS] NL
 	;
 
 nat_mapped_node
-	= acl_object_network_id
-	| "interface" [WS "ipv6"]
+	= type:`object` name:acl_object_network
+	| type:`interface` nat_mapped_fallback
+	| type:"any"
 	;
 
+nat_mapped_src_dynamic_node
+    = type:`object` name:acl_object_network fallback:[WS nat_mapped_fallback]
+    | type:"interface" option+:[WS "ipv6"]
+    | type:`pool` pool:pat_pool fallback:[WS nat_mapped_fallback]
+    ;
+
+nat_real_node
+    = &(acl_object_network WS) type:`object` node:acl_object_network
+    | &(acl_object_group_network WS) type:`group` node:acl_object_group_network
+    | type:"any"
+    ;
+
 nat_src
-	= "source" WS "dynamic" WS (acl_object_network_id|"any") WS (nat_mapped_node|pat_pool)
-	| "source" WS "static" WS (acl_object_network_id|"any") WS
+	= "source" WS type:"dynamic" WS ~ real:nat_real_node WS mapped:nat_mapped_src_dynamic_node
+	| "source" WS type:"static" WS ~ real:nat_real_node WS mapped:nat_mapped_node
 	;
 
 nat_dst
-	= "destination" WS "static" WS (acl_object_network_id|"interface" [WS "ipv6"]) WS acl_object_network_id
+	= "destination" WS type:"static" WS mapped:nat_mapped_node WS real:acl_object_network
 	;
 
 nat_pos
-	= ["after-auto"] [WS int]
+	= "after-" ("object"|"auto") [WS int]
 	;
 
 nat_srv
-	= "service" WS acl_object_service_id WS acl_object_service_id
+	= "service" WS acl_object_service WS acl_object_service
 	;
 
 nat_options
-	= "net-to-net"
-	| "dns"
-	| "unidirectional"
-	| "no-proxy-arp"
-	| "inactive"
-	| [> description]
-	;
-
-nat
-	= "nat" WS nat_interfaces nat_pos WS nat_src [WS nat_dst] [WS nat_srv] [WS nat_options] [WS] NL
+	= type:"net-to-net"
+	| type:"dns"
+	| type:"unidirectional"
+	| type:"no-proxy-arp"
+	| type:"inactive"
+	| type:"description" WS value:TOEOL
+	| type:"route-lookup"
 	;
 
 ignored_indent

@@ -77,10 +77,76 @@ class Interface:
 		return "Interface {}".format(self.alias)
 
 
-class NATObject:
-	def __init__(self, args):
-		pass
+class NATReal:
+	def __init__(self, iface, src, dst, service=None):
+		self.iface = NetworkInterface(iface.nameif or iface.alias)
+		self.src = src
+		self.dst = dst
+		self.service = service
 
+	def __repr__(self):
+		return "{i.iface}::{i.src}::{i.dst}".format(i=self)
+
+class NATRealNode:
+	def __init__(self, node):
+		self.node = node
+
+
+class NATMappedSource:
+	def __init__(self, _type, node, fallback=None):
+		assert (node is None or isinstance(node, (NetworkHost, Network, NetworkAny, NetworkObject, NetworkInterface, NetworkGroup)) or node == 'interface'), "unexpected type {} or class {} {}".format(type(node),
+																									 node.__class__.__qualname__, node)
+
+		self.type = _type
+		self.node = node
+		self.fallback = fallback
+
+class NATMappedDestination:
+	def __init__(self, node):
+		assert (node is None or isinstance(node, (NetworkAny, NetworkObject, NetworkInterface, NetworkGroup)) or node == 'interface'), "unexpected type {} or class {} {}".format(type(node),
+																									 node.__class__.__qualname__, node)
+
+		self.node = node
+
+
+
+class NATMapped:
+	def __init__(self, iface, src, dst, service=None):
+		self.iface = NetworkInterface(iface.nameif or iface.alias)
+		assert (src is None or isinstance(src, NATMappedSource)), "unexpected type {} or class {}".format(type(src),
+																									 src.__class__.__qualname__)
+		self.src = src
+		assert (dst is None or isinstance(dst, NATMappedDestination)), "unexpected type {} or class {}".format(type(dst),
+																									 dst.__class__.__qualname__)
+		self.dst = dst
+
+		self.service = service
+
+	def __repr__(self):
+		return "{i.iface}::{i.src}::{i.dst}".format(i=self)
+
+
+class NATMappedSourceFallback:
+	def __init__(self, interface=None, ipv6=False):
+		self.interface = interface
+		self.ipv6 = ipv6
+
+
+class NATObject:
+	def __init__(self, real, mapped, description=None, options=None):
+		assert (real is None or isinstance(real, NATReal)), "unexpected type {} or class {}".format(type(real),
+																									 real.__class__.__qualname__)
+		assert (mapped is None or isinstance(mapped, NATMapped)), "unexpected type {} or class {}".format(type(mapped),
+																									 mapped.__class__.__qualname__)
+
+		self.real = real
+		self.mapped = mapped
+
+		self.description = description
+		self.options = {} if options is None else options
+
+	def __repr__(self):
+		return "<NATObject {} -> {}".format(self.real, self.mapped)
 
 class _Group:
 	_allowed = None.__class__
@@ -939,6 +1005,7 @@ class ACLConfig:
 		self.groups = ACLObjects()
 		self.rules = ACLRules()
 		self.access_groups = {}
+		self.nat = {1: list(), 2: list(), 3: list()}
 		for i in list(ast):
 			if isinstance(i, tatsu.ast.AST) and 'hostname' in i:
 				self.hostname = i.hostname
@@ -955,7 +1022,12 @@ class ACLConfig:
 			elif isinstance(i, TimeRange):
 				self.objects.time[i.name] = i
 			elif isinstance(i, NetworkObject):
-				self.objects.network[i.name] = i
+				# NAT auto via object network
+				if hasattr(i, 'nat'):
+					self.nat[2].append(i.nat)
+					delattr(i, 'nat')
+				if i.name not in self.objects.network:
+					self.objects.network[i.name] = i
 			elif isinstance(i, ServiceObject):
 				self.objects.service[i.name] = i
 			elif isinstance(i, PortGroup):
@@ -976,8 +1048,9 @@ class ACLConfig:
 						i.iface = j
 						j.access_groups[i.direction] = i
 						break
-
-				self.access_groups[i.name] = i
+			elif isinstance(i, NATObject):
+				position = 3 if ('after-auto','after-object') & i.options.keys() else 1
+				self.nat[position].append(i)
 			else:
 				continue
 			ast.remove(i)

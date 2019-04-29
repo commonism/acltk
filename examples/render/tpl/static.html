@@ -651,6 +651,88 @@ thead			{ font-style: italic; }
 </table>
 {%- endif %}
 
+{%- if selection is none or 'NAT' in selection or args.show_not_selected %}
+<h2>NAT</h2>
+<table>
+	<tr>
+		<td></td>
+        <td></td>
+        <td></td>
+		<td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+	</tr>
+{%- for k,v in {1:'',2:'auto',3:'after-auto'}.items() %}
+    <tr{{ visible(obj) }}>
+        <td colspan="6" align="center">{{ k }} {{ v }}</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td colspan="3" align="center" bgcolor="#a9a9a9">real</td>
+        <td colspan="3" align="center" bgcolor="#a9a9a9">mapped</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td align="center">Interface</td>
+        <td align="center">Source</td>
+        <td align="center">Destination</td>
+        <td align="center">Interface</td>
+        <td align="center">Source</td>
+        <td align="center">Destination</td>
+        <td align="center">Options</td>
+    </tr>
+
+{%-  for nat in aclconfig.nat[k] %}
+{%- if "inactive" in nat.options %}
+{%- set cls = 'class="mode_inactive"' %}
+{%- else %}
+{%- set cls = 'class="tr-even"' if loop.index % 2 else 'class="tr-odd"' %}
+{%- endif %}
+
+    <tr {{ cls | safe }}>
+        <td align="center">{{ host(nat.real.iface) }}</td>
+        <td align="center">{{ host(nat.real.src.node) }}</td>
+        <td align="center">{{ host(nat.real.dst.node) if nat.real.dst else '' }}</td>
+
+        <td align="center">{{ host(nat.mapped.iface) }}</td>
+        <td>{{ nat.mapped.src.type }} :: {{ host(nat.mapped.src.node)  if nat.mapped.src else '' }} {{ ' (' + host(nat.mapped.src.fallback.interface) + ')'  if nat.mapped.src.fallback and nat.mapped.src.fallback.interface }} {{ 'ipv6' if nat.mapped.src.fallback and nat.mapped.src.fallback.ipv6 }}</td>
+        <td align="center">{{ host(nat.mapped.dst.node) if nat.mapped.dst else '' }}</td>
+        <td>
+{% for name,value in nat.options.items() %}
+{% if name in ('auto','after-auto','after-object') %}
+{% continue %}
+{% endif %}
+    {{ name }}{{ value if value != True else '' }}
+{% endfor %}
+        </td>
+    </tr>
+{% if nat.real.service %}
+    <tr  align="center"  {{ cls | safe }}>
+    <td>{{ nat.real.service.protocol.name }}</td>
+    <td>{{ port(nat.real.service.src) }}</td>
+    <td>{{ port(nat.real.service.dst) }}</td>
+    <td></td>
+    <td>{{ port(nat.mapped.service.src) }}</td>
+    <td>{{ port(nat.mapped.service.dst) }}</td>
+    <td></td>
+    </tr>
+{% endif %}
+
+{% if nat.description %}
+    <tr {{ cls | safe }}>
+    <td colspan="1"></td>
+    <td colspan="6">{{ nat.description }}</td>
+    </tr>
+{% endif %}
+
+{%- endfor %}
+{%- endfor %}
+</table>
+{%- endif %}
+
+
+
 <h2>Access Control List</h2>
 <table>
 {%- set idx = {'rule':0,'iface':0} %}
