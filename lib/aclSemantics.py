@@ -14,6 +14,9 @@ class aclSemantics:
 	def __init__(self, parser):
 		self.parser = parser
 
+	def _learn(self, name, obj):
+		self.parser._learn(name, obj)
+
 	def NL(self, ast):
 		return None
 
@@ -28,7 +31,10 @@ class aclSemantics:
 
 	def interface(self, ast):
 		iface = Interface(ast.alias, ast.detail)
-		self.parser.interfaces[ast.alias] = iface
+		if ast.alias is not None:
+			self._learn(ast.alias, iface)
+		if iface.nameif is not None:
+			self._learn(iface.nameif, iface)
 		return iface
 
 	def interface_detail(self, ast):
@@ -82,7 +88,7 @@ class aclSemantics:
 
 	def time_range(self, ast):
 		t = TimeRange(ast.name)
-		self.parser.time_ranges[ast.name] = t
+		self._learn(ast.name, t)
 		for i in ast.objects:
 			t.add(i)
 		return t
@@ -135,7 +141,8 @@ class aclSemantics:
 
 
 		p = cls(ast.name, ast.description)
-		groups[ast.name] = p
+		#groups[ast.name] = p
+		self._learn(ast.name, p)
 		for i in ast.objects:
 			p.add(i)
 		return p
@@ -321,18 +328,47 @@ class aclSemantics:
 		return r
 
 
+	def acl_interface(self, ast):
+		return self.parser.interfaces[ast.name]
+
+	def acl_object_group_network(self, ast):
+		return self.parser.network_groups[ast.name]
+
+	def acl_object_network(self, ast):
+		return self.parser.network_objects[ast.name]
+
+	def acl_object_service(self, ast):
+		return self.parser.service_objects[ast.name]
+
 class aclParser:
 	def __init__(self):
 		self.network_groups = dict()
 		self.network_objects = dict()
 		self.service_groups = dict()
 		self.service_objects = dict()
-		self.port_groups = dict()
+#		self.port_groups = dict()
 		self.icmp_groups = dict()
 		self.protocol_groups = dict()
 		self.names = dict()
 		self.time_ranges = dict()
 		self.interfaces = dict()
+
+		self.objects = dict()
+
+	def _learn(self, name, obj):
+		{
+			NetworkGroup:self.network_groups,
+			NetworkObject:self.network_objects,
+			ServiceGroup:self.service_groups,
+			ServiceObject:self.service_objects,
+			PortGroup:self.service_groups,
+			ICMPGroup:self.icmp_groups,
+			ProtocolGroup:self.protocol_groups,
+			Name:self.names,
+			TimeRange:self.time_ranges,
+			Interface:self.interfaces
+		}[obj.__class__][name] = obj
+		self.objects[name] = obj
 
 	def __acl_internal_ids(self, s):
 		if len(s) == 0:

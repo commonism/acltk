@@ -64,9 +64,17 @@ acl_object_group_network_id
 	= !()
 	;
 
+acl_object_group_network
+    = name:acl_object_group_network_id
+    ;
+
 acl_object_network_id
 	= !()
 	;
+
+acl_object_network
+    = name:acl_object_network_id
+    ;
 
 acl_object_group_service_id
 	= !()
@@ -74,6 +82,10 @@ acl_object_group_service_id
 
 acl_object_service_id
 	= !()
+	;
+
+acl_object_service
+	= name:acl_object_service_id
 	;
 
 acl_object_group_icmp_id
@@ -95,6 +107,18 @@ acl_time_range_id
 acl_interface_id
 	= !()
 	;
+
+acl_interface
+    = name:acl_interface_id
+    ;
+
+acl_internal_id
+    = !()
+    ;
+
+acl_internal
+    = name:acl_internal_id
+    ;
 
 acl_host
 	= type:("host"|"ip") WS address:(acl_names_id|ip4|ip6)
