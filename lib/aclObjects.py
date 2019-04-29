@@ -257,32 +257,39 @@ class NetworkWildcard:
 	def _addresses(self):
 		l = set()
 		start = int(self.address) & ~int(self.wildcard)
-		bits = int(self.wildcard)
+		wild = int(self.wildcard)
 
-		if start & ~bits == start:
+		if start & ~wild == start:
 			l.add(ipaddress.ip_address(start))
 
-		todo = [(start, bits)]
+		todo = [(start, wild)]
 
 		while len(todo):
-			addr, bits = todo[0]
-			if bits > 0:
-				bit = math.floor(math.log(bits, 2))
+			# basically ... iterates over all bits of the wildcard
+			addr0, wild0 = todo[0]
+			if wild0 > 0:
+				bit = math.floor(math.log(wild0, 2))
 
-				if bits == (2**(bit+1)) -1:
-					m = ipaddress.ip_network("{}/{}".format(ipaddress.ip_address(addr), 31-bit))
+				if wild0 == (2**(bit+1)) -1:
+					# the mask is a inverted netmask
+					# e.g. 0.0.0.255
+					m = ipaddress.ip_network("{}/{}".format(ipaddress.ip_address(addr0), 31-bit))
 					l.add(m)
 				else:
-					e = (addr, bits & ~(1 << bit) )
-					if bits != e[1]:
-						todo.append( e )
+					# the mask has zeroes after ones
+					# e.g. 0.0.1.0 and is not a inverted netmask
 
-					x = addr | (1 << bit)
-					e = (x, bits & ~(1 << bit))
-					if addr != x or bits != e[1]:
-						todo.append( e )
-						l.add(ipaddress.ip_address(addr))
-						l.add(ipaddress.ip_address(x))
+					# iterate
+					addr1,wild1 = (addr0 | (1 << bit),
+								   wild0 & ~(1 << bit))
+
+					if wild0 != wild1:
+						todo.append((addr0, wild1))
+
+					if (addr0,wild0) != (addr1,wild1):
+						todo.append((addr1, wild1))
+						l.add(ipaddress.ip_address(addr0))
+						l.add(ipaddress.ip_address(addr1))
 			todo = todo[1:]
 		return l
 
