@@ -71,6 +71,11 @@ FIXME {{ obj.__class__.__name__ }}
 {%- endif -%}
 {%- endmacro -%}
 
+{%- macro icmp_type_and_code(obj) -%}
+{{ obj.icmp_type or ''}}{{ '/' + obj.icmp_code if obj.icmp_code or '' }}
+{%- endmacro -%}
+
+
 {%- macro options(obj) -%}
 {%- for k in obj.keys()|sort -%}
 {%- set i=obj[k] %}
@@ -410,9 +415,8 @@ thead			{ font-style: italic; }
 	</a>
 </td>
 <td>{{ protocol(obj.protocol) }}</td>
-{%- if obj.protocol in ('icmp','icmp6') %}
-<td>{{ obj.icmp_type }}</td>
-<td>{{ obj.icmp_code }}</td>
+{%- if obj.protocol.name in ('icmp','icmp6') %}
+<td colspan="2" align="center">{{ icmp_type_and_code(obj) }}</td>
 {%- else %}
 <td>{{ port(obj.src) }}</td>
 <td>{{ port(obj.dst) }}</td>
@@ -460,8 +464,7 @@ thead			{ font-style: italic; }
 	<td></td>
 	<td>{{ protocol(item.protocol) }}</td>
 {%- if item.protocol.name in ('icmp','icmp6') %}
-	<td>{{ item.icmp_type }}</td>
-	<td>{{ item.icmp_code }}</td>
+    <td colspan="2" align="center">{{ icmp_type_and_code(item) }}</td>
 {%- else %}
 	<td>{{ port(item.src) }}</td>
 	<td>{{ port(item.dst) }}</td>
