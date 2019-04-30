@@ -259,7 +259,9 @@ class NetworkObject:
 		self.name = name
 		self.description = description
 		self.type = type
-		if type == 'host':
+		if type is None:
+			self.addresses = []
+		elif type == 'host':
 			self.addresses = [NetworkHost(address)]
 		elif type == 'subnet':
 			self.addresses = [Network(address, mask)]
@@ -277,6 +279,8 @@ class NetworkObject:
 				self.addresses = [NetworkAny4()]
 			elif limit == 'v6':
 				self.addresses = [NetworkAny6()]
+		else:
+			raise ValueError(type)
 
 	def __and__(self, other):
 		for i in self.addresses:

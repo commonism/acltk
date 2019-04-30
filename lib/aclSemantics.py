@@ -162,15 +162,18 @@ class aclSemantics:
 			p.add(i)
 		return p
 
+	def ip4(self, ast):
+		return ipaddress.ip_address(ast)
+
+	def ip6(self, ast):
+		return ipaddress.ip_address(ast)
+
 	def _resolve_addr(self, addr):
-		target = None
-		try:
-			ipaddress.ip_address(addr)
-		except ValueError:
-			target = self.parser.names[addr]
-			addr = str(self.parser.names[addr].address)
-			return addr, target
-		return addr, target
+		if isinstance(addr, ipaddress._BaseAddress):
+			return addr, None
+		elif isinstance(addr, Name):
+			return addr.address, addr
+		raise ValueError(addr)
 
 	def protocol_icmp(self, ast):
 		return Protocol(ast)
@@ -201,8 +204,7 @@ class aclSemantics:
 		assert (ast.type is not None), "object type is None"
 		if ast.type == 'network-object':
 			if ast.name == 'object':
-				# pdb.set_trace()
-				return self.parser.network_objects[ast.object]
+				return ast.object
 
 			if ast.name == 'host':
 				addr = ast.address
@@ -217,21 +219,20 @@ class aclSemantics:
 				return Network(addr, ast.netmask, target)
 
 		elif ast.type == 'group-object':
-			return self.parser.network_groups[ast.object]
+			return ast.group
 
 	def service_group_object(self, ast):
 		assert (ast.type is not None), "object type is None"
 		if ast.type == 'service-object':
 			if ast.protocol == 'object':
-				return self.parser.service_objects[ast.object]
+				return ast.object
 			else:
 				assert isinstance(ast.protocol, Protocol), "protocol {} is unknown".format(ast.protocol)
-				for i in frozenset(['type', 'object']) & set(ast.keys()):
+				for i in frozenset(['type', 'object','group']) & set(ast.keys()):
 					del ast[i]
 				return Service(**ast)
 		elif ast.type == 'group-object':
-			r = self.parser.service_groups[ast.object]
-			return r
+			return ast.group
 
 	def service_object(self, ast):
 		assert (isinstance(ast['protocol'], Protocol)), "invalid protocol {}".format(ast.protocol)
@@ -257,62 +258,57 @@ class aclSemantics:
 			else:
 				return Port(ast[1], ast[2])
 		elif ast[0] == 'group-object':
-			return self.parser.service_groups[ast[1]]
+			return ast[1]
 
 	def protocol_group_object(self, ast):
 		assert (ast.type is not None), "object type is None"
 		if ast.type == 'protocol-object':
 			return Protocol(ast.name)
 		elif ast.type == 'group-object':
-			return self.parser.protocol_groups[ast.name]
+			return ast.group
 
 	def icmp_group_object(self, ast):
 		assert (ast.type is not None), "object type is None"
 		if ast.type == 'icmp-object':
 			return ICMP(ast.name, None)
 		elif ast.type == 'group-object':
-			return self.parser.icmp_groups[ast.name]
+			return ast.group
 
 	def acl_protocol(self, ast):
-		if hasattr(ast, 'type') and ast.type is not None:
-			if ast.type == 'object':
-				return self.parser.service_objects[ast.name]
-			elif ast.type == 'object-group':
-				if ast.name in self.parser.service_groups:
-					return self.parser.service_groups[ast.name]
-				else:
-					return self.parser.protocol_groups[ast.name]
-		elif hasattr(ast, 'name'):
+		if ast.type == 'object':
+			return ast.object
+		elif ast.type == 'object-group':
+			return ast.group
+		elif ast.type == 'name':
 			assert isinstance(ast.name, Protocol), "invalid type {}".format(type(ast.name))
 			return ast.name
 		raise ValueError(ast)
 
 	def acl_host(self, ast):
-		if hasattr(ast, 'type') and ast.type is not None:
-			# pdb.set_trace()
-			if ast.type == 'host' or ast.type == 'ip':
-				addr, target = self._resolve_addr(ast.address)
-				return NetworkHost(addr, target=target)
-			elif ast.type == 'interface':
-				return NetworkInterface(ast.name)
-			elif ast.type in ('any', 'any4', 'any6'):
-				return {'any':NetworkAny(),'any4':NetworkAny4(), 'any6':NetworkAny6()}[ast.type]
-			elif ast.type == 'object':
-				return self.parser.network_objects[ast.name]
-			elif ast.type == 'object-group':
-				return self.parser.network_groups[ast.name]
-		else:
+		if ast.type == 'host' or ast.type == 'ip':
+			addr, target = self._resolve_addr(ast.address)
+			return NetworkHost(addr, target=target)
+		elif ast.type == 'interface':
+			return NetworkInterface(ast.name)
+		elif ast.type in ('any', 'any4', 'any6'):
+			return {'any':NetworkAny(),'any4':NetworkAny4(), 'any6':NetworkAny6()}[ast.type]
+		elif ast.type == 'object':
+			return ast.object
+		elif ast.type == 'object-group':
+			return ast.group
+		elif ast.type == 'network':
 			addr, target = self._resolve_addr(ast.address)
 			return Network(addr, ast.netmask, target=target)
+		raise ValueError(ast.type)
 
 	def acl_port(self, ast):
-		if hasattr(ast, 'type') and ast.type is not None:
-			if ast.type == 'range':
-				return PortRange(ast.start, ast.stop)
-			elif ast.type == 'object-group':
-				return self.parser.service_groups[ast.name]
-		else:
+		if ast.type == 'range':
+			return PortRange(ast.start, ast.stop)
+		elif ast.type == 'object-group':
+			return ast.group
+		elif ast.type == 'port':
 			return Port(ast.op, ast.port)
+		raise ValueError(ast.type)
 
 	def acl_icmp_node(self, ast):
 		return ACLNode(ast, None)
@@ -321,7 +317,7 @@ class aclSemantics:
 		if ast.type is None:
 			return None
 		if ast.type == 'object-group':
-			return self.parser.icmp_groups[ast.object]
+			return ast.group
 		else:
 			return ICMP(ast.type, ast.code)
 
@@ -337,17 +333,40 @@ class aclSemantics:
 			elif i.type == 'log':
 				r[i.type] = ACLRuleOptionLog(i.options)
 			elif i.type == 'time-range':
-				r[i.type] = self.parser.time_ranges[i.option]
+				r[i.type] = i.option
 			elif i.type == 'inactive':
 				r[i.type] = ACLRuleOptionInActive()
 		return r
 
+	def acl_name(self, ast):
+		return ast
+
+	def acl_name_ws(self, ast):
+		return self.parser.names[ast.name]
+
+	def acl_name_slash(self, ast):
+		return self.parser.names[ast.name]
 
 	def acl_interface(self, ast):
 		return self.parser.interfaces[ast.name]
 
+	def acl_time_range(self, ast):
+		return self.parser.time_ranges[ast.name]
+
+	def acl_object_group_icmp(self, ast):
+		return self.parser.icmp_groups[ast.name]
+
 	def acl_object_group_network(self, ast):
 		return self.parser.network_groups[ast.name]
+
+	def acl_object_group_port(self, ast):
+		return self.parser.port_groups[ast.name]
+
+	def acl_object_group_protocol(self, ast):
+		return self.parser.protocol_groups[ast.name]
+
+	def acl_object_group_service(self, ast):
+		return self.parser.service_groups[ast.name]
 
 	def acl_object_network(self, ast):
 		return self.parser.network_objects[ast.name]
@@ -438,7 +457,7 @@ class aclParser:
 		self.network_objects = dict()
 		self.service_groups = dict()
 		self.service_objects = dict()
-#		self.port_groups = dict()
+		self.port_groups = dict()
 		self.icmp_groups = dict()
 		self.protocol_groups = dict()
 		self.names = dict()
@@ -453,7 +472,7 @@ class aclParser:
 			NetworkObject:self.network_objects,
 			ServiceGroup:self.service_groups,
 			ServiceObject:self.service_objects,
-			PortGroup:self.service_groups,
+			PortGroup:self.port_groups,
 			ICMPGroup:self.icmp_groups,
 			ProtocolGroup:self.protocol_groups,
 			Name:self.names,
@@ -491,6 +510,11 @@ class aclParser:
 	@tatsumasu()
 	def _acl_object_group_service_id_(self):
 		self.__acl_internal_ids(self.service_groups)
+
+	@tatsumasu()
+	def _acl_object_group_port_id_(self):
+		self.__acl_internal_ids(self.port_groups)
+
 
 	@tatsumasu()
 	def _acl_object_service_id_(self):

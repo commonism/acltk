@@ -51,9 +51,9 @@ acl_mode
 	;
 
 acl_protocol
-	= type:"object-group" WS name:(acl_object_group_service_id|acl_object_group_protocol_id)
-	| type:"object" WS name:acl_object_service_id
-	| name:(protocol_code|protocol_int)
+	= type:"object-group" WS group:(acl_object_group_service|acl_object_group_protocol)
+	| type:"object" WS object:acl_object_service
+	| type:`name` name:(protocol_code|protocol_int)
 	;
 
 node
@@ -65,7 +65,7 @@ acl_object_group_network_id
 	;
 
 acl_object_group_network
-    = name:acl_object_group_network_id
+    = &(acl_object_group_network_id (WS|NL)) name:acl_object_group_network_id
     ;
 
 acl_object_network_id
@@ -73,43 +73,83 @@ acl_object_network_id
 	;
 
 acl_object_network
-    = name:acl_object_network_id
+    = &(acl_object_network_id (WS|NL)) name:acl_object_network_id
     ;
 
 acl_object_group_service_id
 	= !()
 	;
 
+acl_object_group_service
+    = &(acl_object_group_service_id (WS|NL)) name:acl_object_group_service_id
+    ;
+
+
+acl_object_group_port_id
+    = !()
+    ;
+
+acl_object_group_port
+    = &(acl_object_group_port_id (WS|NL)) name:acl_object_group_port_id
+    ;
+
 acl_object_service_id
 	= !()
 	;
 
 acl_object_service
-	= name:acl_object_service_id
+	= &(acl_object_service_id (WS|NL)) name:acl_object_service_id
 	;
 
 acl_object_group_icmp_id
 	= !()
 	;
 
+acl_object_group_icmp
+	= &(acl_object_group_icmp_id (WS|NL)) name:acl_object_group_icmp_id
+	;
+
 acl_object_group_protocol_id
 	= !()
 	;
+
+acl_object_group_protocol
+	= &(acl_object_group_protocol_id (WS|NL)) name:acl_object_group_protocol_id
+	;
+
 
 acl_names_id
 	= !()
 	;
 
+acl_name_ws
+	= &(acl_names_id (WS|NL)) name:acl_names_id
+	;
+
+acl_name_slash
+    = &(acl_names_id "/") name:acl_names_id
+    ;
+
+acl_name
+    = @:acl_name_ws
+    | @:acl_name_slash
+    ;
+
 acl_time_range_id
 	= !()
 	;
+
+acl_time_range
+	= &(acl_time_range_id (WS|NL)) name:acl_time_range_id
+	;
+
 
 acl_interface_id
 	= !()
 	;
 
 acl_interface
-    = name:acl_interface_id
+    = &(acl_interface_id (WS|NL)) name:acl_interface_id
     ;
 
 acl_internal_id
@@ -121,24 +161,25 @@ acl_internal
     ;
 
 acl_host
-	= type:("host"|"ip") WS address:(acl_names_id|ip4|ip6)
+	= type:("host"|"ip") WS address:(acl_name|ip4|ip6)
 	| type:"interface" WS name:identifier
 	| type:("any"|"any4"|"any6")
-	| type:"object" WS name:acl_object_network_id
-	| type:"object-group" WS name:acl_object_group_network_id
-	| address:(acl_names_id|ip4) WS netmask:ip4
-	| address:(acl_names_id|ip6) "/" netmask:int
+	| type:"object" WS object:acl_object_network
+	| type:"object-group" WS group:acl_object_group_network
+	| type:`network` address:(acl_name_ws|ip4) WS netmask:ip4
+	| type:`network` address:(acl_name_slash|ip6) "/" netmask:int
 	;
 
 acl_port
-	= type:"object-group" WS name:acl_object_group_service_id
-	| op:("gt"|"lt"|"eq"|"neq") WS port:port
+	= type:"object-group" WS group:acl_object_group_service
+	| type:"object-group" WS group:acl_object_group_port
+	| type:`port` op:("gt"|"lt"|"eq"|"neq") WS port:port
 	| type:"range" WS start:port WS stop:port
 	;
 
 acl_icmp_options
-	= WS type:"object-group" WS object:acl_object_group_icmp_id
-	| WS type:(icmp_type|icmp_type_int) [WS code:icmp_code_int]
+	= WS type:"object-group" WS group:acl_object_group_icmp
+	| WS type:icmp_type [WS code:icmp_code_int]
 	| ()
 	;
 
@@ -148,7 +189,7 @@ acl_options
 
 acl_option
 	= type:"log" options:{WS acl_option_log_option}*
-	| type:"time-range" WS option:acl_time_range_id
+	| type:"time-range" WS option:acl_time_range
 	| type:"inactive"
 	| ()
 	;
@@ -277,8 +318,8 @@ pat_pool_options
 	;
 
 pat_pool_range
-    = &(acl_object_group_network (WS|NL)) acl_object_group_network
-    | &(acl_object_network (WS|NL)) acl_object_network
+    = acl_object_group_network
+    | acl_object_network
     ;
 
 pat_pool
@@ -288,7 +329,7 @@ pat_pool
 
 
 service_object
-	= type:"service" WS protocol:protocol_icmp [WS icmp_type:(icmp_type|icmp_type_int) [WS icmp_code:icmp_code_int]] NL
+	= type:"service" WS protocol:protocol_icmp [WS icmp_type:icmp_type [WS icmp_code:icmp_code_int]] NL
 	| type:"service" WS protocol:protocol_tcp_udp [WS] src:service_object_source [WS] dst:service_object_destination [WS] NL
 	| type:"service" WS protocol:protocol_int NL
 	;
@@ -332,46 +373,46 @@ object_group_type
 	;
 
 service_group_object
-	= type:"service-object" WS protocol:protocol_icmp [WS icmp_type:(icmp_type|icmp_type_int) [WS icmp_code:icmp_code_int]] NL
+	= type:"service-object" WS protocol:protocol_icmp [WS icmp_type:icmp_type [WS icmp_code:icmp_code_int]] NL
 	| type:"service-object" WS protocol:protocol_tcp_udp [WS] src:service_object_source [WS] dst:service_object_destination [WS] NL
 	| type:"service-object" WS protocol:(protocol_code|protocol_int) NL
-	| type:"service-object" WS protocol:"object" WS object:acl_object_service_id NL
-	| type:"group-object" WS object:acl_object_group_service_id NL
+	| type:"service-object" WS protocol:"object" WS object:acl_object_service NL
+	| type:"group-object" WS group:acl_object_group_service NL
 	| ()
 	;
 
 port_group_object
 	= "port-object" WS "eq" WS port NL
 	| "port-object" WS "range" WS port WS port NL
-	| "group-object" WS acl_object_group_service_id NL
+	| "group-object" WS acl_object_group_port NL
 	| ()
 	;
 
 network_group_object
-	= type:"network-object" WS name:"host" WS address:(acl_names_id|ip4|ip6) NL
-	| type:"network-object" WS name:"object" WS object:acl_object_network_id NL
-	| type:"network-object" WS name:(acl_names_id|ip4) WS netmask:ip4 NL
-	| type:"network-object" WS name:(acl_names_id|ip6) "/" netmask:int NL
-	| type:"group-object" WS object:acl_object_group_network_id NL
+	= type:"network-object" WS name:"host" WS address:(acl_name_ws|ip4|ip6) NL
+	| type:"network-object" WS name:"object" WS object:acl_object_network NL
+	| type:"network-object" WS name:(acl_name_ws|ip4) WS netmask:ip4 NL
+	| type:"network-object" WS name:(acl_name_slash|ip6) "/" netmask:int NL
+	| type:"group-object" WS group:acl_object_group_network NL
 	| ()
 	;
 
 icmp_group_object
-	= type:"icmp-object" WS name:(icmp_type|icmp_type_int) NL
-	| type:"group-object" WS name:acl_object_group_icmp_id NL
+	= type:"icmp-object" WS name:icmp_type NL
+	| type:"group-object" WS group:acl_object_group_icmp NL
 	| ()
 	;
-
 
 
 protocol_group_object
 	= type:"protocol-object" WS name:obj_name NL
-	| type:"group-object" WS name:acl_object_group_protocol_id NL
+	| type:"group-object" WS group:acl_object_group_protocol NL
 	| ()
 	;
 
 port
-	= (port_code|port_int)
+	= &(port_code (WS|NL)) port_code
+	| port_int
 	;
 
 hour
@@ -441,7 +482,13 @@ month
 	;
 
 # https://www.cisco.com/c/en/us/td/docs/security/asa/asa72/configuration/guide/conf_gd/ports.html#wp1021334%0A
+
 icmp_type
+    = &(icmp_type_name (WS|NL)) icmp_type_name
+    | icmp_type_int
+    ;
+
+icmp_type_name
 	= "unreachable"
 	| "ttl-exceeded"
 	| "traceroute"
