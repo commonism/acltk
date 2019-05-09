@@ -451,6 +451,9 @@ class aclSemantics:
 	def nat_mapped_fallback(self, ast):
 		return NATMappedSourceFallback(ast.interface, ast.ipv6)
 
+	def nat_interfaces(self, ast):
+		return {'real':self.parser.interfaces[ast.real], 'mapped':self.parser.interfaces[ast.mapped]}
+
 class aclParser:
 	def __init__(self):
 		self.network_groups = dict()
