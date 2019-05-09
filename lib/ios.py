@@ -81,15 +81,15 @@ class iosParser(Parser):
 
     @tatsumasu()
     def _ip4_(self):  # noqa
-        self._pattern(r'((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])')
+        self._pattern('((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])')
 
     @tatsumasu()
     def _ipX_(self):  # noqa
-        self._pattern(r'\w+\.\w+\.\w+\.\w+')
+        self._pattern('\\w+\\.\\w+\\.\\w+\\.\\w+')
 
     @tatsumasu()
     def _ip6_(self):  # noqa
-        self._pattern(r'[a-fA-F0-9]*:[a-fA-F0-9\.\:]+')
+        self._pattern('[a-fA-F0-9]*:[a-fA-F0-9\\.\\:]+')
 
     @tatsumasu()
     def _NL_(self):  # noqa
@@ -99,7 +99,7 @@ class iosParser(Parser):
 
     @tatsumasu()
     def _TOEOL_(self):  # noqa
-        self._pattern(r'[^\n]*')
+        self._pattern('[^\\n]*')
 
     @tatsumasu()
     def _SP_(self):  # noqa
@@ -107,23 +107,23 @@ class iosParser(Parser):
 
     @tatsumasu()
     def _WS_(self):  # noqa
-        self._pattern(r'[ \t]+')
+        self._pattern('[ \\t]+')
 
     @tatsumasu()
     def _identifier_(self):  # noqa
-        self._pattern(r'[a-zA-Z_][A-Za-z0-9_\-\.]*')
+        self._pattern('[a-zA-Z_][A-Za-z0-9_\\-\\.]*')
 
     @tatsumasu()
     def _int_(self):  # noqa
-        self._pattern(r'[0-9]+')
+        self._pattern('[0-9]+')
 
     @tatsumasu()
     def _string_(self):  # noqa
-        self._pattern(r'[\S]+')
+        self._pattern('[\\S]+')
 
     @tatsumasu()
     def _obj_name_(self):  # noqa
-        self._pattern(r'[A-Za-z0-9_\-\.+]*')
+        self._pattern('[A-Za-z0-9_\\-\\.+\\(\\)\\&]*')
 
     @tatsumasu()
     def _hostname_(self):  # noqa
@@ -152,7 +152,7 @@ class iosParser(Parser):
     def _description_(self):  # noqa
         self._token('description')
         self._WS_()
-        self._pattern(r'[^\n]+')
+        self._pattern('[^\\n]+')
         self.name_last_node('description')
         self._NL_()
         self.ast._define(
@@ -180,7 +180,7 @@ class iosParser(Parser):
 
     @tatsumasu()
     def _interface_alias_(self):  # noqa
-        self._pattern(r'[^\s]+')
+        self._pattern('[^\\s]+')
 
     @tatsumasu()
     def _acl_id_(self):  # noqa
@@ -220,18 +220,20 @@ class iosParser(Parser):
                 with self._group():
                     with self._choice():
                         with self._option():
-                            self._acl_object_group_service_id_()
+                            self._acl_object_group_service_()
                         with self._option():
-                            self._acl_object_group_protocol_id_()
+                            self._acl_object_group_protocol_()
                         self._error('no available options')
-                self.name_last_node('name')
+                self.name_last_node('group')
             with self._option():
                 self._token('object')
                 self.name_last_node('type')
                 self._WS_()
-                self._acl_object_service_id_()
-                self.name_last_node('name')
+                self._acl_object_service_()
+                self.name_last_node('object')
             with self._option():
+                self._constant('name')
+                self.name_last_node('type')
                 with self._group():
                     with self._choice():
                         with self._option():
@@ -242,7 +244,7 @@ class iosParser(Parser):
                 self.name_last_node('name')
             self._error('no available options')
         self.ast._define(
-            ['name', 'type'],
+            ['group', 'name', 'object', 'type'],
             []
         )
 
@@ -265,9 +267,47 @@ class iosParser(Parser):
             self._void()
 
     @tatsumasu()
+    def _acl_object_group_network_(self):  # noqa
+        with self._if():
+            with self._group():
+                self._acl_object_group_network_id_()
+                with self._group():
+                    with self._choice():
+                        with self._option():
+                            self._WS_()
+                        with self._option():
+                            self._NL_()
+                        self._error('no available options')
+        self._acl_object_group_network_id_()
+        self.name_last_node('name')
+        self.ast._define(
+            ['name'],
+            []
+        )
+
+    @tatsumasu()
     def _acl_object_network_id_(self):  # noqa
         with self._ifnot():
             self._void()
+
+    @tatsumasu()
+    def _acl_object_network_(self):  # noqa
+        with self._if():
+            with self._group():
+                self._acl_object_network_id_()
+                with self._group():
+                    with self._choice():
+                        with self._option():
+                            self._WS_()
+                        with self._option():
+                            self._NL_()
+                        self._error('no available options')
+        self._acl_object_network_id_()
+        self.name_last_node('name')
+        self.ast._define(
+            ['name'],
+            []
+        )
 
     @tatsumasu()
     def _acl_object_group_service_id_(self):  # noqa
@@ -275,9 +315,71 @@ class iosParser(Parser):
             self._void()
 
     @tatsumasu()
+    def _acl_object_group_service_(self):  # noqa
+        with self._if():
+            with self._group():
+                self._acl_object_group_service_id_()
+                with self._group():
+                    with self._choice():
+                        with self._option():
+                            self._WS_()
+                        with self._option():
+                            self._NL_()
+                        self._error('no available options')
+        self._acl_object_group_service_id_()
+        self.name_last_node('name')
+        self.ast._define(
+            ['name'],
+            []
+        )
+
+    @tatsumasu()
+    def _acl_object_group_port_id_(self):  # noqa
+        with self._ifnot():
+            self._void()
+
+    @tatsumasu()
+    def _acl_object_group_port_(self):  # noqa
+        with self._if():
+            with self._group():
+                self._acl_object_group_port_id_()
+                with self._group():
+                    with self._choice():
+                        with self._option():
+                            self._WS_()
+                        with self._option():
+                            self._NL_()
+                        self._error('no available options')
+        self._acl_object_group_port_id_()
+        self.name_last_node('name')
+        self.ast._define(
+            ['name'],
+            []
+        )
+
+    @tatsumasu()
     def _acl_object_service_id_(self):  # noqa
         with self._ifnot():
             self._void()
+
+    @tatsumasu()
+    def _acl_object_service_(self):  # noqa
+        with self._if():
+            with self._group():
+                self._acl_object_service_id_()
+                with self._group():
+                    with self._choice():
+                        with self._option():
+                            self._WS_()
+                        with self._option():
+                            self._NL_()
+                        self._error('no available options')
+        self._acl_object_service_id_()
+        self.name_last_node('name')
+        self.ast._define(
+            ['name'],
+            []
+        )
 
     @tatsumasu()
     def _acl_object_group_icmp_id_(self):  # noqa
@@ -285,9 +387,47 @@ class iosParser(Parser):
             self._void()
 
     @tatsumasu()
+    def _acl_object_group_icmp_(self):  # noqa
+        with self._if():
+            with self._group():
+                self._acl_object_group_icmp_id_()
+                with self._group():
+                    with self._choice():
+                        with self._option():
+                            self._WS_()
+                        with self._option():
+                            self._NL_()
+                        self._error('no available options')
+        self._acl_object_group_icmp_id_()
+        self.name_last_node('name')
+        self.ast._define(
+            ['name'],
+            []
+        )
+
+    @tatsumasu()
     def _acl_object_group_protocol_id_(self):  # noqa
         with self._ifnot():
             self._void()
+
+    @tatsumasu()
+    def _acl_object_group_protocol_(self):  # noqa
+        with self._if():
+            with self._group():
+                self._acl_object_group_protocol_id_()
+                with self._group():
+                    with self._choice():
+                        with self._option():
+                            self._WS_()
+                        with self._option():
+                            self._NL_()
+                        self._error('no available options')
+        self._acl_object_group_protocol_id_()
+        self.name_last_node('name')
+        self.ast._define(
+            ['name'],
+            []
+        )
 
     @tatsumasu()
     def _acl_names_id_(self):  # noqa
@@ -295,14 +435,109 @@ class iosParser(Parser):
             self._void()
 
     @tatsumasu()
+    def _acl_name_ws_(self):  # noqa
+        with self._if():
+            with self._group():
+                self._acl_names_id_()
+                with self._group():
+                    with self._choice():
+                        with self._option():
+                            self._WS_()
+                        with self._option():
+                            self._NL_()
+                        self._error('no available options')
+        self._acl_names_id_()
+        self.name_last_node('name')
+        self.ast._define(
+            ['name'],
+            []
+        )
+
+    @tatsumasu()
+    def _acl_name_slash_(self):  # noqa
+        with self._if():
+            with self._group():
+                self._acl_names_id_()
+                self._token('/')
+        self._acl_names_id_()
+        self.name_last_node('name')
+        self.ast._define(
+            ['name'],
+            []
+        )
+
+    @tatsumasu()
+    def _acl_name_(self):  # noqa
+        with self._choice():
+            with self._option():
+                self._acl_name_ws_()
+                self.name_last_node('@')
+            with self._option():
+                self._acl_name_slash_()
+                self.name_last_node('@')
+            self._error('no available options')
+
+    @tatsumasu()
     def _acl_time_range_id_(self):  # noqa
         with self._ifnot():
             self._void()
 
     @tatsumasu()
+    def _acl_time_range_(self):  # noqa
+        with self._if():
+            with self._group():
+                self._acl_time_range_id_()
+                with self._group():
+                    with self._choice():
+                        with self._option():
+                            self._WS_()
+                        with self._option():
+                            self._NL_()
+                        self._error('no available options')
+        self._acl_time_range_id_()
+        self.name_last_node('name')
+        self.ast._define(
+            ['name'],
+            []
+        )
+
+    @tatsumasu()
     def _acl_interface_id_(self):  # noqa
         with self._ifnot():
             self._void()
+
+    @tatsumasu()
+    def _acl_interface_(self):  # noqa
+        with self._if():
+            with self._group():
+                self._acl_interface_id_()
+                with self._group():
+                    with self._choice():
+                        with self._option():
+                            self._WS_()
+                        with self._option():
+                            self._NL_()
+                        self._error('no available options')
+        self._acl_interface_id_()
+        self.name_last_node('name')
+        self.ast._define(
+            ['name'],
+            []
+        )
+
+    @tatsumasu()
+    def _acl_internal_id_(self):  # noqa
+        with self._ifnot():
+            self._void()
+
+    @tatsumasu()
+    def _acl_internal_(self):  # noqa
+        self._acl_internal_id_()
+        self.name_last_node('name')
+        self.ast._define(
+            ['name'],
+            []
+        )
 
     @tatsumasu()
     def _acl_host_(self):  # noqa
@@ -320,7 +555,7 @@ class iosParser(Parser):
                 with self._group():
                     with self._choice():
                         with self._option():
-                            self._acl_names_id_()
+                            self._acl_name_()
                         with self._option():
                             self._ip4_()
                         with self._option():
@@ -348,19 +583,21 @@ class iosParser(Parser):
                 self._token('object')
                 self.name_last_node('type')
                 self._WS_()
-                self._acl_object_network_id_()
-                self.name_last_node('name')
+                self._acl_object_network_()
+                self.name_last_node('object')
             with self._option():
                 self._token('object-group')
                 self.name_last_node('type')
                 self._WS_()
-                self._acl_object_group_network_id_()
-                self.name_last_node('name')
+                self._acl_object_group_network_()
+                self.name_last_node('group')
             with self._option():
+                self._constant('network')
+                self.name_last_node('type')
                 with self._group():
                     with self._choice():
                         with self._option():
-                            self._acl_names_id_()
+                            self._acl_name_ws_()
                         with self._option():
                             self._ip4_()
                         self._error('no available options')
@@ -369,10 +606,12 @@ class iosParser(Parser):
                 self._ip4_()
                 self.name_last_node('netmask')
             with self._option():
+                self._constant('network')
+                self.name_last_node('type')
                 with self._group():
                     with self._choice():
                         with self._option():
-                            self._acl_names_id_()
+                            self._acl_name_slash_()
                         with self._option():
                             self._ip6_()
                         self._error('no available options')
@@ -382,7 +621,7 @@ class iosParser(Parser):
                 self.name_last_node('netmask')
             self._error('no available options')
         self.ast._define(
-            ['address', 'name', 'netmask', 'type'],
+            ['address', 'group', 'name', 'netmask', 'object', 'type'],
             []
         )
 
@@ -393,9 +632,17 @@ class iosParser(Parser):
                 self._token('object-group')
                 self.name_last_node('type')
                 self._WS_()
-                self._acl_object_group_service_id_()
-                self.name_last_node('name')
+                self._acl_object_group_service_()
+                self.name_last_node('group')
             with self._option():
+                self._token('object-group')
+                self.name_last_node('type')
+                self._WS_()
+                self._acl_object_group_port_()
+                self.name_last_node('group')
+            with self._option():
+                self._constant('port')
+                self.name_last_node('type')
                 with self._group():
                     with self._choice():
                         with self._option():
@@ -422,7 +669,7 @@ class iosParser(Parser):
                 self.name_last_node('stop')
             self._error('no available options')
         self.ast._define(
-            ['name', 'op', 'port', 'start', 'stop', 'type'],
+            ['group', 'op', 'port', 'start', 'stop', 'type'],
             []
         )
 
@@ -434,17 +681,11 @@ class iosParser(Parser):
                 self._token('object-group')
                 self.name_last_node('type')
                 self._WS_()
-                self._acl_object_group_icmp_id_()
-                self.name_last_node('object')
+                self._acl_object_group_icmp_()
+                self.name_last_node('group')
             with self._option():
                 self._WS_()
-                with self._group():
-                    with self._choice():
-                        with self._option():
-                            self._icmp_type_()
-                        with self._option():
-                            self._icmp_type_int_()
-                        self._error('no available options')
+                self._icmp_type_()
                 self.name_last_node('type')
                 with self._optional():
                     self._WS_()
@@ -454,7 +695,7 @@ class iosParser(Parser):
                 self._void()
             self._error('no available options')
         self.ast._define(
-            ['code', 'object', 'type'],
+            ['code', 'group', 'type'],
             []
         )
 
@@ -483,7 +724,7 @@ class iosParser(Parser):
                 self._token('time-range')
                 self.name_last_node('type')
                 self._WS_()
-                self._acl_time_range_id_()
+                self._acl_time_range_()
                 self.name_last_node('option')
             with self._option():
                 self._token('inactive')
@@ -512,6 +753,8 @@ class iosParser(Parser):
                             self._token('notifications')
                         with self._option():
                             self._token('warnings')
+                        with self._option():
+                            self._token('critical')
                         self._error('no available options')
             with self._option():
                 self._token('interval')
@@ -548,7 +791,7 @@ class iosParser(Parser):
     @tatsumasu()
     def _remark_(self):  # noqa
         with self._group():
-            self._pattern(r'[^\n]*')
+            self._pattern('[^\\n]*')
 
     @tatsumasu()
     def _object_(self):  # noqa
@@ -572,9 +815,13 @@ class iosParser(Parser):
                     self.name_last_node('args')
                 with self._optional():
                     self._SP_()
+                    self._network_object_nat_()
+                    self.name_last_node('nat')
+                with self._optional():
+                    self._SP_()
                     self._token('description')
                     self._WS_()
-                    self._pattern(r'[^\n]+')
+                    self._pattern('[^\\n]+')
                     self.name_last_node('description')
                     self._NL_()
             with self._option():
@@ -592,12 +839,12 @@ class iosParser(Parser):
                     self._SP_()
                     self._token('description')
                     self._WS_()
-                    self._pattern(r'[^\n]+')
+                    self._pattern('[^\\n]+')
                     self.name_last_node('description')
                     self._NL_()
             self._error('no available options')
         self.ast._define(
-            ['args', 'description', 'name', 'type'],
+            ['args', 'description', 'name', 'nat', 'type'],
             []
         )
 
@@ -675,13 +922,244 @@ class iosParser(Parser):
                 self.name_last_node('fqdn')
                 self._NL_()
             with self._option():
-                self._token('nat')
+                self._constant('nat')
                 self.name_last_node('type')
-                self._TOEOL_()
+                self._network_object_nat_()
+                self.name_last_node('nat')
+            self._error('no available options')
+        self.ast._define(
+            ['address', 'fqdn', 'limit', 'mask', 'nat', 'start', 'stop', 'type'],
+            []
+        )
+
+    @tatsumasu()
+    def _network_object_nat_(self):  # noqa
+        with self._choice():
+            with self._option():
+                self._token('nat')
+                self._WS_()
+                self._nat_interfaces_()
+                self.name_last_node('iface')
+                self._WS_()
+                self._token('dynamic')
+                self.name_last_node('type')
+                self._WS_()
+                self._network_nat_mapped_()
+                self.name_last_node('mapped')
+
+                def block4():
+                    self._WS_()
+                    self._network_object_nat_options_()
+                self._closure(block4)
+                self.name_last_node('options')
+                with self._optional():
+                    self._WS_()
+                self._NL_()
+            with self._option():
+                self._token('nat')
+                self._WS_()
+                self._nat_interfaces_()
+                self.name_last_node('iface')
+                self._WS_()
+                self._token('static')
+                self.name_last_node('type')
+                self._WS_()
+                self._network_nat_mapped_()
+                self.name_last_node('mapped')
+                with self._optional():
+                    self._WS_()
+                    self._network_object_nat_service_()
+                    self.name_last_node('service')
+
+                def block10():
+                    self._WS_()
+                    self._network_object_nat_options_()
+                self._closure(block10)
+                self.name_last_node('options')
+                with self._optional():
+                    self._WS_()
                 self._NL_()
             self._error('no available options')
         self.ast._define(
-            ['address', 'fqdn', 'limit', 'mask', 'start', 'stop', 'type'],
+            ['iface', 'mapped', 'options', 'service', 'type'],
+            []
+        )
+
+    @tatsumasu()
+    def _nat_interfaces_(self):  # noqa
+        self._token('(')
+        self._acl_interface_id_()
+        self.name_last_node('real')
+        self._token(',')
+        self._acl_interface_id_()
+        self.name_last_node('mapped')
+        self._token(')')
+        self.ast._define(
+            ['mapped', 'real'],
+            []
+        )
+
+    @tatsumasu()
+    def _network_nat_mapped_(self):  # noqa
+        with self._choice():
+            with self._option():
+                self._constant('object')
+                self.name_last_node('type')
+                self._acl_object_network_()
+                self.name_last_node('object')
+                with self._optional():
+                    self._WS_()
+                    self._nat_mapped_fallback_()
+                    self.name_last_node('fallback')
+            with self._option():
+                self._constant('group')
+                self.name_last_node('type')
+                self._acl_object_group_network_()
+                self.name_last_node('object')
+                with self._optional():
+                    self._WS_()
+                    self._nat_mapped_fallback_()
+                    self.name_last_node('fallback')
+            with self._option():
+                self._constant('address')
+                self.name_last_node('type')
+                self._ip4_()
+                self.name_last_node('address')
+                with self._optional():
+                    self._WS_()
+                    self._nat_mapped_fallback_()
+                    self.name_last_node('fallback')
+            with self._option():
+                self._constant('address')
+                self.name_last_node('type')
+                self._ip6_()
+                self.name_last_node('address')
+                with self._optional():
+                    self._token('/')
+                    self._int_()
+                    self.name_last_node('mask')
+                with self._optional():
+                    self._WS_()
+                    self._nat_mapped_fallback_()
+                    self.name_last_node('fallback')
+            with self._option():
+                self._token('interface')
+                self.name_last_node('type')
+                with self._optional():
+                    self._WS_()
+                    self._token('ipv6')
+                self.name_last_node('option')
+            with self._option():
+                self._constant('pool')
+                self.name_last_node('type')
+                self._pat_pool_()
+                self.name_last_node('pool')
+                with self._optional():
+                    self._WS_()
+                    self._nat_mapped_fallback_()
+                    self.name_last_node('fallback')
+            self._error('no available options')
+        self.ast._define(
+            ['address', 'fallback', 'mask', 'object', 'option', 'pool', 'type'],
+            []
+        )
+
+    @tatsumasu()
+    def _nat_mapped_fallback_(self):  # noqa
+        self._token('interface')
+        self.name_last_node('interface')
+        with self._optional():
+            self._WS_()
+            self._token('ipv6')
+            self.name_last_node('ipv6')
+        self.ast._define(
+            ['interface', 'ipv6'],
+            []
+        )
+
+    @tatsumasu()
+    def _network_object_nat_options_(self):  # noqa
+        with self._choice():
+            with self._option():
+                self._token('route-lookup')
+            with self._option():
+                self._token('no-proxy-arp')
+            with self._option():
+                self._token('dns')
+            self._error('no available options')
+
+    @tatsumasu()
+    def _network_object_nat_service_(self):  # noqa
+        with self._choice():
+            with self._option():
+                self._token('service')
+                self.name_last_node('type')
+                self._WS_()
+                with self._group():
+                    with self._choice():
+                        with self._option():
+                            self._token('tcp')
+                        with self._option():
+                            self._token('udp')
+                        self._error('no available options')
+                self.name_last_node('protocol')
+                self._WS_()
+                self._port_()
+                self.name_last_node('real')
+                self._WS_()
+                self._port_()
+                self.name_last_node('mapped')
+            with self._option():
+                self._token('dns')
+                self.name_last_node('type')
+            self._error('no available options')
+        self.ast._define(
+            ['mapped', 'protocol', 'real', 'type'],
+            []
+        )
+
+    @tatsumasu()
+    def _pat_pool_option_(self):  # noqa
+        with self._choice():
+            with self._option():
+                self._token('round-robin')
+            with self._option():
+                self._token('extended')
+            with self._option():
+                self._token('flat')
+                with self._optional():
+                    self._WS_()
+                    self._token('include-reserve')
+            self._error('no available options')
+
+    @tatsumasu()
+    def _pat_pool_options_(self):  # noqa
+
+        def block0():
+            self._WS_()
+            self._pat_pool_option_()
+        self._closure(block0)
+
+    @tatsumasu()
+    def _pat_pool_range_(self):  # noqa
+        with self._choice():
+            with self._option():
+                self._acl_object_group_network_()
+            with self._option():
+                self._acl_object_network_()
+            self._error('no available options')
+
+    @tatsumasu()
+    def _pat_pool_(self):  # noqa
+        self._token('pat-pool')
+        self._WS_()
+        self._pat_pool_range_()
+        self.name_last_node('range')
+        with self._optional():
+            self._pat_pool_options_()
+            self.name_last_node('options')
+        self.ast._define(
+            ['options', 'range'],
             []
         )
 
@@ -696,13 +1174,7 @@ class iosParser(Parser):
                 self.name_last_node('protocol')
                 with self._optional():
                     self._WS_()
-                    with self._group():
-                        with self._choice():
-                            with self._option():
-                                self._icmp_type_()
-                            with self._option():
-                                self._icmp_type_int_()
-                            self._error('no available options')
+                    self._icmp_type_()
                     self.name_last_node('icmp_type')
                     with self._optional():
                         self._WS_()
@@ -829,7 +1301,7 @@ class iosParser(Parser):
                     self._SP_()
                     self._token('description')
                     self._WS_()
-                    self._pattern(r'[^\n]+')
+                    self._pattern('[^\\n]+')
                     self.name_last_node('description')
                     self._NL_()
 
@@ -851,7 +1323,7 @@ class iosParser(Parser):
                     self._SP_()
                     self._token('description')
                     self._WS_()
-                    self._pattern(r'[^\n]+')
+                    self._pattern('[^\\n]+')
                     self.name_last_node('description')
                     self._NL_()
 
@@ -871,7 +1343,7 @@ class iosParser(Parser):
                     self._SP_()
                     self._token('description')
                     self._WS_()
-                    self._pattern(r'[^\n]+')
+                    self._pattern('[^\\n]+')
                     self.name_last_node('description')
                     self._NL_()
 
@@ -891,7 +1363,7 @@ class iosParser(Parser):
                     self._SP_()
                     self._token('description')
                     self._WS_()
-                    self._pattern(r'[^\n]+')
+                    self._pattern('[^\\n]+')
                     self.name_last_node('description')
                     self._NL_()
 
@@ -911,7 +1383,7 @@ class iosParser(Parser):
                     self._SP_()
                     self._token('description')
                     self._WS_()
-                    self._pattern(r'[^\n]+')
+                    self._pattern('[^\\n]+')
                     self.name_last_node('description')
                     self._NL_()
 
@@ -937,13 +1409,7 @@ class iosParser(Parser):
                 self.name_last_node('protocol')
                 with self._optional():
                     self._WS_()
-                    with self._group():
-                        with self._choice():
-                            with self._option():
-                                self._icmp_type_()
-                            with self._option():
-                                self._icmp_type_int_()
-                            self._error('no available options')
+                    self._icmp_type_()
                     self.name_last_node('icmp_type')
                     with self._optional():
                         self._WS_()
@@ -987,21 +1453,21 @@ class iosParser(Parser):
                 self._token('object')
                 self.name_last_node('protocol')
                 self._WS_()
-                self._acl_object_service_id_()
+                self._acl_object_service_()
                 self.name_last_node('object')
                 self._NL_()
             with self._option():
                 self._token('group-object')
                 self.name_last_node('type')
                 self._WS_()
-                self._acl_object_group_service_id_()
-                self.name_last_node('object')
+                self._acl_object_group_service_()
+                self.name_last_node('group')
                 self._NL_()
             with self._option():
                 self._void()
             self._error('no available options')
         self.ast._define(
-            ['dst', 'icmp_code', 'icmp_type', 'object', 'protocol', 'src', 'type'],
+            ['dst', 'group', 'icmp_code', 'icmp_type', 'object', 'protocol', 'src', 'type'],
             []
         )
 
@@ -1027,7 +1493,7 @@ class iosParser(Parser):
             with self._option():
                 self._token('group-object')
                 self._WS_()
-                self._acl_object_group_service_id_()
+                self._acl_object_group_port_()
                 self._NL_()
             with self._option():
                 self._void()
@@ -1046,7 +1512,7 @@ class iosParser(Parser):
                 with self._group():
                     with self._choice():
                         with self._option():
-                            self._acl_names_id_()
+                            self._acl_name_ws_()
                         with self._option():
                             self._ip4_()
                         with self._option():
@@ -1061,7 +1527,7 @@ class iosParser(Parser):
                 self._token('object')
                 self.name_last_node('name')
                 self._WS_()
-                self._acl_object_network_id_()
+                self._acl_object_network_()
                 self.name_last_node('object')
                 self._NL_()
             with self._option():
@@ -1071,7 +1537,7 @@ class iosParser(Parser):
                 with self._group():
                     with self._choice():
                         with self._option():
-                            self._acl_names_id_()
+                            self._acl_name_ws_()
                         with self._option():
                             self._ip4_()
                         self._error('no available options')
@@ -1087,7 +1553,7 @@ class iosParser(Parser):
                 with self._group():
                     with self._choice():
                         with self._option():
-                            self._acl_names_id_()
+                            self._acl_name_slash_()
                         with self._option():
                             self._ip6_()
                         self._error('no available options')
@@ -1100,14 +1566,14 @@ class iosParser(Parser):
                 self._token('group-object')
                 self.name_last_node('type')
                 self._WS_()
-                self._acl_object_group_network_id_()
-                self.name_last_node('object')
+                self._acl_object_group_network_()
+                self.name_last_node('group')
                 self._NL_()
             with self._option():
                 self._void()
             self._error('no available options')
         self.ast._define(
-            ['address', 'name', 'netmask', 'object', 'type'],
+            ['address', 'group', 'name', 'netmask', 'object', 'type'],
             []
         )
 
@@ -1118,27 +1584,21 @@ class iosParser(Parser):
                 self._token('icmp-object')
                 self.name_last_node('type')
                 self._WS_()
-                with self._group():
-                    with self._choice():
-                        with self._option():
-                            self._icmp_type_()
-                        with self._option():
-                            self._icmp_type_int_()
-                        self._error('no available options')
+                self._icmp_type_()
                 self.name_last_node('name')
                 self._NL_()
             with self._option():
                 self._token('group-object')
                 self.name_last_node('type')
                 self._WS_()
-                self._acl_object_group_icmp_id_()
-                self.name_last_node('name')
+                self._acl_object_group_icmp_()
+                self.name_last_node('group')
                 self._NL_()
             with self._option():
                 self._void()
             self._error('no available options')
         self.ast._define(
-            ['name', 'type'],
+            ['group', 'name', 'type'],
             []
         )
 
@@ -1156,34 +1616,43 @@ class iosParser(Parser):
                 self._token('group-object')
                 self.name_last_node('type')
                 self._WS_()
-                self._acl_object_group_protocol_id_()
-                self.name_last_node('name')
+                self._acl_object_group_protocol_()
+                self.name_last_node('group')
                 self._NL_()
             with self._option():
                 self._void()
             self._error('no available options')
         self.ast._define(
-            ['name', 'type'],
+            ['group', 'name', 'type'],
             []
         )
 
     @tatsumasu()
     def _port_(self):  # noqa
-        with self._group():
-            with self._choice():
-                with self._option():
-                    self._port_code_()
-                with self._option():
-                    self._port_int_()
-                self._error('no available options')
+        with self._choice():
+            with self._option():
+                with self._if():
+                    with self._group():
+                        self._port_code_()
+                        with self._group():
+                            with self._choice():
+                                with self._option():
+                                    self._WS_()
+                                with self._option():
+                                    self._NL_()
+                                self._error('no available options')
+                self._port_code_()
+            with self._option():
+                self._port_int_()
+            self._error('no available options')
 
     @tatsumasu()
     def _hour_(self):  # noqa
-        self._pattern(r'[0-9]{1,2}')
+        self._pattern('[0-9]{1,2}')
 
     @tatsumasu()
     def _minute_(self):  # noqa
-        self._pattern(r'[0-9]{1,2}')
+        self._pattern('[0-9]{1,2}')
 
     @tatsumasu()
     def _time_(self):  # noqa
@@ -1199,11 +1668,11 @@ class iosParser(Parser):
 
     @tatsumasu()
     def _year_(self):  # noqa
-        self._pattern(r'[0-9]{4}')
+        self._pattern('[0-9]{4}')
 
     @tatsumasu()
     def _day_(self):  # noqa
-        self._pattern(r'[0-9]{1,2}')
+        self._pattern('[0-9]{1,2}')
 
     @tatsumasu()
     def _date_(self):  # noqa
@@ -1386,6 +1855,25 @@ class iosParser(Parser):
 
     @tatsumasu()
     def _icmp_type_(self):  # noqa
+        with self._choice():
+            with self._option():
+                with self._if():
+                    with self._group():
+                        self._icmp_type_name_()
+                        with self._group():
+                            with self._choice():
+                                with self._option():
+                                    self._WS_()
+                                with self._option():
+                                    self._NL_()
+                                self._error('no available options')
+                self._icmp_type_name_()
+            with self._option():
+                self._icmp_type_int_()
+            self._error('no available options')
+
+    @tatsumasu()
+    def _icmp_type_name_(self):  # noqa
         with self._choice():
             with self._option():
                 self._token('unreachable')
@@ -1670,6 +2158,8 @@ class iosParser(Parser):
             with self._option():
                 self._token('https')
             with self._option():
+                self._token('http')
+            with self._option():
                 self._token('hostname')
             with self._option():
                 self._token('h323')
@@ -1846,7 +2336,7 @@ class iosParser(Parser):
             with self._option():
                 self._token('^C')
             with self._option():
-                self._pattern(r'.')
+                self._pattern('.')
             self._error('no available options')
 
     @tatsumasu()
@@ -2622,11 +3112,11 @@ class iosParser(Parser):
     def _access_list_ip_standard_id_(self):  # noqa
         with self._choice():
             with self._option():
-                self._pattern(r'[1-9][0-9]?')
+                self._pattern('[1-9][0-9]?')
                 with self._if():
                     self._WS_()
             with self._option():
-                self._pattern(r'13[0-9][0-9]')
+                self._pattern('13[0-9][0-9]')
                 with self._if():
                     self._WS_()
             self._error('no available options')
@@ -2635,11 +3125,11 @@ class iosParser(Parser):
     def _access_list_ip_extended_id_(self):  # noqa
         with self._choice():
             with self._option():
-                self._pattern(r'1[0-9][0-9]')
+                self._pattern('1[0-9][0-9]')
                 with self._if():
                     self._WS_()
             with self._option():
-                self._pattern(r'2[0-6][0-9][0-9]')
+                self._pattern('2[0-6][0-9][0-9]')
                 with self._if():
                     self._WS_()
             self._error('no available options')
@@ -2648,7 +3138,7 @@ class iosParser(Parser):
     def _ignored_indent_(self):  # noqa
 
         def block0():
-            self._pattern(r'^ [^\n]*')
+            self._pattern('^ [^\\n]*')
             self._NL_()
         self._closure(block0)
 
@@ -2973,7 +3463,7 @@ class iosParser(Parser):
                 self._token('dhcp pool')
 
                 def block0():
-                    self._pattern(r'[^(!|\n)]*')
+                    self._pattern('[^(!|\\n)]*')
                     self._NL_()
                 self._closure(block0)
             with self._option():
@@ -3129,28 +3619,73 @@ class iosSemantics(object):
     def acl_object_group_network_id(self, ast):  # noqa
         return ast
 
+    def acl_object_group_network(self, ast):  # noqa
+        return ast
+
     def acl_object_network_id(self, ast):  # noqa
+        return ast
+
+    def acl_object_network(self, ast):  # noqa
         return ast
 
     def acl_object_group_service_id(self, ast):  # noqa
         return ast
 
+    def acl_object_group_service(self, ast):  # noqa
+        return ast
+
+    def acl_object_group_port_id(self, ast):  # noqa
+        return ast
+
+    def acl_object_group_port(self, ast):  # noqa
+        return ast
+
     def acl_object_service_id(self, ast):  # noqa
+        return ast
+
+    def acl_object_service(self, ast):  # noqa
         return ast
 
     def acl_object_group_icmp_id(self, ast):  # noqa
         return ast
 
+    def acl_object_group_icmp(self, ast):  # noqa
+        return ast
+
     def acl_object_group_protocol_id(self, ast):  # noqa
+        return ast
+
+    def acl_object_group_protocol(self, ast):  # noqa
         return ast
 
     def acl_names_id(self, ast):  # noqa
         return ast
 
+    def acl_name_ws(self, ast):  # noqa
+        return ast
+
+    def acl_name_slash(self, ast):  # noqa
+        return ast
+
+    def acl_name(self, ast):  # noqa
+        return ast
+
     def acl_time_range_id(self, ast):  # noqa
         return ast
 
+    def acl_time_range(self, ast):  # noqa
+        return ast
+
     def acl_interface_id(self, ast):  # noqa
+        return ast
+
+    def acl_interface(self, ast):  # noqa
+        return ast
+
+    def acl_internal_id(self, ast):  # noqa
+        return ast
+
+    def acl_internal(self, ast):  # noqa
         return ast
 
     def acl_host(self, ast):  # noqa
@@ -3184,6 +3719,36 @@ class iosSemantics(object):
         return ast
 
     def network_object(self, ast):  # noqa
+        return ast
+
+    def network_object_nat(self, ast):  # noqa
+        return ast
+
+    def nat_interfaces(self, ast):  # noqa
+        return ast
+
+    def network_nat_mapped(self, ast):  # noqa
+        return ast
+
+    def nat_mapped_fallback(self, ast):  # noqa
+        return ast
+
+    def network_object_nat_options(self, ast):  # noqa
+        return ast
+
+    def network_object_nat_service(self, ast):  # noqa
+        return ast
+
+    def pat_pool_option(self, ast):  # noqa
+        return ast
+
+    def pat_pool_options(self, ast):  # noqa
+        return ast
+
+    def pat_pool_range(self, ast):  # noqa
+        return ast
+
+    def pat_pool(self, ast):  # noqa
         return ast
 
     def service_object(self, ast):  # noqa
@@ -3262,6 +3827,9 @@ class iosSemantics(object):
         return ast
 
     def icmp_type(self, ast):  # noqa
+        return ast
+
+    def icmp_type_name(self, ast):  # noqa
         return ast
 
     def icmp_type_int(self, ast):  # noqa

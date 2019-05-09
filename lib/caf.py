@@ -81,15 +81,15 @@ class cafParser(Parser):
 
     @tatsumasu()
     def _ip4_(self):  # noqa
-        self._pattern(r'((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])')
+        self._pattern('((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])')
 
     @tatsumasu()
     def _ipX_(self):  # noqa
-        self._pattern(r'\w+\.\w+\.\w+\.\w+')
+        self._pattern('\\w+\\.\\w+\\.\\w+\\.\\w+')
 
     @tatsumasu()
     def _ip6_(self):  # noqa
-        self._pattern(r'[a-fA-F0-9]*:[a-fA-F0-9\.\:]+')
+        self._pattern('[a-fA-F0-9]*:[a-fA-F0-9\\.\\:]+')
 
     @tatsumasu()
     def _grammar_(self):  # noqa
@@ -99,15 +99,15 @@ class cafParser(Parser):
 
     @tatsumasu()
     def _string_(self):  # noqa
-        self._pattern(r'[A-Za-z0-9_\-\.]+')
+        self._pattern('[A-Za-z0-9_\\-\\.]+')
 
     @tatsumasu()
     def _pattern_(self):  # noqa
-        self._pattern(r'[A-Za-z0-9_\-\.\?\*\[\]\!\/]+')
+        self._pattern('[A-Za-z0-9_\\-\\.\\?\\*\\[\\]\\!\\/]+')
 
     @tatsumasu()
     def _int_(self):  # noqa
-        self._pattern(r'[0-9]+')
+        self._pattern('[0-9]+')
 
     @tatsumasu()
     def _comments_(self):  # noqa
@@ -119,7 +119,7 @@ class cafParser(Parser):
     @tatsumasu()
     def _comment_(self):  # noqa
         self._token('/*')
-        self._pattern(r'([^*]|(\*[^/]))*')
+        self._pattern('([^*]|(\\*[^/]))*')
         self._token('*/')
 
     @tatsumasu()
