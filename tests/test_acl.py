@@ -200,6 +200,9 @@ class aclTestBlock(unittest.TestCase):
 	def test_block_network_object_dynamic_nat_backup_pat(self):
 		return self._test_block('network_object_dynamic_nat_backup_pat', ['nat_interfaces'], trace=True)
 
+	def test_block_network_object_nat_single_definition(self):
+		return self._test_block('network_object_nat_single_definition', ['nat_interfaces'], trace=True)
+
 	def test_all(self):
 		return self._test_block(None, tpl='all')
 

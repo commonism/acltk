@@ -261,6 +261,8 @@ class NetworkObject:
 		self.type = type
 		if type is None:
 			self.addresses = []
+		elif type == 'nat':
+			self.addresses = []
 		elif type == 'host':
 			self.addresses = [NetworkHost(address)]
 		elif type == 'subnet':
