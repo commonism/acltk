@@ -2959,6 +2959,11 @@ class fwsmParser(Parser):
                 self._acl_object_network_()
                 self.name_last_node('name')
             with self._option():
+                self._constant('group')
+                self.name_last_node('type')
+                self._acl_object_group_network_()
+                self.name_last_node('name')
+            with self._option():
                 self._constant('interface')
                 self.name_last_node('type')
                 self._nat_mapped_fallback_()
@@ -3078,7 +3083,13 @@ class fwsmParser(Parser):
         self._nat_mapped_node_()
         self.name_last_node('mapped')
         self._WS_()
-        self._acl_object_network_()
+        with self._group():
+            with self._choice():
+                with self._option():
+                    self._acl_object_network_()
+                with self._option():
+                    self._acl_object_group_network_()
+                self._error('no available options')
         self.name_last_node('real')
         self.ast._define(
             ['mapped', 'real', 'type'],

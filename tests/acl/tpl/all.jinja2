@@ -923,5 +923,12 @@ nat (inside,outside) after-auto source dynamic LAN NAT-POOL {{ fallback }} desti
 {% endfor %}
 {% endblock %}
 
+{% block nat_mapped_network_group %}
+object-group network MAPPED-GROUP
+ network-object host 1.2.3.4
+
+nat (inside,outside) source static any any destination static MAPPED-GROUP MAPPED-GROUP no-proxy-arp
+{% endblock %}
+
 {% endblock nat %}
 {% endblock all %}

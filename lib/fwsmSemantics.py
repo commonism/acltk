@@ -152,6 +152,8 @@ class fwsmSemantics(aclSemantics, _fwsmSemantics):
 		obj = ast.mapped
 		if obj.type == 'object':
 			mapped = obj.name
+		elif obj.type == 'group':
+			mapped = obj.name
 		elif obj.type == 'interface':
 			mapped = 'interface'
 		elif obj.type == 'pool':

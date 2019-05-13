@@ -161,6 +161,7 @@ nat
 
 nat_mapped_node
 	= type:`object` name:acl_object_network
+	| type:`group` name:acl_object_group_network
 	| type:`interface` nat_mapped_fallback
 	| type:"any"
 	;
@@ -183,7 +184,7 @@ nat_src
 	;
 
 nat_dst
-	= "destination" WS type:"static" WS mapped:nat_mapped_node WS real:acl_object_network
+	= "destination" WS type:"static" WS mapped:nat_mapped_node WS real:(acl_object_network|acl_object_group_network)
 	;
 
 nat_pos
