@@ -127,10 +127,6 @@ class fwsmSemantics(aclSemantics, _fwsmSemantics):
 		else:
 			return ValueError()
 
-	def nat_mapped_node(self, ast):
-		return self.nat_mapped_src_dynamic_node(ast)
-
-
 	def nat_src(self, ast):
 		obj = ast.mapped
 		mapped = None
@@ -144,6 +140,10 @@ class fwsmSemantics(aclSemantics, _fwsmSemantics):
 			mapped = obj.pool.range
 		elif obj.type == 'any':
 			mapped = NetworkAny()
+		elif obj.type == 'group':
+			mapped = obj.name
+		else:
+			raise ValueError(obj.type)
 
 		return {'real': NATRealNode(ast['real']), 'mapped': NATMappedSource(ast['type'], mapped, obj.fallback)}
 
@@ -160,6 +160,8 @@ class fwsmSemantics(aclSemantics, _fwsmSemantics):
 			mapped = obj.pool
 		elif obj.type == 'any':
 			mapped = NetworkAny()
+		else:
+			raise ValueError(obj.type)
 
 		return {'real':NATRealNode(ast['real']), 'mapped':NATMappedDestination(mapped)}
 
