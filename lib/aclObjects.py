@@ -301,7 +301,7 @@ class Network:
 		self.target = target
 
 	def __and__(self, other):
-		assert isinstance(other, (Network, NetworkWildcard, NetworkHost, NetworkObject, NetworkGroup, NetworkAny, NetworkAny4, NetworkAny6)), "unexpected type {} or class {}".format(type(other), other.__class__.__qualname__)
+		assert isinstance(other, (Network, NetworkWildcard, NetworkHost, NetworkObject, NetworkGroup, NetworkAny, NetworkAny4, NetworkAny6, NetworkInterface)), "unexpected type {} or class {}".format(type(other), other.__class__.__qualname__)
 		if isinstance(other, NetworkHost):
 			return other.address in self.network
 		if isinstance(other, NetworkAny):
@@ -318,6 +318,9 @@ class Network:
 			return other & self
 		if isinstance(other, NetworkWildcard):
 			return other & self
+		if isinstance(other, NetworkInterface):
+			return other & self
+
 
 	def __repr__(self):
 		return "Network {}".format(str(self.network))
@@ -391,9 +394,12 @@ class NetworkAny:
 		return "NetworkAny"
 
 
-class NetworkInterface(NetworkAny):
+class NetworkInterface:
 	def __init__(self, name):
 		self.name = name
+
+	def __and__(self, other):
+		return True
 
 	def __repr__(self):
 		return "NetworkInterface {}".format(self.name)
@@ -889,7 +895,7 @@ class TimeRangeObjectPeriodic:
 
 class ACLNode:
 	def __init__(self, host=None, port=None):
-		assert isinstance(host, (Network, NetworkWildcard, NetworkAny, NetworkAny4, NetworkAny6, NetworkGroup, NetworkHost, NetworkObject)), "unexpected type {} or class {}".format(type(host), host.__class__.__qualname__)
+		assert isinstance(host, (Network, NetworkWildcard, NetworkAny, NetworkAny4, NetworkAny6, NetworkGroup, NetworkHost, NetworkObject, NetworkInterface)), "unexpected type {} or class {}".format(type(host), host.__class__.__qualname__)
 		self.host = host
 		assert port is None or isinstance(port, (Port, PortGroup, PortRange)), "unexpected type {} or class {}".format(type(port), port.__class__.__qualname__)
 		self.port = port
