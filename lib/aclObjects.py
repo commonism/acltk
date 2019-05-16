@@ -149,12 +149,20 @@ class NATObject:
 	def __and__(self, other):
 		assert isinstance(other, ACLRule), "unexpected type {} or class {}".format(type(other), other.__class__.__qualname__)
 
+		for i in ['real','mapped']:
+			rm = getattr(self, i)
+			src = ACLNode(rm.src.node) if rm.src and rm.src.node else None
+			dst = ACLNode(rm.dst.node) if rm.dst and rm.dst.node else None
 
-		if (self.mapped.src and other.src & ACLNode(self.mapped.src.node) and self.mapped.dst and other.dst & ACLNode(self.mapped.dst.node)):
-			return True
-
-		if (self.real.src and other.src & ACLNode(self.real.src.node) and self.real.dst and other.dst & ACLNode(self.real.dst.node)):
-			return True
+			if src and dst:
+				if other.src & src and other.dst & dst:
+					return True
+			elif src:
+				if other.src & src:
+					return True
+			elif dst:
+				if other.dst & dst:
+					return True
 
 		return False
 
