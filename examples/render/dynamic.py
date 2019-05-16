@@ -55,7 +55,7 @@ def show():
 		if cafString and len(cafString) > 0:
 			try:
 				caf = cafBlock.fromString(cafString)
-				selection = caf.run(acls.rules)
+				selection = acls.filter(caf)
 				selection = acls.resolve(selection)
 			except Exception as e:
 				warning = str(e)

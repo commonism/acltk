@@ -31,8 +31,9 @@ def main():
 	selection = None
 	caffilter = ""
 	if args.caf:
-		caf = cafBlock.parse(args.caf)
-		r = caf.run(aclconfig.rules, verbose=True)
+		print(args.caf)
+		caf = cafBlock.fromFile(open(args.caf,'rb'), trace=False)
+		r = aclconfig.filter(caf)
 		caffilter = open(args.caf).read()
 		selection = aclconfig.resolve(r)
 
