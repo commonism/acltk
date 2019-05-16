@@ -1,4 +1,4 @@
-from acltk.aclObjects import ACLRule, NetworkAny, NetworkAny4, NetworkAny6, ACLRules
+from acltk.aclObjects import ACLRule, NetworkAny, NetworkAny4, NetworkAny6, ACLRules, NATObject
 
 
 class cafBlock:
@@ -66,7 +66,7 @@ class cafOp:
 		self.b = block(b)
 
 	def run(self, rules, verbose=False):
-		assert isinstance(rules, (ACLRules, cafOp, cafBlock)), "unexpected type {} or class {}".format(type(rules), rules.__class__.__qualname__)
+		assert isinstance(rules, (ACLRules, cafOp, cafBlock, NATObject)), "unexpected type {} or class {}".format(type(rules), rules.__class__.__qualname__)
 
 	def result(self, r, verbose=False):
 		if verbose:

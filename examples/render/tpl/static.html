@@ -273,7 +273,7 @@ thead			{ font-style: italic; }
 {% endfor %}
 
 {%  if obj.nameif  %}
-	<tr>
+	<tr  {{ visible(obj) }}>
 		<td></td>
 		<td>iface</td>
 		<td>{{ obj.nameif }}</td>
@@ -364,7 +364,7 @@ thead			{ font-style: italic; }
 		</td>
 	</tr>
 {%- if obj.description %}
-	<tr>
+	<tr {{ visible(obj) }}>
 		<td></td>
 		<td colspan="6" class="network_group_description">
 			{{ obj.description }}
@@ -684,10 +684,19 @@ thead			{ font-style: italic; }
     </tr>
 
 {%-  for nat in aclconfig.nat[k] %}
+
 {%- if "inactive" in nat.options %}
 {%- set cls = 'class="mode_inactive"' %}
 {%- else %}
 {%- set cls = 'class="tr-even"' if loop.index % 2 else 'class="tr-odd"' %}
+{%- endif %}
+
+{%- if selection is not none and nat not in selection %}
+{%- if args.show_not_selected %}
+{%- set cls = 'class="filterd_by_the_filter"' %}
+{%- else %}
+{%- continue %}
+{%- endif %}
 {%- endif %}
 
     <tr {{ cls | safe }}>

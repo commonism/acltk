@@ -5,6 +5,7 @@ import math
 import fnmatch
 import logging
 import socket
+import itertools
 
 log = logging.getLogger()
 
@@ -145,8 +146,21 @@ class NATObject:
 		self.description = description
 		self.options = {} if options is None else options
 
+	def __and__(self, other):
+		assert isinstance(other, ACLRule), "unexpected type {} or class {}".format(type(other), other.__class__.__qualname__)
+
+
+		if (self.mapped.src and other.src & ACLNode(self.mapped.src.node) and self.mapped.dst and other.dst & ACLNode(self.mapped.dst.node)):
+			return True
+
+		if (self.real.src and other.src & ACLNode(self.real.src.node) and self.real.dst and other.dst & ACLNode(self.real.dst.node)):
+			return True
+
+		return False
+
 	def __repr__(self):
 		return "<NATObject {} -> {}".format(self.real, self.mapped)
+
 
 class _Group:
 	_allowed = None.__class__
@@ -944,7 +958,10 @@ class ACLRule:
 		self.head = head
 
 	def __and__(self, other):
-		assert isinstance(other, ACLRule), "unexpected type {} or class {}".format(type(other), other.__class__.__qualname__)
+		assert isinstance(other, (ACLRule, NATObject)), "unexpected type {} or class {}".format(type(other), other.__class__.__qualname__)
+		if isinstance(other, NATObject):
+			# FIXME abuse
+			return other & self
 		if self.id and other.id:
 			pattern = name = None
 			if self.id[0] == self.id[-1] == '/':
@@ -1117,20 +1134,38 @@ class ACLConfig:
 
 	def resolve(self, r):
 		for i in list(r):
-			r.add(i.protocol)
-			r.add(i.src.host)
-			r.add(i.src.port)
-			r.add(i.dst.host)
-			r.add(i.dst.port)
-			r.add(i.id)
-			if i.protocol.name in ('icmp','icmp6'):
-				if i.icmp:
-					r.add(i.icmp)
-			for k,v in i.options.items():
-				if isinstance(v, TimeRange):
-					r.add(v)
-			if i.id in self.access_groups:
-				r.add(self.access_groups[i.id])
+			if isinstance(i, ACLRule):
+				r.add(i.protocol)
+				r.add(i.src.host)
+				try:
+					r.add(i.src.port)
+					r.add(i.dst.port)
+				except Exception as e:
+					print(e)
+				r.add(i.dst.host)
+				r.add(i.id)
+				if i.protocol.name in ('icmp','icmp6'):
+					if i.icmp:
+						r.add(i.icmp)
+				for k,v in i.options.items():
+					if isinstance(v, TimeRange):
+						r.add(v)
+				if i.id in self.access_groups:
+					r.add(self.access_groups[i.id])
+			elif isinstance(i, NATObject):
+				if i.real.src:
+					r.add(i.real.src.node)
+				if i.real.dst:
+					r.add(i.real.dst.node)
+				r.add(i.real.iface)
+				r.add(i.real.service)
+
+				if i.mapped.src:
+					r.add(i.mapped.src.node)
+				if i.mapped.dst:
+					r.add(i.mapped.dst.node)
+				r.add(i.mapped.iface)
+				r.add(i.mapped.service)
 
 		done = set()
 		while True:
@@ -1155,6 +1190,8 @@ class ACLConfig:
 					r.add(i.iface)
 					r.add('Interface')
 					break
+				elif isinstance(i, NATObject):
+					r.add('NAT')
 			else:
 				break
 
@@ -1172,3 +1209,16 @@ class ACLConfig:
 			for group in l.values():
 				group.expand()
 
+	def filter(self, caf):
+		from acltk.cafObjects import cafBlock
+		assert (isinstance(caf, cafBlock)), "unexpected type {} or class {}".format(type(caf),
+																				 caf.__class__.__qualname__)
+		r = set()
+
+		r.update(caf.run(self.rules, verbose=False))
+
+		# FIXME abuse
+		nat = ACLRules()
+		nat.rules = list(itertools.chain.from_iterable(self.nat.values()))
+		r.update(caf.run(nat, verbose=True))
+		return r

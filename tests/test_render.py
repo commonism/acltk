@@ -4,7 +4,7 @@ import unittest
 from jinja2 import FileSystemLoader, Environment
 from acltk import ACLConfig, cafBlock
 from acltk.aclObjects import NetworkGroup, PortGroup, ServiceGroup, ProtocolGroup, TimeRange, Network, NetworkHost, \
-	NetworkObject, ServiceObject
+	NetworkObject, ServiceObject, ACLParserOptions
 from acltk.pfsenseObjects import pfsenseConfig
 
 RENDER_DIR = "../examples/render/"
@@ -22,14 +22,17 @@ class renderTest(unittest.TestCase):
 		self.template = env.get_template('static.html')
 
 
-	def _test_render_single(self, aclpath, cafpath, sort=None):
-		acl = ACLConfig.fromPath(aclpath)
+	def _test_render_single(self, aclpath, cafpath, sort=None, trace=False):
+		acl = ACLConfig.fromPath(aclpath, options=ACLParserOptions(trace=trace))
 		if False:
 			acl.expand()
-		caf = cafBlock.fromPath(cafpath, trace=False)
 
-		r = caf.run(acl.rules, verbose=True)
-		selection = acl.resolve(r)
+		if cafpath:
+			caf = cafBlock.fromPath(cafpath, trace=False)
+			r = acl.filter(caf)
+			selection = acl.resolve(r)
+		else:
+			selection = None
 
 		for i in sort or []: #:
 			grps = getattr(acl.groups, i)
@@ -40,7 +43,10 @@ class renderTest(unittest.TestCase):
 
 
 		try:
-			path = "dataout/{}-{}.html".format(*list(map(lambda x: os.path.splitext(os.path.basename(x))[0], [aclpath, cafpath])))
+			if cafpath:
+				path = "dataout/{}-{}.html".format(*list(map(lambda x: os.path.splitext(os.path.basename(x))[0], [aclpath, cafpath])))
+			else:
+				path = "dataout/{}.html".format(*list(map(lambda x: os.path.splitext(os.path.basename(x))[0], [aclpath])))
 		except Exception as e:
 			print(e)
 
@@ -49,3 +55,7 @@ class renderTest(unittest.TestCase):
 
 	def test_render_all(self):
 		return self._test_render_single('acl/single/all.txt', 'caf/any.caf', sort=self.SORT_ALL)
+
+	def test_render_auto(self):
+		return self._test_render_single('acl/single/auto.txt', 'caf/any.caf', sort=self.SORT_ALL, trace=False)
+
