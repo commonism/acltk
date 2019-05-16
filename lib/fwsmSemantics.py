@@ -72,7 +72,7 @@ class fwsmSemantics(aclSemantics, _fwsmSemantics):
 		description = None
 
 		if ast.service:
-			if ast.src.type == 'static':
+			if ast.src['mapped'].type == 'static':
 				# For source port translation, the objects must specify the source service.
 				# The order of the service objects in the command for source port translation is service real_obj mapped_obj.
 				if ast.service[1].src and not ast.service[2].dst and ast.service[2].src and not ast.service[2].dst:
@@ -91,11 +91,11 @@ class fwsmSemantics(aclSemantics, _fwsmSemantics):
 				else:
 					raise ValueError("unexpected")
 				# For identity port translation, simply use the same service object for both the real and mapped ports (source and / or destination ports, depending on your configuration).
-			elif ast.src.type == 'dynamic':
+			elif ast.src['mapped'].type == 'dynamic':
 				real['service'] = ast.service[1]
 				mapped['service'] = ast.service[2]
 			else:
-				raise ValueError(ast.src.type)
+				raise ValueError(ast.src['mapped'].type)
 
 		for i in ast.options:
 			if i.type == 'description':
