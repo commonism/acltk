@@ -199,7 +199,7 @@ acl_option
 (* access-list access_list_name [extended] {deny|permit}...[log [[level] [interval secs] |disable|default]] *)
 
 acl_option_log_option
-	= ("debugging"|"disable"|"default"|"notifications"|"warnings")
+	= ("debugging"|"disable"|"default"|"notifications"|"warnings"|"critical")
 	| "interval" WS int
 	| ("0"|"1"|"2"|"3"|"4"|"5"|"6"|"7")
 	| ()
