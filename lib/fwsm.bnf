@@ -214,6 +214,7 @@ ignored
 	| "!" TOEOL NL
 	| "aaa-server" WS TOEOL NL ignored_indent
 	| "aaa" WS TOEOL NL
+	| "app-agent" TOEOL NL
 	| "arp-inspection" WS TOEOL NL
 	| "arp" WS TOEOL NL
 	| "asdm" WS TOEOL NL
@@ -235,6 +236,7 @@ ignored
 	| "established" WS TOEOL NL
 	| "failover" [WS TOEOL] NL
 	| "firewall" TOEOL NL
+	| "flow-export" TOEOL NL
 	| "fragment" TOEOL NL
 	| "ftp" TOEOL NL
 	| "global" WS TOEOL NL
