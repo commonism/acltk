@@ -69,8 +69,8 @@ class aclTestParse(unittest.TestCase):
 		for i in cfg.rules.rules:
 			i.__repr__()
 
-	def _test_single_acl(self, name):
-		cfg = ACLConfig.fromPath(name)
+	def _test_single_acl(self, name, trace=False):
+		cfg = ACLConfig.fromPath(name, options=ACLParserOptions(trace=trace))
 
 	def test_candidate(self):
 		return self._test_single_acl('acl/private/fwsm.conf')

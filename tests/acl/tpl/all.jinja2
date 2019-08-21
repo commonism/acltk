@@ -932,4 +932,9 @@ nat (inside,outside) source static MAPPED-GROUP MAPPED-GROUP
 {% endblock %}
 
 {% endblock nat %}
+
+{% block ignored %}
+app-agent heartbeat interval 1000 retry-count 3
+{% endblock %}
+
 {% endblock all %}
