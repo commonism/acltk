@@ -3184,6 +3184,10 @@ class fwsmParser(Parser):
                 self._TOEOL_()
                 self._NL_()
             with self._option():
+                self._token('app-agent')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
                 self._token('arp-inspection')
                 self._WS_()
                 self._TOEOL_()
