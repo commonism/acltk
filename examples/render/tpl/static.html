@@ -28,7 +28,7 @@ VERIFY {{ obj.address }}/{{ obj.wildcard }}
 {%- elif obj.__class__.__name__ == 'Webtype' -%}
 	{{ obj.url }}
 {%  else %}
-FIXME {{ obj.__class__.__name__ }}
+    FIXME {{ obj.__class__.__name__ }}
 {%- endif -%}
 {%- endmacro -%}
 
@@ -131,23 +131,13 @@ caption			{ font-size: 200%;
 	              font-weight: bold; }
 thead			{ font-style: italic; }
 
-.new_network_group{ font-weight: bold;
-					font-size: 110%; }
-.new_service_group{ font-weight: bold;
-					font-size: 110%; }
-.new_time_range{ font-weight: bold;
-				 font-size: 110%; }
-.network_group_description{
-					font-size: 80%;
-					font-style: italic; }
-.service_group_description{
+.new{ font-weight: bold; font-size: 110%; }
+.description{
 					font-size: 80%;
 					font-style: italic; }
 .different_acl_id { font-weight: bold;
 					text-align:center;
 					font-size: 150%; }
-.acl_description{ font-size: 80%;
-				  font-style: italic; }
 .mode_deny	  { color:#FF0000;
 				  font-weight: bold; }
 .mode_permit	{ color:#008000;
@@ -357,7 +347,7 @@ thead			{ font-style: italic; }
 {%- endif %}
 
 	<tr {{ visible(obj) }}>
-		<td colspan="6" class="new_network_group">
+		<td colspan="6" class="new">
 			<a name="network_group_{{ name }}" id="network_group_{{ name }}">
 				{{ name }}
 			</a>
@@ -366,7 +356,7 @@ thead			{ font-style: italic; }
 {%- if obj.description %}
 	<tr {{ visible(obj) }}>
 		<td></td>
-		<td colspan="6" class="network_group_description">
+		<td colspan="6" class="description">
 			{{ obj.description }}
 		</td>
 	</tr>
@@ -438,7 +428,7 @@ thead			{ font-style: italic; }
 {%- endif %}
 
 	<tr {{ visible(obj) }}>
-		<td colspan="5" class="new_service_group">
+		<td colspan="5" class="new">
 			<a name="service_group_{{ name }}" id="service_group_{{ name }}">
 				{{ name }}
 			</a>
@@ -447,7 +437,7 @@ thead			{ font-style: italic; }
 {%- if obj.description %}
 	<tr {{ visible(obj) }}>
 		<td></td>
-		<td colspan="4" class="service_group_description">{{obj.description}}</td>
+		<td colspan="4" class="description">{{obj.description}}</td>
 	</tr>
 {%- endif %}
 	<tr {{ visible(obj) }}>
@@ -509,7 +499,7 @@ thead			{ font-style: italic; }
 {%- endif %}
 
 	<tr {{ visible(obj) }}>
-		<td colspan="5" class="new_service_group">
+		<td colspan="5" class="new">
 			<a name="port_group_{{ name }}" id="port_group_{{ name }}">
 				{{ name }} ({{ protocol(obj.protocol) }})
 			</a>
@@ -518,7 +508,7 @@ thead			{ font-style: italic; }
 {%- if obj.description %}
 	<tr {{ visible(obj) }}>
 		<td></td>
-		<td colspan="8" class="service_group_description">{{obj.description}}</td>
+		<td colspan="8" class="description">{{obj.description}}</td>
 	</tr>
 {%- endif %}
 {%- for items in obj.objects|batch(6) %}
@@ -554,7 +544,7 @@ thead			{ font-style: italic; }
 {%- endif %}
 
 	<tr {{ visible(obj) }}>
-		<td colspan="5" class="new_service_group">
+		<td colspan="5" class="new">
 			<a name="icmp_group_{{ name }}" id="icmp_group_{{ name }}">
 				{{ name }}
 			</a>
@@ -596,7 +586,7 @@ thead			{ font-style: italic; }
 {%- endif %}
 
 	<tr {{ visible(obj) }}>
-		<td colspan="5" class="new_service_group">
+		<td colspan="5" class="new">
 			<a name="protocol_group_{{ name }}" id="protocol_group_{{ name }}">
 				{{ name }}
 			</a>
@@ -631,7 +621,7 @@ thead			{ font-style: italic; }
 {%- endif %}
 
 	<tr {{ visible(obj) }}>
-		<td colspan="3" class="new_time_range">
+		<td colspan="3" class="new">
 			<a name="time_range_{{ name }}" id="time_range_{{ name }}">
 				{{ name }}
 			</a>
@@ -839,7 +829,7 @@ thead			{ font-style: italic; }
 <tr {{ cls| safe }}>
 	<td>
 	</td>
-	<td colspan=7  class="acl_description">
+	<td colspan=7  class="description">
 		{{ remark }}
 	</td>
 </tr>
