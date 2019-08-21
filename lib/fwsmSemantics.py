@@ -71,6 +71,10 @@ class fwsmSemantics(aclSemantics, _fwsmSemantics):
 		options = {}
 		description = None
 
+		# fwsm/PIX NAT syntax is not supported
+		if ast.iface is None:
+			return None
+
 		if ast.service:
 			if ast.src['mapped'].type == 'static':
 				# For source port translation, the objects must specify the source service.
