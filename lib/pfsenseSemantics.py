@@ -96,6 +96,10 @@ class pfsenseParser(aclParser):
 			for v in list(i):
 				values[v.tag] = v.text
 			g = None
+
+			# description is html escaped
+			values['descr'] = html.parser.unescape(values['descr'] or '')
+
 			if values['type'] == 'host':
 				g = NetworkGroup(values['name'], values['descr'])
 				if values['address']:
