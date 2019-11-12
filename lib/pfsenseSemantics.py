@@ -100,7 +100,12 @@ class pfsenseParser(aclParser):
 				g = NetworkGroup(values['name'], values['descr'])
 				if values['address']:
 					for addr in values['address'].split(" "):
-						g.add(NetworkHost(addr))
+						# FIXME pfsense allows strings in address fields
+						try:
+							host = NetworkHost(addr)
+						except ValueError:
+							host = NetworkAny()
+						g.add(host)
 				self.network_groups[values['name']] = g
 			elif values['type'] == 'network':
 				g = NetworkGroup(values['name'], values['descr'])
@@ -204,7 +209,8 @@ class pfsenseParser(aclParser):
 		for v in list(i):
 			if v.tag in valueable:
 				if v.tag == 'descr':
-					values[v.tag] = html.parser.unescape(v.text)
+					# text can be None
+					values[v.tag] = html.parser.unescape(v.text or '')
 				else:
 					values[v.tag] = v.text
 			elif v.tag == 'log':
