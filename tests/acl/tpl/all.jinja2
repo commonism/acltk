@@ -3,6 +3,10 @@
 
 ASA Version 9.1(5)12 <context>
 
+{% block ignore_command_alias %}
+command-alias exec sclht show conn lon | i bytes [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]
+{% endblock %}
+
 hostname test-config
 domain-name example.org
 {% block ignore %}{% endblock %}
@@ -296,6 +300,7 @@ object-group service ObjectGroupWithIPServiceByName
  service-object tcp destination eq https
  service-object tcp destination eq ssh
 {% endblock %}
+
 
 {% block object_group_service_int %}
 object-group service ObjectGroupWithIPServiceByInteger
@@ -1012,4 +1017,14 @@ dynamic-access-policy-record DfltAccessPolicy
 {% block ignore_password_policy %}
 password-policy minimum-length 12
 {% endblock %}
+
+{% block ignore_sla %}
+sla monitor 100
+ type echo protocol ipIcmpEcho DNS1 interface outside
+ timeout 1000
+ frequency 3
+sla monitor schedule 100 life forever start-time now
+{% endblock %}
+
 {% endblock all %}
+

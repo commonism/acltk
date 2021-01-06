@@ -235,6 +235,7 @@ ignored
 	| "class-map" WS TOEOL NL ignored_indent
 	| "clock" TOEOL NL
 	| "console" WS TOEOL NL
+	| "command-alias" TOEOL NL
 	| "Cryptochecksum:" TOEOL NL
 	| "crypto" WS TOEOL NL ignored_indent
 	| "dhcpd" WS TOEOL NL
@@ -284,6 +285,7 @@ ignored
 	| "service-module" WS TOEOL NL
 	| "service-policy" WS TOEOL NL
 	| "service" WS TOEOL NL
+	| "sla" WS TOEOL NL ignored_indent
 	| "snmp-map" WS TOEOL NL ignored_indent
 	| "snmp-server" WS TOEOL NL
 	| "smtp-server" WS TOEOL NL

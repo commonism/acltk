@@ -3,6 +3,10 @@
 
 ASA Version 9.1(5)12 <context>
 
+
+command-alias exec sclht show conn lon | i bytes [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]
+
+
 hostname test-config
 domain-name example.org
 
@@ -139,6 +143,12 @@ object-group icmp-type Nested0-IG
 
 object-group service ServiceGroupICMPWhiteSpaceSuffix
  service-object icmp 
+
+object service wireguard
+ service udp destination eq 51820
+
+object-group service ServiceGroupWithObjectWhitespace
+ service-object object wireguard 
 
 
 
@@ -384,6 +394,7 @@ object-group service ObjectGroupWithIPServiceByName
  service-object tcp destination eq www
  service-object tcp destination eq https
  service-object tcp destination eq ssh
+
 
 
 
@@ -1131,4 +1142,14 @@ dynamic-access-policy-record DfltAccessPolicy
 
 
 password-policy minimum-length 12
+
+
+
+sla monitor 100
+ type echo protocol ipIcmpEcho DNS1 interface outside
+ timeout 1000
+ frequency 3
+sla monitor schedule 100 life forever start-time now
+
+
 
