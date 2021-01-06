@@ -11,13 +11,14 @@
 # the file is generated.
 
 
-from __future__ import print_function, division, absolute_import, unicode_literals
+from __future__ import generator_stop
 
 import sys
 
 from tatsu.buffering import Buffer
 from tatsu.parsing import Parser
-from tatsu.parsing import tatsumasu
+from tatsu.parsing import tatsumasu, leftrec, nomemo
+from tatsu.parsing import leftrec, nomemo  # noqa
 from tatsu.util import re, generic_main  # noqa
 
 
@@ -36,7 +37,7 @@ class iosBuffer(Buffer):
         namechars='',
         **kwargs
     ):
-        super(iosBuffer, self).__init__(
+        super().__init__(
             text,
             whitespace=whitespace,
             nameguard=nameguard,
@@ -60,12 +61,12 @@ class iosParser(Parser):
         parseinfo=True,
         keywords=None,
         namechars='',
-        buffer_class=iosBuffer,
+        tokenizercls=iosBuffer,
         **kwargs
     ):
         if keywords is None:
             keywords = KEYWORDS
-        super(iosParser, self).__init__(
+        super().__init__(
             whitespace=whitespace,
             nameguard=nameguard,
             comments_re=comments_re,
@@ -75,7 +76,7 @@ class iosParser(Parser):
             parseinfo=parseinfo,
             keywords=keywords,
             namechars=namechars,
-            buffer_class=buffer_class,
+            tokenizercls=tokenizercls,
             **kwargs
         )
 
@@ -123,7 +124,7 @@ class iosParser(Parser):
 
     @tatsumasu()
     def _obj_name_(self):  # noqa
-        self._pattern('[A-Za-z0-9_\\-\\.+\\(\\)\\&]*')
+        self._pattern('[A-Za-z0-9_\\-\\.+]*')
 
     @tatsumasu()
     def _hostname_(self):  # noqa
@@ -194,7 +195,7 @@ class iosParser(Parser):
                 self._int_()
             with self._option():
                 self._void()
-            self._error('no available options')
+            self._error('expecting one of: line')
 
     @tatsumasu()
     def _acl_extended_(self):  # noqa
@@ -208,7 +209,7 @@ class iosParser(Parser):
                     self._token('permit')
                 with self._option():
                     self._token('deny')
-                self._error('no available options')
+                self._error('expecting one of: deny permit')
 
     @tatsumasu()
     def _acl_protocol_(self):  # noqa
@@ -223,7 +224,7 @@ class iosParser(Parser):
                             self._acl_object_group_service_()
                         with self._option():
                             self._acl_object_group_protocol_()
-                        self._error('no available options')
+                        self._error('expecting one of: acl_object_group_protocol acl_object_group_service')
                 self.name_last_node('group')
             with self._option():
                 self._token('object')
@@ -240,9 +241,9 @@ class iosParser(Parser):
                             self._protocol_code_()
                         with self._option():
                             self._protocol_int_()
-                        self._error('no available options')
+                        self._error('expecting one of: protocol_code protocol_int')
                 self.name_last_node('name')
-            self._error('no available options')
+            self._error('expecting one of: /[0-9]+/ ah ahp eigrp esp gre icmp icmp6 icmpv6 igmp igrp int ip ipinip ipsec nos object object-group ospf pcp pim pptp protocol_code protocol_int snp tcp udp')
         self.ast._define(
             ['group', 'name', 'object', 'type'],
             []
@@ -277,7 +278,7 @@ class iosParser(Parser):
                             self._WS_()
                         with self._option():
                             self._NL_()
-                        self._error('no available options')
+                        self._error('expecting one of: NL WS')
         self._acl_object_group_network_id_()
         self.name_last_node('name')
         self.ast._define(
@@ -301,7 +302,7 @@ class iosParser(Parser):
                             self._WS_()
                         with self._option():
                             self._NL_()
-                        self._error('no available options')
+                        self._error('expecting one of: NL WS')
         self._acl_object_network_id_()
         self.name_last_node('name')
         self.ast._define(
@@ -325,7 +326,7 @@ class iosParser(Parser):
                             self._WS_()
                         with self._option():
                             self._NL_()
-                        self._error('no available options')
+                        self._error('expecting one of: NL WS')
         self._acl_object_group_service_id_()
         self.name_last_node('name')
         self.ast._define(
@@ -349,7 +350,7 @@ class iosParser(Parser):
                             self._WS_()
                         with self._option():
                             self._NL_()
-                        self._error('no available options')
+                        self._error('expecting one of: NL WS')
         self._acl_object_group_port_id_()
         self.name_last_node('name')
         self.ast._define(
@@ -373,7 +374,7 @@ class iosParser(Parser):
                             self._WS_()
                         with self._option():
                             self._NL_()
-                        self._error('no available options')
+                        self._error('expecting one of: NL WS')
         self._acl_object_service_id_()
         self.name_last_node('name')
         self.ast._define(
@@ -397,7 +398,7 @@ class iosParser(Parser):
                             self._WS_()
                         with self._option():
                             self._NL_()
-                        self._error('no available options')
+                        self._error('expecting one of: NL WS')
         self._acl_object_group_icmp_id_()
         self.name_last_node('name')
         self.ast._define(
@@ -421,7 +422,7 @@ class iosParser(Parser):
                             self._WS_()
                         with self._option():
                             self._NL_()
-                        self._error('no available options')
+                        self._error('expecting one of: NL WS')
         self._acl_object_group_protocol_id_()
         self.name_last_node('name')
         self.ast._define(
@@ -445,7 +446,7 @@ class iosParser(Parser):
                             self._WS_()
                         with self._option():
                             self._NL_()
-                        self._error('no available options')
+                        self._error('expecting one of: NL WS')
         self._acl_names_id_()
         self.name_last_node('name')
         self.ast._define(
@@ -475,7 +476,7 @@ class iosParser(Parser):
             with self._option():
                 self._acl_name_slash_()
                 self.name_last_node('@')
-            self._error('no available options')
+            self._error('expecting one of: acl_name_slash acl_name_ws acl_names_id')
 
     @tatsumasu()
     def _acl_time_range_id_(self):  # noqa
@@ -493,7 +494,7 @@ class iosParser(Parser):
                             self._WS_()
                         with self._option():
                             self._NL_()
-                        self._error('no available options')
+                        self._error('expecting one of: NL WS')
         self._acl_time_range_id_()
         self.name_last_node('name')
         self.ast._define(
@@ -517,7 +518,7 @@ class iosParser(Parser):
                             self._WS_()
                         with self._option():
                             self._NL_()
-                        self._error('no available options')
+                        self._error('expecting one of: NL WS')
         self._acl_interface_id_()
         self.name_last_node('name')
         self.ast._define(
@@ -549,7 +550,7 @@ class iosParser(Parser):
                             self._token('host')
                         with self._option():
                             self._token('ip')
-                        self._error('no available options')
+                        self._error('expecting one of: host ip')
                 self.name_last_node('type')
                 self._WS_()
                 with self._group():
@@ -560,7 +561,7 @@ class iosParser(Parser):
                             self._ip4_()
                         with self._option():
                             self._ip6_()
-                        self._error('no available options')
+                        self._error('expecting one of: acl_name ip4 ip6')
                 self.name_last_node('address')
             with self._option():
                 self._token('interface')
@@ -577,7 +578,7 @@ class iosParser(Parser):
                             self._token('any4')
                         with self._option():
                             self._token('any6')
-                        self._error('no available options')
+                        self._error('expecting one of: any any4 any6')
                 self.name_last_node('type')
             with self._option():
                 self._token('object')
@@ -600,7 +601,7 @@ class iosParser(Parser):
                             self._acl_name_ws_()
                         with self._option():
                             self._ip4_()
-                        self._error('no available options')
+                        self._error('expecting one of: acl_name_ws ip4')
                 self.name_last_node('address')
                 self._WS_()
                 self._ip4_()
@@ -614,12 +615,12 @@ class iosParser(Parser):
                             self._acl_name_slash_()
                         with self._option():
                             self._ip6_()
-                        self._error('no available options')
+                        self._error('expecting one of: acl_name_slash ip6')
                 self.name_last_node('address')
                 self._token('/')
                 self._int_()
                 self.name_last_node('netmask')
-            self._error('no available options')
+            self._error('expecting one of: / /((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])/ /[ \\t]+/ /[a-fA-F0-9]*:[a-fA-F0-9\\.\\:]+/ WS acl_name_slash acl_name_ws acl_names_id any any4 any6 host interface ip ip4 ip6 object object-group')
         self.ast._define(
             ['address', 'group', 'name', 'netmask', 'object', 'type'],
             []
@@ -653,7 +654,7 @@ class iosParser(Parser):
                             self._token('eq')
                         with self._option():
                             self._token('neq')
-                        self._error('no available options')
+                        self._error('expecting one of: eq gt lt neq')
                 self.name_last_node('op')
                 self._WS_()
                 self._port_()
@@ -667,7 +668,7 @@ class iosParser(Parser):
                 self._WS_()
                 self._port_()
                 self.name_last_node('stop')
-            self._error('no available options')
+            self._error('expecting one of: eq gt lt neq object-group range')
         self.ast._define(
             ['group', 'op', 'port', 'start', 'stop', 'type'],
             []
@@ -693,7 +694,7 @@ class iosParser(Parser):
                     self.name_last_node('code')
             with self._option():
                 self._void()
-            self._error('no available options')
+            self._error('expecting one of: /[ \\t]+/ WS')
         self.ast._define(
             ['code', 'group', 'type'],
             []
@@ -731,7 +732,7 @@ class iosParser(Parser):
                 self.name_last_node('type')
             with self._option():
                 self._void()
-            self._error('no available options')
+            self._error('expecting one of: inactive log time-range')
         self.ast._define(
             ['option', 'options', 'type'],
             []
@@ -755,7 +756,7 @@ class iosParser(Parser):
                             self._token('warnings')
                         with self._option():
                             self._token('critical')
-                        self._error('no available options')
+                        self._error('expecting one of: critical debugging default disable notifications warnings')
             with self._option():
                 self._token('interval')
                 self._WS_()
@@ -779,10 +780,10 @@ class iosParser(Parser):
                             self._token('6')
                         with self._option():
                             self._token('7')
-                        self._error('no available options')
+                        self._error('expecting one of: 0 1 2 3 4 5 6 7')
             with self._option():
                 self._void()
-            self._error('no available options')
+            self._error('expecting one of: 0 1 2 3 4 5 6 7 critical debugging default disable interval notifications warnings')
 
     @tatsumasu()
     def _acl_icmp_node_(self):  # noqa
@@ -842,7 +843,7 @@ class iosParser(Parser):
                     self._pattern('[^\\n]+')
                     self.name_last_node('description')
                     self._NL_()
-            self._error('no available options')
+            self._error('expecting one of: network service')
         self.ast._define(
             ['args', 'description', 'name', 'nat', 'type'],
             []
@@ -861,7 +862,7 @@ class iosParser(Parser):
                             self._ip4_()
                         with self._option():
                             self._ip6_()
-                        self._error('no available options')
+                        self._error('expecting one of: ip4 ip6')
                 self.name_last_node('address')
                 self._NL_()
             with self._option():
@@ -915,7 +916,7 @@ class iosParser(Parser):
                                 self._token('v4')
                             with self._option():
                                 self._token('v6')
-                            self._error('no available options')
+                            self._error('expecting one of: v4 v6')
                     self.name_last_node('limit')
                     self._WS_()
                 self._string_()
@@ -926,7 +927,7 @@ class iosParser(Parser):
                 self.name_last_node('type')
                 self._network_object_nat_()
                 self.name_last_node('nat')
-            self._error('no available options')
+            self._error('expecting one of: fqdn host nat network_object_nat range subnet')
         self.ast._define(
             ['address', 'fqdn', 'limit', 'mask', 'nat', 'start', 'stop', 'type'],
             []
@@ -979,7 +980,7 @@ class iosParser(Parser):
                 with self._optional():
                     self._WS_()
                 self._NL_()
-            self._error('no available options')
+            self._error('expecting one of: nat')
         self.ast._define(
             ['iface', 'mapped', 'options', 'service', 'type'],
             []
@@ -988,10 +989,22 @@ class iosParser(Parser):
     @tatsumasu()
     def _nat_interfaces_(self):  # noqa
         self._token('(')
-        self._acl_interface_id_()
+        with self._group():
+            with self._choice():
+                with self._option():
+                    self._token('any')
+                with self._option():
+                    self._acl_interface_id_()
+                self._error('expecting one of: acl_interface_id any')
         self.name_last_node('real')
         self._token(',')
-        self._acl_interface_id_()
+        with self._group():
+            with self._choice():
+                with self._option():
+                    self._token('any')
+                with self._option():
+                    self._acl_interface_id_()
+                self._error('expecting one of: acl_interface_id any')
         self.name_last_node('mapped')
         self._token(')')
         self.ast._define(
@@ -1058,7 +1071,7 @@ class iosParser(Parser):
                     self._WS_()
                     self._nat_mapped_fallback_()
                     self.name_last_node('fallback')
-            self._error('no available options')
+            self._error('expecting one of: /((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])/ /[ \\t]+/ /[a-fA-F0-9]*:[a-fA-F0-9\\.\\:]+/ WS acl_object_group_network acl_object_group_network_id acl_object_network acl_object_network_id interface ip4 ip6 pat-pool pat_pool')
         self.ast._define(
             ['address', 'fallback', 'mask', 'object', 'option', 'pool', 'type'],
             []
@@ -1086,7 +1099,7 @@ class iosParser(Parser):
                 self._token('no-proxy-arp')
             with self._option():
                 self._token('dns')
-            self._error('no available options')
+            self._error('expecting one of: dns no-proxy-arp route-lookup')
 
     @tatsumasu()
     def _network_object_nat_service_(self):  # noqa
@@ -1101,7 +1114,7 @@ class iosParser(Parser):
                             self._token('tcp')
                         with self._option():
                             self._token('udp')
-                        self._error('no available options')
+                        self._error('expecting one of: tcp udp')
                 self.name_last_node('protocol')
                 self._WS_()
                 self._port_()
@@ -1112,7 +1125,7 @@ class iosParser(Parser):
             with self._option():
                 self._token('dns')
                 self.name_last_node('type')
-            self._error('no available options')
+            self._error('expecting one of: dns service')
         self.ast._define(
             ['mapped', 'protocol', 'real', 'type'],
             []
@@ -1130,7 +1143,7 @@ class iosParser(Parser):
                 with self._optional():
                     self._WS_()
                     self._token('include-reserve')
-            self._error('no available options')
+            self._error('expecting one of: extended flat round-robin')
 
     @tatsumasu()
     def _pat_pool_options_(self):  # noqa
@@ -1147,7 +1160,7 @@ class iosParser(Parser):
                 self._acl_object_group_network_()
             with self._option():
                 self._acl_object_network_()
-            self._error('no available options')
+            self._error('expecting one of: acl_object_group_network acl_object_group_network_id acl_object_network acl_object_network_id')
 
     @tatsumasu()
     def _pat_pool_(self):  # noqa
@@ -1205,7 +1218,7 @@ class iosParser(Parser):
                 self._protocol_int_()
                 self.name_last_node('protocol')
                 self._NL_()
-            self._error('no available options')
+            self._error('expecting one of: service')
         self.ast._define(
             ['dst', 'icmp_code', 'icmp_type', 'protocol', 'src', 'type'],
             []
@@ -1225,7 +1238,7 @@ class iosParser(Parser):
                             self._token('eq')
                         with self._option():
                             self._token('neq')
-                        self._error('no available options')
+                        self._error('expecting one of: eq gt lt neq')
                 self._WS_()
                 self._port_()
             with self._option():
@@ -1234,7 +1247,7 @@ class iosParser(Parser):
                 self._port_()
                 self._WS_()
                 self._port_()
-            self._error('no available options')
+            self._error('expecting one of: eq gt lt neq range')
 
     @tatsumasu()
     def _service_object_source_(self):  # noqa
@@ -1246,7 +1259,7 @@ class iosParser(Parser):
                 self.name_last_node('@')
             with self._option():
                 self._void()
-            self._error('no available options')
+            self._error('expecting one of: source')
 
     @tatsumasu()
     def _service_object_destination_(self):  # noqa
@@ -1258,7 +1271,7 @@ class iosParser(Parser):
                 self.name_last_node('@')
             with self._option():
                 self._void()
-            self._error('no available options')
+            self._error('expecting one of: destination')
 
     @tatsumasu()
     def _object_group_(self):  # noqa
@@ -1273,7 +1286,7 @@ class iosParser(Parser):
                 self._token('icmp')
             with self._option():
                 self._token('icmp6')
-            self._error('no available options')
+            self._error('expecting one of: icmp icmp6')
 
     @tatsumasu()
     def _protocol_tcp_udp_(self):  # noqa
@@ -1285,7 +1298,7 @@ class iosParser(Parser):
                     self._token('tcp')
                 with self._option():
                     self._token('udp')
-                self._error('no available options')
+                self._error('expecting one of: tcp tcp-udp udp')
 
     @tatsumasu()
     def _object_group_type_(self):  # noqa
@@ -1392,7 +1405,7 @@ class iosParser(Parser):
                     self._protocol_group_object_()
                 self._closure(block24)
                 self.name_last_node('objects')
-            self._error('no available options')
+            self._error('expecting one of: icmp-type network protocol service')
         self.ast._define(
             ['description', 'name', 'objects', 'type'],
             []
@@ -1443,7 +1456,7 @@ class iosParser(Parser):
                             self._protocol_code_()
                         with self._option():
                             self._protocol_int_()
-                        self._error('no available options')
+                        self._error('expecting one of: protocol_code protocol_int')
                 self.name_last_node('protocol')
                 self._NL_()
             with self._option():
@@ -1465,7 +1478,7 @@ class iosParser(Parser):
                 self._NL_()
             with self._option():
                 self._void()
-            self._error('no available options')
+            self._error('expecting one of: group-object service-object')
         self.ast._define(
             ['dst', 'group', 'icmp_code', 'icmp_type', 'object', 'protocol', 'src', 'type'],
             []
@@ -1497,7 +1510,7 @@ class iosParser(Parser):
                 self._NL_()
             with self._option():
                 self._void()
-            self._error('no available options')
+            self._error('expecting one of: group-object port-object')
 
     @tatsumasu()
     def _network_group_object_(self):  # noqa
@@ -1517,7 +1530,7 @@ class iosParser(Parser):
                             self._ip4_()
                         with self._option():
                             self._ip6_()
-                        self._error('no available options')
+                        self._error('expecting one of: acl_name_ws ip4 ip6')
                 self.name_last_node('address')
                 self._NL_()
             with self._option():
@@ -1540,7 +1553,7 @@ class iosParser(Parser):
                             self._acl_name_ws_()
                         with self._option():
                             self._ip4_()
-                        self._error('no available options')
+                        self._error('expecting one of: acl_name_ws ip4')
                 self.name_last_node('name')
                 self._WS_()
                 self._ip4_()
@@ -1556,7 +1569,7 @@ class iosParser(Parser):
                             self._acl_name_slash_()
                         with self._option():
                             self._ip6_()
-                        self._error('no available options')
+                        self._error('expecting one of: acl_name_slash ip6')
                 self.name_last_node('name')
                 self._token('/')
                 self._int_()
@@ -1571,7 +1584,7 @@ class iosParser(Parser):
                 self._NL_()
             with self._option():
                 self._void()
-            self._error('no available options')
+            self._error('expecting one of: group-object network-object')
         self.ast._define(
             ['address', 'group', 'name', 'netmask', 'object', 'type'],
             []
@@ -1596,7 +1609,7 @@ class iosParser(Parser):
                 self._NL_()
             with self._option():
                 self._void()
-            self._error('no available options')
+            self._error('expecting one of: group-object icmp-object')
         self.ast._define(
             ['group', 'name', 'type'],
             []
@@ -1621,7 +1634,7 @@ class iosParser(Parser):
                 self._NL_()
             with self._option():
                 self._void()
-            self._error('no available options')
+            self._error('expecting one of: group-object protocol-object')
         self.ast._define(
             ['group', 'name', 'type'],
             []
@@ -1640,11 +1653,11 @@ class iosParser(Parser):
                                     self._WS_()
                                 with self._option():
                                     self._NL_()
-                                self._error('no available options')
+                                self._error('expecting one of: NL WS')
                 self._port_code_()
             with self._option():
                 self._port_int_()
-            self._error('no available options')
+            self._error('expecting one of: /[0-9]+/ aol bgp biff bootpc bootps chargen citrix-ica cmd ctiqbe daytime discard dnsix domain echo exec finger ftp ftp-data gopher h323 hostname http https ident imap4 int irc isakmp kerberos klogin kshell ldap ldaps login lotusnotes lpd mobile-ip nameserver netbios-dgm netbios-ns netbios-ss netbios-ssn nfs nntp non500-isakmp ntp pcanywhere-data pcanywhere-status pim-auto-rp pop2 pop3 port_code port_int pptp radius radius-acct rip rpc rsh rtsp secureid-udp sip smtp snmp snmptrap sqlnet ssh sunrpc syslog tacacs talk telnet tftp time uucp who whois www xdmcp')
 
     @tatsumasu()
     def _hour_(self):  # noqa
@@ -1748,7 +1761,7 @@ class iosParser(Parser):
                             self._token('weekend')
                         with self._option():
                             self._token('daily')
-                        self._error('no available options')
+                        self._error('expecting one of: daily weekdays weekend')
                 self.add_last_node_to_name('days')
                 self._WS_()
                 self._time_()
@@ -1781,7 +1794,7 @@ class iosParser(Parser):
                 self._WS_()
                 self._TOEOL_()
                 self._NL_()
-            self._error('no available options')
+            self._error('expecting one of: absolute no periodic')
         self.ast._define(
             ['edays', 'end', 'start', 'type'],
             ['days']
@@ -1822,7 +1835,7 @@ class iosParser(Parser):
                 self._token('Saturday')
             with self._option():
                 self._token('Sunday')
-            self._error('no available options')
+            self._error('expecting one of: Friday Monday Saturday Sunday Thursday Tuesday Wednesday')
 
     @tatsumasu()
     def _month_(self):  # noqa
@@ -1851,7 +1864,7 @@ class iosParser(Parser):
                 self._token('November')
             with self._option():
                 self._token('December')
-            self._error('no available options')
+            self._error('expecting one of: April August December February January July June March May November October September')
 
     @tatsumasu()
     def _icmp_type_(self):  # noqa
@@ -1866,11 +1879,11 @@ class iosParser(Parser):
                                     self._WS_()
                                 with self._option():
                                     self._NL_()
-                                self._error('no available options')
+                                self._error('expecting one of: NL WS')
                 self._icmp_type_name_()
             with self._option():
                 self._icmp_type_int_()
-            self._error('no available options')
+            self._error('expecting one of: /[0-9]+/ address-mask-reply address-mask-request administratively-prohibited alternate-address conversion-error destination-unreachable dod-host-prohibited dod-net-prohibited echo echo-reply echo-request general-parameter-problem host-isolated host-precedence-unreachable host-redirect host-tos-redirect host-tos-unreachable host-unknown host-unreachable icmp_type_int icmp_type_name information-reply information-request int mask-reply mask-request membership-query membership-reduction membership-report mobile-redirect neighbor-advertisement neighbor-redirect neighbor-solicitation net-redirect net-tos-redirect net-tos-unreachable net-unreachable network-unknown no-room-for-option option-missing packet-too-big parameter-problem port-unreachable precedence-unreachable protocol-unreachable reassembly-timeout redirect router-advertisement router-renumbering router-solicitation source-quench source-route-failed time-exceeded timestamp-reply timestamp-request traceroute ttl-exceeded unreachable')
 
     @tatsumasu()
     def _icmp_type_name_(self):  # noqa
@@ -1985,7 +1998,7 @@ class iosParser(Parser):
                 self._token('address-mask-request')
             with self._option():
                 self._token('address-mask-reply')
-            self._error('no available options')
+            self._error('expecting one of: address-mask-reply address-mask-request administratively-prohibited alternate-address conversion-error destination-unreachable dod-host-prohibited dod-net-prohibited echo echo-reply echo-request general-parameter-problem host-isolated host-precedence-unreachable host-redirect host-tos-redirect host-tos-unreachable host-unknown host-unreachable information-reply information-request mask-reply mask-request membership-query membership-reduction membership-report mobile-redirect neighbor-advertisement neighbor-redirect neighbor-solicitation net-redirect net-tos-redirect net-tos-unreachable net-unreachable network-unknown no-room-for-option option-missing packet-too-big parameter-problem port-unreachable precedence-unreachable protocol-unreachable reassembly-timeout redirect router-advertisement router-renumbering router-solicitation source-quench source-route-failed time-exceeded timestamp-reply timestamp-request traceroute ttl-exceeded unreachable')
 
     @tatsumasu()
     def _icmp_type_int_(self):  # noqa
@@ -2040,7 +2053,7 @@ class iosParser(Parser):
                 self._token('ahp')
             with self._option():
                 self._token('ah')
-            self._error('no available options')
+            self._error('expecting one of: ah ahp eigrp esp gre icmp icmp6 icmpv6 igmp igrp ip ipinip ipsec nos ospf pcp pim pptp snp tcp udp')
 
     @tatsumasu()
     def _protocol_int_(self):  # noqa
@@ -2201,7 +2214,7 @@ class iosParser(Parser):
                 self._token('bgp')
             with self._option():
                 self._token('aol')
-            self._error('no available options')
+            self._error('expecting one of: aol bgp biff bootpc bootps chargen citrix-ica cmd ctiqbe daytime discard dnsix domain echo exec finger ftp ftp-data gopher h323 hostname http https ident imap4 irc isakmp kerberos klogin kshell ldap ldaps login lotusnotes lpd mobile-ip nameserver netbios-dgm netbios-ns netbios-ss netbios-ssn nfs nntp non500-isakmp ntp pcanywhere-data pcanywhere-status pim-auto-rp pop2 pop3 pptp radius radius-acct rip rpc rsh rtsp secureid-udp sip smtp snmp snmptrap sqlnet ssh sunrpc syslog tacacs talk telnet tftp time uucp who whois www xdmcp')
 
     @tatsumasu()
     def _port_int_(self):  # noqa
@@ -2223,7 +2236,7 @@ class iosParser(Parser):
                     self._token('end')
                 with self._option():
                     self._check_eof()
-                self._error('no available options')
+                self._error('expecting one of: end line')
 
     @tatsumasu()
     def _version_(self):  # noqa
@@ -2253,7 +2266,7 @@ class iosParser(Parser):
                 self._ip_()
             with self._option():
                 self._ignored_()
-            self._error('no available options')
+            self._error('expecting one of: \n \r ! : Current configuration NL Using aaa access-list access_list access_list_ip_extended access_list_ip_standard access_list_remark alias appfw archive arp banner boot boot-end-marker boot-start-marker bridge call-home class-map clock control-plane crypto cts define diagnostic dial-peer dialer-list domain-name domain_name dot11 enable encryption errdisable firewall hostname hw-module ignored interface ip ipv6 isdn key lldp logging mac-address mac-address-table mls mmi multilink no policy-map port-channel power redundancy resource rmon route-map router rtr security service snmp snmp-server spanning-tree system transceiver username version vlan vpdn vrf vtp wism')
 
     @tatsumasu()
     def _interface_detail_(self):  # noqa
@@ -2299,7 +2312,7 @@ class iosParser(Parser):
                                 self._token('in')
                             with self._option():
                                 self._token('out')
-                            self._error('no available options')
+                            self._error('expecting one of: in out')
                 self.name_last_node('value')
                 with self._optional():
                     self._WS_()
@@ -2309,7 +2322,7 @@ class iosParser(Parser):
                 self._NL_()
             with self._option():
                 self._void()
-            self._error('no available options')
+            self._error('expecting one of: \n \r /[^\\n]*/ NL TOEOL description ip')
         self.ast._define(
             ['type', 'value'],
             []
@@ -2337,7 +2350,7 @@ class iosParser(Parser):
                 self._token('^C')
             with self._option():
                 self._pattern('.')
-            self._error('no available options')
+            self._error('expecting one of: /./ ^C')
 
     @tatsumasu()
     def _delim_msg_(self):  # noqa
@@ -2381,7 +2394,7 @@ class iosParser(Parser):
                 self.name_last_node('route')
             with self._option():
                 self._ip_ignored_()
-            self._error('no available options')
+            self._error('expecting one of: access-list accounting-threshold cef classless default-gateway dhcp excluded-address dhcp pool domain domain name flow-aggregation flow-cache flow-export flow-top-talkers forward-protocol ftp host http inspect ip_ignored ips multicast-routing name-server nat pim prefix-list route sla slb ssh subnet-zero tcp vrf')
         self.ast._define(
             ['cmd', 'name', 'object', 'route'],
             []
@@ -2405,10 +2418,10 @@ class iosParser(Parser):
                             self._ip4_()
                         with self._option():
                             self._acl_interface_id_()
-                        self._error('no available options')
+                        self._error('expecting one of: acl_interface_id ip4')
                 self.name_last_node('gw')
                 self._NL_()
-            self._error('no available options')
+            self._error('expecting one of: /((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])/ ip4 profile')
         self.ast._define(
             ['gw', 'mask', 'prefix'],
             []
@@ -2441,7 +2454,7 @@ class iosParser(Parser):
                     self._ip_access_list_extended_()
                 self._positive_closure(block7)
                 self.name_last_node('objects')
-            self._error('no available options')
+            self._error('expecting one of: extended standard')
         self.ast._define(
             ['name', 'objects', 'type'],
             []
@@ -2521,7 +2534,7 @@ class iosParser(Parser):
             with self._option():
                 self._token('any')
                 self.name_last_node('address')
-            self._error('no available options')
+            self._error('expecting one of: /((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])/ any host ip4')
         self.ast._define(
             ['address', 'wildcard'],
             []
@@ -2577,7 +2590,7 @@ class iosParser(Parser):
                 self._ip_access_list_standard_rule_options_()
                 self.name_last_node('options')
                 self._NL_()
-            self._error('no available options')
+            self._error('expecting one of:   SP')
         self.ast._define(
             ['mode', 'options', 'remark', 'seq', 'src'],
             []
@@ -2630,7 +2643,7 @@ class iosParser(Parser):
             with self._option():
                 self._token('established')
                 self.name_last_node('type')
-            self._error('no available options')
+            self._error('expecting one of: dscp established fragments log log-input precedence time-range tos')
         self.ast._define(
             ['type', 'value'],
             []
@@ -2706,7 +2719,7 @@ class iosParser(Parser):
                 self._ip_access_list_extended_rule_options_()
                 self.name_last_node('options')
                 self._NL_()
-            self._error('no available options')
+            self._error('expecting one of: acl_mode int')
         self.ast._define(
             ['dst', 'icmp', 'mode', 'options', 'protocol', 'seq', 'src'],
             []
@@ -2783,7 +2796,7 @@ class iosParser(Parser):
                         self._ip_access_list_extended_rule_options_()
                         self.name_last_node('options')
                         self._NL_()
-                    self._error('no available options')
+                    self._error('expecting one of: acl_mode int')
             with self._option():
                 self._SP_()
                 with self._choice():
@@ -2846,8 +2859,8 @@ class iosParser(Parser):
                         self._ip_access_list_extended_rule_options_()
                         self.name_last_node('options')
                         self._NL_()
-                    self._error('no available options')
-            self._error('no available options')
+                    self._error('expecting one of: acl_mode int')
+            self._error('expecting one of:   SP')
         self.ast._define(
             ['dst', 'icmp', 'mode', 'options', 'protocol', 'remark', 'seq', 'src'],
             []
@@ -2922,7 +2935,7 @@ class iosParser(Parser):
                 self._ip_access_list_standard_rule_options_()
                 self.name_last_node('options')
                 self._NL_()
-            self._error('no available options')
+            self._error('expecting one of: access-list access_list_remark')
         self.ast._define(
             ['id', 'mode', 'options', 'remark', 'src'],
             []
@@ -2951,7 +2964,7 @@ class iosParser(Parser):
                 self._access_list_ip_extended_()
             with self._option():
                 self._access_list_ip_standard_()
-            self._error('no available options')
+            self._error('expecting one of: access-list access_list_ip_extended access_list_ip_standard access_list_remark')
 
     @tatsumasu()
     def _access_list_ip_extended_rule_(self):  # noqa
@@ -2998,7 +3011,7 @@ class iosParser(Parser):
                 self._ip_access_list_extended_rule_options_()
                 self.name_last_node('options')
                 self._NL_()
-            self._error('no available options')
+            self._error('expecting one of: access-list')
         self.ast._define(
             ['dst', 'icmp', 'id', 'mode', 'options', 'protocol', 'src'],
             []
@@ -3056,7 +3069,7 @@ class iosParser(Parser):
                         self._ip_access_list_extended_rule_options_()
                         self.name_last_node('options')
                         self._NL_()
-                    self._error('no available options')
+                    self._error('expecting one of: access-list')
             with self._option():
                 with self._choice():
                     with self._option():
@@ -3101,8 +3114,8 @@ class iosParser(Parser):
                         self._ip_access_list_extended_rule_options_()
                         self.name_last_node('options')
                         self._NL_()
-                    self._error('no available options')
-            self._error('no available options')
+                    self._error('expecting one of: access-list')
+            self._error('expecting one of: access-list access_list_remark')
         self.ast._define(
             ['dst', 'icmp', 'id', 'mode', 'options', 'protocol', 'remark', 'src'],
             []
@@ -3119,7 +3132,7 @@ class iosParser(Parser):
                 self._pattern('13[0-9][0-9]')
                 with self._if():
                     self._WS_()
-            self._error('no available options')
+            self._error('expecting one of: /13[0-9][0-9]/ /[1-9][0-9]?/')
 
     @tatsumasu()
     def _access_list_ip_extended_id_(self):  # noqa
@@ -3132,7 +3145,7 @@ class iosParser(Parser):
                 self._pattern('2[0-6][0-9][0-9]')
                 with self._if():
                     self._WS_()
-            self._error('no available options')
+            self._error('expecting one of: /1[0-9][0-9]/ /2[0-6][0-9][0-9]/')
 
     @tatsumasu()
     def _ignored_indent_(self):  # noqa
@@ -3184,7 +3197,7 @@ class iosParser(Parser):
                             self._token('boot-start-marker')
                         with self._option():
                             self._token('boot-end-marker')
-                        self._error('no available options')
+                        self._error('expecting one of: boot-end-marker boot-start-marker')
                 self._NL_()
             with self._option():
                 self._token('boot')
@@ -3420,7 +3433,7 @@ class iosParser(Parser):
                 self._NL_()
             with self._option():
                 self._NL_()
-            self._error('no available options')
+            self._error('expecting one of: \n \r ! : Current configuration NL Using aaa alias appfw archive arp banner boot boot-end-marker boot-start-marker bridge call-home class-map clock control-plane crypto cts define diagnostic dial-peer dialer-list dot11 enable encryption errdisable firewall hw-module ipv6 isdn key lldp logging mac-address mac-address-table mls mmi multilink no policy-map port-channel power redundancy resource rmon route-map router rtr security service snmp snmp-server spanning-tree system transceiver username vlan vpdn vrf vtp wism')
 
     @tatsumasu()
     def _ip_ignored_(self):  # noqa
@@ -3546,7 +3559,7 @@ class iosParser(Parser):
                 self._token('pim')
                 self._TOEOL_()
                 self._NL_()
-            self._error('no available options')
+            self._error('expecting one of: accounting-threshold cef classless default-gateway dhcp excluded-address dhcp pool domain flow-aggregation flow-cache flow-export flow-top-talkers forward-protocol ftp host http inspect ips multicast-routing name-server nat pim prefix-list route sla slb ssh subnet-zero tcp vrf')
 
 
 class iosSemantics(object):

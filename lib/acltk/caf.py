@@ -11,13 +11,14 @@
 # the file is generated.
 
 
-from __future__ import print_function, division, absolute_import, unicode_literals
+from __future__ import generator_stop
 
 import sys
 
 from tatsu.buffering import Buffer
 from tatsu.parsing import Parser
-from tatsu.parsing import tatsumasu
+from tatsu.parsing import tatsumasu, leftrec, nomemo
+from tatsu.parsing import leftrec, nomemo  # noqa
 from tatsu.util import re, generic_main  # noqa
 
 
@@ -36,7 +37,7 @@ class cafBuffer(Buffer):
         namechars='',
         **kwargs
     ):
-        super(cafBuffer, self).__init__(
+        super().__init__(
             text,
             whitespace=whitespace,
             nameguard=nameguard,
@@ -60,12 +61,12 @@ class cafParser(Parser):
         parseinfo=True,
         keywords=None,
         namechars='',
-        buffer_class=cafBuffer,
+        tokenizercls=cafBuffer,
         **kwargs
     ):
         if keywords is None:
             keywords = KEYWORDS
-        super(cafParser, self).__init__(
+        super().__init__(
             whitespace=whitespace,
             nameguard=nameguard,
             comments_re=comments_re,
@@ -75,7 +76,7 @@ class cafParser(Parser):
             parseinfo=parseinfo,
             keywords=keywords,
             namechars=namechars,
-            buffer_class=buffer_class,
+            tokenizercls=tokenizercls,
             **kwargs
         )
 
@@ -131,7 +132,7 @@ class cafParser(Parser):
                 self._token('intersect')
             with self._option():
                 self._token('except')
-            self._error('no available options')
+            self._error('expecting one of: except intersect union')
 
     @tatsumasu()
     def _expr_(self):  # noqa
@@ -140,7 +141,7 @@ class cafParser(Parser):
                 self._expr_r_()
             with self._option():
                 self._set_()
-            self._error('no available options')
+            self._error('expecting one of: ( comment comments expr_r id ip set set_expr set_id set_ip set_r')
 
     @tatsumasu()
     def _expr_r_(self):  # noqa
@@ -154,7 +155,7 @@ class cafParser(Parser):
                         self._expr_r_()
                     with self._option():
                         self._set_()
-                    self._error('no available options')
+                    self._error('expecting one of: expr_r set')
         self._positive_closure(block0)
 
     @tatsumasu()
@@ -164,7 +165,7 @@ class cafParser(Parser):
                 self._token('src')
             with self._option():
                 self._token('dst')
-            self._error('no available options')
+            self._error('expecting one of: dst src')
 
     @tatsumasu()
     def _network_(self):  # noqa
@@ -184,7 +185,7 @@ class cafParser(Parser):
                             self._token('any6')
                         with self._option():
                             self._token('any')
-                        self._error('no available options')
+                        self._error('expecting one of: ANY ANY4 ANY6 any any4 any6')
                 self.name_last_node('address')
             with self._option():
                 with self._group():
@@ -193,13 +194,13 @@ class cafParser(Parser):
                             self._ip4_()
                         with self._option():
                             self._ip6_()
-                        self._error('no available options')
+                        self._error('expecting one of: ip4 ip6')
                 self.name_last_node('address')
                 with self._optional():
                     self._token('/')
                     self._int_()
                     self.name_last_node('netmask')
-            self._error('no available options')
+            self._error('expecting one of: /((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])/ /[a-fA-F0-9]*:[a-fA-F0-9\\.\\:]+/ ANY ANY4 ANY6 any any4 any6 ip4 ip6')
         self.ast._define(
             ['address', 'netmask'],
             []
@@ -250,7 +251,7 @@ class cafParser(Parser):
                 self._set_expr_()
             with self._option():
                 self._comments_()
-            self._error('no available options')
+            self._error('expecting one of: ( /* comment comments ip set_expr set_ip')
 
     @tatsumasu()
     def _set_(self):  # noqa
