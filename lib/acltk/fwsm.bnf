@@ -240,7 +240,7 @@ ignored
 	| "dhcprelay" WS TOEOL NL
 	| "dns-guard" TOEOL NL
 	| "dns" TOEOL NL ignored_indent
-	| "dynamic-access-policy-record" WS TOEOL NL
+	| "dynamic-access-policy-record" WS TOEOL NL ignored_indent
 	| "enable"  TOEOL NL
 	| "eou" WS TOEOL NL
 	| "established" WS TOEOL NL
@@ -256,6 +256,7 @@ ignored
 	| "icmp" WS TOEOL NL
 	| "ipv6" WS TOEOL NL
 	| "ip" WS TOEOL NL
+	| "ldap" WS TOEOL NL ignored_indent
 	| "logging" WS TOEOL NL
 	| "mac-address-table" TOEOL NL
 	| "mac-address" TOEOL NL
@@ -270,6 +271,7 @@ ignored
 	| "ntp" WS TOEOL NL
 	| "pager" WS TOEOL NL
 	| "passwd" TOEOL NL
+	| "password-policy" WS TOEOL NL
 	| "policy-map" WS TOEOL NL ignored_indent
 	| "privilege" WS TOEOL NL
 	| "prompt" WS TOEOL NL

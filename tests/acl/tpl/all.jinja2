@@ -961,13 +961,24 @@ ssh pubkey-chain
   server 127.0.0.1
     key-hash sha256 ce:a4:65:28:91:26:14:4d:40:ae:3a:4c:68:3e:d8:ff:0c:a1:e5:b5:42:99:e2:6c:84:c6:92:39:74:cd:ec:0f
 {% endblock %}
-{% ignore_management_access %}
+{% block ignore_management_access %}
 management-access inside
 {% endblock %}
-{% ignore_url_cache %}
+{% block ignore_url_cache %}
 url-cache dst 1
 {% endblock %}
 
-
-
+{% block ignore_ldap %}
+ldap attribute-map carlomag
+  map-name  member Group-Policy
+  map-value member cn=cn0,dc=uni-hannover,dc=de luis
+{% endblock %}
+{% block ignore_dynamic_access_policy_record %}
+dynamic-access-policy-record Policy_Openvpn_Group
+dynamic-access-policy-record DfltAccessPolicy
+ action terminate
+{% endblock %}
+{% block ignore_password_policy %}
+password-policy minimum-length 12
+{% endblock %}
 {% endblock all %}

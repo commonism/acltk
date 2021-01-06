@@ -7,6 +7,17 @@ hostname test-config
 domain-name example.org
 
 
+service-module 0 keepalive-timeout 4
+service-module 0 keepalive-counter 6
+service-module ips keepalive-timeout 4
+service-module ips keepalive-counter 6
+service-module cxsc keepalive-timeout 4
+service-module cxsc keepalive-counter 6
+service-module sfr keepalive-timeout 4
+service-module sfr keepalive-counter 6
+
+
+
 names
 name 127.1.0.1 localhorst
 name 127.1.0.2 localbernd description localbernd
@@ -1062,8 +1073,36 @@ nat (inside,outside) source static MAPPED-GROUP MAPPED-GROUP
 
 
 
+nat (inside) 1 10.10.10.0 255.255.255.0
+nat (inside) 0 0.0.0.0 0.0.0.0
+
+
 
 
 app-agent heartbeat interval 1000 retry-count 3
 
+
+ssh pubkey-chain
+  server 127.0.0.1
+    key-hash sha256 ce:a4:65:28:91:26:14:4d:40:ae:3a:4c:68:3e:d8:ff:0c:a1:e5:b5:42:99:e2:6c:84:c6:92:39:74:cd:ec:0f
+
+
+management-access inside
+
+
+url-cache dst 1
+
+
+
+ldap attribute-map carlomag
+  map-name  member Group-Policy
+  map-value member cn=cn0,dc=uni-hannover,dc=de luis
+
+
+dynamic-access-policy-record Policy_Openvpn_Group
+dynamic-access-policy-record DfltAccessPolicy
+ action terminate
+
+
+password-policy minimum-length 12
 

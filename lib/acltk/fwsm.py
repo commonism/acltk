@@ -2282,7 +2282,7 @@ class fwsmParser(Parser):
             with self._option():
                 self._unmatched_()
                 self._NL_()
-            self._error('expecting one of: ! /ASA Version [^\\n]*/ /FWSM Version [^\\n]*/ : Cryptochecksum: aaa aaa-server access-group access-list access_group access_list access_list_remark app-agent arp arp-inspection asdm auth-prompt boot call-home class-map clock console crypto dhcpd dhcprelay dns dns-guard domain-name domain_name dynamic-access-policy-record enable eou established failover firewall flow-export fragment ftp global group-policy hostname hpm http icmp ignored interface ip ipv6 logging mac-address mac-address-table management-access monitor-interface mtu multicast-routing nac-policy name names nat nat-control no ntp object object-group object_group pager passwd policy-map privilege prompt resource route router same-security-traffic service service-module service-policy smtp-server snmp-map snmp-server ssh ssl static sysopt tcp-map telnet terminal tftp-server threat-detection time-range time_range timeout tls-proxy tunnel-group tunnel-group-map unmatched url-cache user-identity username version virtual vpn vpn-group-policy webvpn xlate xlate-bypass')
+            self._error('expecting one of: ! /ASA Version [^\\n]*/ /FWSM Version [^\\n]*/ : Cryptochecksum: aaa aaa-server access-group access-list access_group access_list access_list_remark app-agent arp arp-inspection asdm auth-prompt boot call-home class-map clock console crypto dhcpd dhcprelay dns dns-guard domain-name domain_name dynamic-access-policy-record enable eou established failover firewall flow-export fragment ftp global group-policy hostname hpm http icmp ignored interface ip ipv6 ldap logging mac-address mac-address-table management-access monitor-interface mtu multicast-routing nac-policy name names nat nat-control no ntp object object-group object_group pager passwd password-policy policy-map privilege prompt resource route router same-security-traffic service service-module service-policy smtp-server snmp-map snmp-server ssh ssl static sysopt tcp-map telnet terminal tftp-server threat-detection time-range time_range timeout tls-proxy tunnel-group tunnel-group-map unmatched url-cache user-identity username version virtual vpn vpn-group-policy webvpn xlate xlate-bypass')
 
     @tatsumasu()
     def _interface_detail_(self):  # noqa
@@ -3278,6 +3278,7 @@ class fwsmParser(Parser):
                 self._WS_()
                 self._TOEOL_()
                 self._NL_()
+                self._ignored_indent_()
             with self._option():
                 self._token('enable')
                 self._TOEOL_()
@@ -3350,6 +3351,12 @@ class fwsmParser(Parser):
                 self._TOEOL_()
                 self._NL_()
             with self._option():
+                self._token('ldap')
+                self._WS_()
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
+            with self._option():
                 self._token('logging')
                 self._WS_()
                 self._TOEOL_()
@@ -3410,6 +3417,11 @@ class fwsmParser(Parser):
                 self._NL_()
             with self._option():
                 self._token('passwd')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('password-policy')
+                self._WS_()
                 self._TOEOL_()
                 self._NL_()
             with self._option():
@@ -3591,7 +3603,7 @@ class fwsmParser(Parser):
                 self._WS_()
                 self._TOEOL_()
                 self._NL_()
-            self._error('expecting one of: ! : Cryptochecksum: aaa aaa-server app-agent arp arp-inspection asdm auth-prompt boot call-home class-map clock console crypto dhcpd dhcprelay dns dns-guard dynamic-access-policy-record enable eou established failover firewall flow-export fragment ftp global group-policy hpm http icmp ip ipv6 logging mac-address mac-address-table management-access monitor-interface mtu multicast-routing nac-policy names nat-control no ntp pager passwd policy-map privilege prompt resource route router same-security-traffic service service-module service-policy smtp-server snmp-map snmp-server ssh ssl static sysopt tcp-map telnet terminal tftp-server threat-detection timeout tls-proxy tunnel-group tunnel-group-map url-cache user-identity username virtual vpn vpn-group-policy webvpn xlate xlate-bypass')
+            self._error('expecting one of: ! : Cryptochecksum: aaa aaa-server app-agent arp arp-inspection asdm auth-prompt boot call-home class-map clock console crypto dhcpd dhcprelay dns dns-guard dynamic-access-policy-record enable eou established failover firewall flow-export fragment ftp global group-policy hpm http icmp ip ipv6 ldap logging mac-address mac-address-table management-access monitor-interface mtu multicast-routing nac-policy names nat-control no ntp pager passwd password-policy policy-map privilege prompt resource route router same-security-traffic service service-module service-policy smtp-server snmp-map snmp-server ssh ssl static sysopt tcp-map telnet terminal tftp-server threat-detection timeout tls-proxy tunnel-group tunnel-group-map url-cache user-identity username virtual vpn vpn-group-policy webvpn xlate xlate-bypass')
 
     @tatsumasu()
     def _unmatched_(self):  # noqa
