@@ -3004,6 +3004,15 @@ class fwsmParser(Parser):
                     self._nat_mapped_fallback_()
                 self.name_last_node('fallback')
             with self._option():
+                self._constant('group')
+                self.name_last_node('type')
+                self._acl_object_group_network_()
+                self.name_last_node('name')
+                with self._optional():
+                    self._WS_()
+                    self._nat_mapped_fallback_()
+                self.name_last_node('fallback')
+            with self._option():
                 self._token('interface')
                 self.name_last_node('type')
                 with self._optional():
@@ -3019,7 +3028,7 @@ class fwsmParser(Parser):
                     self._WS_()
                     self._nat_mapped_fallback_()
                 self.name_last_node('fallback')
-            self._error('expecting one of: /[ \\t]+/ WS acl_object_network acl_object_network_id interface pat-pool pat_pool')
+            self._error('expecting one of: /[ \\t]+/ WS acl_object_group_network acl_object_group_network_id acl_object_network acl_object_network_id interface pat-pool pat_pool')
         self.ast._define(
             ['fallback', 'name', 'pool', 'type'],
             ['option']

@@ -178,6 +178,7 @@ nat_mapped_node
 
 nat_mapped_src_dynamic_node
     = type:`object` name:acl_object_network fallback:[WS nat_mapped_fallback]
+    | type:`group` name:acl_object_group_network fallback:[WS nat_mapped_fallback]
     | type:"interface" option+:[WS "ipv6"]
     | type:`pool` pool:pat_pool fallback:[WS nat_mapped_fallback]
     ;

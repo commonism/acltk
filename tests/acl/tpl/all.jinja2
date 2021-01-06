@@ -948,8 +948,13 @@ object network NAT-POOL
 object network REMOTE-NETWORK
  subnet 3.3.3.0 255.255.255.0
 
+object-group network THEGROUP
+ network-object host 127.0.0.1
+
 {% for fallback in ['','interface','interface ipv6'] %}
 nat (inside,outside) after-auto source dynamic LAN NAT-POOL {{ fallback }} destination static REMOTE-NETWORK REMOTE-NETWORK
+
+nat (outside,inside) after-auto source dynamic THEGROUP THEGROUP description temp Eckhard - Heimarbeit - 20121217-SK
 {% endfor %}
 {% endblock %}
 
@@ -966,6 +971,14 @@ nat (inside) 1 10.10.10.0 255.255.255.0
 nat (inside) 0 0.0.0.0 0.0.0.0
 {% endblock %}
 {% endblock nat %}
+
+{% block nat_x %}
+object-group network Leitwarte-GLT-Home
+ network-object host 172.16.204.32
+ network-object host 172.16.204.33
+
+nat (outside,inside) after-auto source dynamic Leitwarte-GLT-Home Leitwarte-GLT-Home description temp Eckhard - Heimarbeit - 20121217-SK
+{% endblock %}
 
 {% block ignore_app_agent %}
 app-agent heartbeat interval 1000 retry-count 3

@@ -212,6 +212,9 @@ class aclTestBlock(unittest.TestCase):
 	def test_block_nat_fwsm_single(self):
 		return self._test_block('nat_fwsm_single', ['nat_interfaces'], trace=True)
 
+	def test_block_object_group_icmp_whitespace_suffix(self):
+		return self._test_block('object_group_icmp_whitespace_suffix', trace=True)
+
 	def test_block_ignore(self):
 		blocks = list(filter(lambda x: x.startswith("ignore"), self.tpl['all'].blocks.keys()))
 		return self._test_block('ignore', blocks)
