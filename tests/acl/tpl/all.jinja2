@@ -936,6 +936,10 @@ nat (inside,outside) source static any any destination static MAPPED-GROUP MAPPE
 nat (inside,outside) source static MAPPED-GROUP MAPPED-GROUP
 {% endblock %}
 
+{% block nat_fwsm_single %}
+nat (inside) 1 10.10.10.0 255.255.255.0
+nat (inside) 0 0.0.0.0 0.0.0.0
+{% endblock %}
 {% endblock nat %}
 
 {% block ignored %}

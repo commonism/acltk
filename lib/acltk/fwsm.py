@@ -2954,7 +2954,7 @@ class fwsmParser(Parser):
                 self._token('nat')
                 self._WS_()
                 self._token('(')
-                self._acl_interface_()
+                self._acl_interface_id_()
                 self._token(')')
                 self._TOEOL_()
             self._error('expecting one of: nat')

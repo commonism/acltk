@@ -166,7 +166,7 @@ nat
 *)
 nat
 	= "nat" WS iface:nat_interfaces [WS pos:nat_pos] WS src:nat_src [WS dst:nat_dst] [WS service:nat_srv] options:{WS nat_options}* [WS] NL
-	| "nat" WS "(" acl_interface ")" TOEOL
+	| "nat" WS "(" acl_interface_id ")" TOEOL
 	;
 
 nat_mapped_node
