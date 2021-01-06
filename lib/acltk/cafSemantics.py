@@ -29,6 +29,7 @@ class RealCafSemantics(cafSemantics):
         if isinstance(ast, (ACLRule, cafBlock)):
             return ast
         else:
+            ast = [i for i in ast]
             while True:
                 for i, item in enumerate(ast):
                     if (i + 1) % 2 != 0:
