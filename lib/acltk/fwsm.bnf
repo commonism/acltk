@@ -259,6 +259,7 @@ ignored
 	| "logging" WS TOEOL NL
 	| "mac-address-table" TOEOL NL
 	| "mac-address" TOEOL NL
+	| "management-access" TOEOL NL
 	| "monitor-interface" WS TOEOL NL
 	| "mtu" WS TOEOL NL
 	| "multicast-routing" TOEOL NL
