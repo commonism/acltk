@@ -304,6 +304,7 @@ ignored
 	| "username" WS TOEOL NL ignored_indent
 	| "url-cache" WS TOEOL NL
 	| "virtual" TOEOL NL
+	| "vpdn" TOEOL NL
 	| "vpn-group-policy" TOEOL NL
 	| "vpn" TOEOL NL ignored_indent
 	| "webvpn" TOEOL NL ignored_indent

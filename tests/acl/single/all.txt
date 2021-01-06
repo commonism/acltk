@@ -18,6 +18,12 @@ service-module sfr keepalive-counter 6
 
 
 
+license smart
+ feature tier standard
+ feature strong-encryption
+
+
+
 names
 name 127.1.0.1 localhorst
 name 127.1.0.2 localbernd description localbernd
@@ -130,6 +136,10 @@ object-group icmp-type NestMe1-IG
 object-group icmp-type Nested0-IG
  group-object NestMe0-IG
  group-object NestMe1-IG
+
+object-group service DM_INLINE_SERVICE_1
+ service-object icmp 
+
 
 
 object-group service p0123 tcp
@@ -491,7 +501,6 @@ object-group protocol Nested0-PG
  description nested protocol group
  group-object NestMe0-PG
  group-object NestMe1-PG
-
 
 
 access-list v6 extended permit tcp fe80::2aa:bbcc:ddee:ff01/64 fe80::2aa:bbcc:ddee:ff02/64
@@ -1055,6 +1064,9 @@ object network NAT-POOL
 object network REMOTE-NETWORK
  subnet 3.3.3.0 255.255.255.0
 
+object-group network THEGROUP
+ network-object host 127.0.0.1
+
 
 nat (inside,outside) after-auto source dynamic LAN NAT-POOL  destination static REMOTE-NETWORK REMOTE-NETWORK
 
@@ -1062,6 +1074,8 @@ nat (inside,outside) after-auto source dynamic LAN NAT-POOL interface destinatio
 
 nat (inside,outside) after-auto source dynamic LAN NAT-POOL interface ipv6 destination static REMOTE-NETWORK REMOTE-NETWORK
 
+
+nat (outside,inside) after-auto source dynamic THEGROUP THEGROUP description temp Eckhard - Heimarbeit - 20121217-SK
 
 
 
@@ -1079,6 +1093,14 @@ nat (inside) 0 0.0.0.0 0.0.0.0
 
 
 
+object-group network Leitwarte-GLT-Home
+ network-object host 172.16.204.32
+ network-object host 172.16.204.33
+
+nat (outside,inside) after-auto source dynamic Leitwarte-GLT-Home Leitwarte-GLT-Home description temp Eckhard - Heimarbeit - 20121217-SK
+
+
+
 app-agent heartbeat interval 1000 retry-count 3
 
 
@@ -1091,6 +1113,10 @@ management-access inside
 
 
 url-cache dst 1
+
+
+
+vpdn group htp request dialout pppoe
 
 
 

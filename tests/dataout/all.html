@@ -85,7 +85,7 @@ thead			{ font-style: italic; }
 <div align="center">
 	<h2>Hostname: test-config.example.org</h2>
 	<h3>Version: ASA Version 9.1(5)12 <context></h3>
-	<h3>Erstellt am: 2021-01-06 12:59:12.401761</h3>
+	<h3>Erstellt am: 2021-01-06 18:47:43.444383</h3>
 </div>
 <h2>Filter</h2>
 <pre>None</pre>
@@ -777,6 +777,19 @@ thead			{ font-style: italic; }
 
 	<tr >
 		<td colspan="6" class="new">
+			<a name="network_group_Leitwarte-GLT-Home" id="network_group_Leitwarte-GLT-Home">
+				Leitwarte-GLT-Home
+			</a>
+		</td>
+	</tr>
+<tr >
+	<td></td>
+	<td> 172.16.204.32</td>
+	<td> 172.16.204.33</td>
+</tr>
+
+	<tr >
+		<td colspan="6" class="new">
 			<a name="network_group_MAPPED-GROUP" id="network_group_MAPPED-GROUP">
 				MAPPED-GROUP
 			</a>
@@ -953,6 +966,18 @@ thead			{ font-style: italic; }
 		<td colspan="6" class="new">
 			<a name="network_group_NetworkObjectsGroup0" id="network_group_NetworkObjectsGroup0">
 				NetworkObjectsGroup0
+			</a>
+		</td>
+	</tr>
+<tr >
+	<td></td>
+	<td> 127.0.0.1</td>
+</tr>
+
+	<tr >
+		<td colspan="6" class="new">
+			<a name="network_group_THEGROUP" id="network_group_THEGROUP">
+				THEGROUP
 			</a>
 		</td>
 	</tr>
@@ -2387,6 +2412,27 @@ thead			{ font-style: italic; }
 	<td></td>
 	<td>
 	eq 53</td>
+</tr>
+
+	<tr >
+		<td colspan="5" class="new">
+			<a name="service_group_ServiceGroupICMPWhiteSpaceSuffix" id="service_group_ServiceGroupICMPWhiteSpaceSuffix">
+				ServiceGroupICMPWhiteSpaceSuffix
+			</a>
+		</td>
+	</tr>
+	<tr >
+		<td></td>
+		<td style="width:24%;">Name</td>
+		<td style="width:24%;">Protocol</td>
+		<td style="width:24%;">Source</td>
+		<td style="width:24%;">Destination</td>
+	</tr>
+<tr >
+	<td></td>
+	<td></td>
+	<td>icmp</td>
+    <td colspan="2" align="center"></td>
 </tr>
 
 	<tr >
@@ -3883,6 +3929,52 @@ thead			{ font-style: italic; }
     </tr>
 
 
+
+
+    <tr class="tr-odd">
+        <td align="center"><a href="#interface_outside">outside</a></td>
+        <td align="center"><a href="#network_group_THEGROUP">THEGROUP</a></td>
+        <td align="center"></td>
+
+        <td align="center"><a href="#interface_inside">inside</a></td>
+        <td>dynamic :: <a href="#network_group_THEGROUP">THEGROUP</a>  </td>
+        <td align="center"></td>
+        <td>
+
+
+
+        </td>
+    </tr>
+
+
+
+    <tr class="tr-odd">
+    <td colspan="1"></td>
+    <td colspan="6">nat with groups</td>
+    </tr>
+
+
+    <tr class="tr-even">
+        <td align="center"><a href="#interface_outside">outside</a></td>
+        <td align="center"><a href="#network_group_Leitwarte-GLT-Home">Leitwarte-GLT-Home</a></td>
+        <td align="center"></td>
+
+        <td align="center"><a href="#interface_inside">inside</a></td>
+        <td>dynamic :: <a href="#network_group_Leitwarte-GLT-Home">Leitwarte-GLT-Home</a>  </td>
+        <td align="center"></td>
+        <td>
+
+
+
+        </td>
+    </tr>
+
+
+
+    <tr class="tr-even">
+    <td colspan="1"></td>
+    <td colspan="6">temp Eckhard - Heimarbeit - 20121217-SK</td>
+    </tr>
 
 </table>
 

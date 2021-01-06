@@ -139,7 +139,7 @@ object-group icmp-type Nested0-IG
 {% endblock -%}
 
 {% block object_group_icmp_whitespace_suffix %}
-object-group service DM_INLINE_SERVICE_1
+object-group service ServiceGroupICMPWhiteSpaceSuffix
  service-object icmp{{ ' ' }}
 {% endblock %}
 
@@ -406,12 +406,6 @@ object-group protocol Nested0-PG
  description nested protocol group
  group-object NestMe0-PG
  group-object NestMe1-PG
-{% endblock %}
-
-{% block object_group_protocol_tcpudp %}
-object-group protocol TCPUDP
- protocol-object udp
- protocol-object tcp
 {% endblock %}
 
 access-list v6 extended permit tcp fe80::2aa:bbcc:ddee:ff01/64 fe80::2aa:bbcc:ddee:ff02/64
@@ -953,9 +947,9 @@ object-group network THEGROUP
 
 {% for fallback in ['','interface','interface ipv6'] %}
 nat (inside,outside) after-auto source dynamic LAN NAT-POOL {{ fallback }} destination static REMOTE-NETWORK REMOTE-NETWORK
-
-nat (outside,inside) after-auto source dynamic THEGROUP THEGROUP description temp Eckhard - Heimarbeit - 20121217-SK
 {% endfor %}
+
+nat (outside,inside) after-auto source dynamic THEGROUP THEGROUP description nat with groups
 {% endblock %}
 
 {% block nat_mapped_network_group %}
@@ -993,6 +987,10 @@ management-access inside
 {% endblock %}
 {% block ignore_url_cache %}
 url-cache dst 1
+{% endblock %}
+
+{% block ignore_vpdn %}
+vpdn group htp request dialout pppoe
 {% endblock %}
 
 {% block ignore_ldap %}
