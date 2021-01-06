@@ -5,6 +5,17 @@ ASA Version 9.1(5)12 <context>
 
 hostname test-config
 domain-name example.org
+{% block ignore %}{% endblock %}
+{% block ignore_service_module %}
+service-module 0 keepalive-timeout 4
+service-module 0 keepalive-counter 6
+service-module ips keepalive-timeout 4
+service-module ips keepalive-counter 6
+service-module cxsc keepalive-timeout 4
+service-module cxsc keepalive-counter 6
+service-module sfr keepalive-timeout 4
+service-module sfr keepalive-counter 6
+{% endblock %}
 
 {%  block names %}
 names
@@ -942,9 +953,10 @@ nat (inside) 0 0.0.0.0 0.0.0.0
 {% endblock %}
 {% endblock nat %}
 
-{% block ignored %}
+{% block ignore_app_agent %}
 app-agent heartbeat interval 1000 retry-count 3
-
+{% endblock %}
+{% block ignore_ssh_pubkey_chain %}
 ssh pubkey-chain
   server 127.0.0.1
     key-hash sha256 ce:a4:65:28:91:26:14:4d:40:ae:3a:4c:68:3e:d8:ff:0c:a1:e5:b5:42:99:e2:6c:84:c6:92:39:74:cd:ec:0f

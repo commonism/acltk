@@ -276,6 +276,7 @@ ignored
 	| "router" WS TOEOL NL ignored_indent
 	| "route" WS TOEOL NL
 	| "same-security-traffic"  TOEOL NL
+	| "service-module" WS TOEOL NL
 	| "service-policy" WS TOEOL NL
 	| "service" WS TOEOL NL
 	| "snmp-map" WS TOEOL NL ignored_indent
