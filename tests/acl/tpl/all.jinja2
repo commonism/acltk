@@ -22,7 +22,7 @@ license smart
  feature tier standard
  feature strong-encryption
 {% endblock %}
-    
+
 {% block names %}
 names
 name 127.1.0.1 localhorst
@@ -136,9 +136,12 @@ object-group icmp-type NestMe1-IG
 object-group icmp-type Nested0-IG
  group-object NestMe0-IG
  group-object NestMe1-IG
-
 {% endblock -%}
 
+{% block object_group_icmp_whitespace_suffix %}
+object-group service DM_INLINE_SERVICE_1
+ service-object icmp{{ ' ' }}
+{% endblock %}
 
 {% block object_group_expand %}
 object-group service p0123 tcp
@@ -405,6 +408,11 @@ object-group protocol Nested0-PG
  group-object NestMe1-PG
 {% endblock %}
 
+{% block object_group_protocol_tcpudp %}
+object-group protocol TCPUDP
+ protocol-object udp
+ protocol-object tcp
+{% endblock %}
 
 access-list v6 extended permit tcp fe80::2aa:bbcc:ddee:ff01/64 fe80::2aa:bbcc:ddee:ff02/64
 access-list v6 extended permit udp object-group v6NetworkGroup object v6NetworkObject

@@ -1428,6 +1428,8 @@ class fwsmParser(Parser):
                         self._WS_()
                         self._icmp_code_int_()
                         self.name_last_node('icmp_code')
+                with self._optional():
+                    self._WS_()
                 self._NL_()
             with self._option():
                 self._token('service-object')
