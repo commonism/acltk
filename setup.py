@@ -7,6 +7,6 @@ setup(name='acltk',
       author_email='koetter@luis.uni-hannover.de',
       url='..',
       packages=['acltk'],
-      package_dir = {'acltk': 'lib'},
+      package_dir = {'': 'lib'},
       requires=['tatsu','jinja2']
 )
