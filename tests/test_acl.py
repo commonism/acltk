@@ -203,6 +203,9 @@ class aclTestBlock(unittest.TestCase):
 	def test_block_network_object_nat_single_definition(self):
 		return self._test_block('network_object_nat_single_definition', ['nat_interfaces'], trace=True)
 
+	def test_block_network_object_nat_any(self):
+		return self._test_block('network_object_nat_any', trace=True)
+
 	def test_block_nat_mapped_network_group(self):
 		return self._test_block('nat_mapped_network_group', ['nat_interfaces'], trace=True)
 

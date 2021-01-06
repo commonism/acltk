@@ -90,10 +90,13 @@ python3 -m venv ~/venv-acltk/
 
 ```
 #### Running unittests
+In order to generate the `all.txt` config from the template `all.jinja2` the `test_acl.py` has to be run,  
 ```shell script
 cd tests/
 PYTHONPATH=../lib/ ~/venv-acltk/bin/python -m unittest test_acl.py
 ```
+it has to be re-run after changes made to `all.jinja2` so `all.txt` gets updated.
+
 #### Updating the Semtantics
 Changes to the grammar require regeneration of the Semantics
 ```shell script

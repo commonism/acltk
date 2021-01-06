@@ -279,7 +279,7 @@ network_object_nat
 	;
 
 nat_interfaces
-	= "(" real:acl_interface_id "," mapped:acl_interface_id ")"
+	= "(" real:("any"|acl_interface_id) "," mapped:("any"|acl_interface_id) ")"
 	;
 
 network_nat_mapped

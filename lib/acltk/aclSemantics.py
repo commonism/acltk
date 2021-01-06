@@ -452,7 +452,16 @@ class aclSemantics:
 		return NATMappedSourceFallback(ast.interface, ast.ipv6)
 
 	def nat_interfaces(self, ast):
-		return {'real':self.parser.interfaces[ast.real], 'mapped':self.parser.interfaces[ast.mapped]}
+		# NAT Interface name can be "any" - well … have the interface
+		r = {}
+		for k,v in {'real':ast.real, 'mapped':ast.mapped}.items():
+			if v == 'any':
+				r[k] = Interface('any', [])
+			else:
+				r[k] = self.parser.interfaces[v]
+
+		return r
+
 
 class aclParser:
 	def __init__(self):

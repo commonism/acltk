@@ -710,8 +710,13 @@ object network my-host-obj2
 
 object network my-host-obj2
  nat (inside,outside) static my-host-obj2-identity
+
 {% endblock %}
 
+{% block network_object_nat_any %}
+object network my-host-nat-any-0
+ nat (any,any) static 127.0.0.1
+{% endblock %}
 
 {% block twice_dynamic_nat %}
 {# The following example configures dynamic NAT for inside network 10.1.1.0/24 when accessing servers on the 209.165.201.1/27 network as well as servers on the 203.0.113.0/24 network: #}

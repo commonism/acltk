@@ -53,6 +53,9 @@ class renderTest(unittest.TestCase):
 		with open(path,'wt') as f:
 			f.write(self.template.render(aclconfig=acl, selection=selection, caf=cafpath, args={}))
 
+	def test_render_this(self):
+		return self._test_render_single('acl/single/all-network_object_nat_any.txt', None, sort=self.SORT_ALL)
+
 	def test_render_all(self):
 		return self._test_render_single('acl/single/all.txt', 'caf/any.caf', sort=self.SORT_ALL)
 
