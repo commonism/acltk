@@ -137,7 +137,7 @@ object-group icmp-type Nested0-IG
  group-object NestMe0-IG
  group-object NestMe1-IG
 
-object-group service DM_INLINE_SERVICE_1
+object-group service ServiceGroupICMPWhiteSpaceSuffix
  service-object icmp 
 
 
@@ -1075,7 +1075,7 @@ nat (inside,outside) after-auto source dynamic LAN NAT-POOL interface destinatio
 nat (inside,outside) after-auto source dynamic LAN NAT-POOL interface ipv6 destination static REMOTE-NETWORK REMOTE-NETWORK
 
 
-nat (outside,inside) after-auto source dynamic THEGROUP THEGROUP description temp Eckhard - Heimarbeit - 20121217-SK
+nat (outside,inside) after-auto source dynamic THEGROUP THEGROUP description nat with groups
 
 
 

@@ -1460,6 +1460,8 @@ class fwsmParser(Parser):
                             self._protocol_int_()
                         self._error('expecting one of: protocol_code protocol_int')
                 self.name_last_node('protocol')
+                with self._optional():
+                    self._WS_()
                 self._NL_()
             with self._option():
                 self._token('service-object')
@@ -1470,6 +1472,8 @@ class fwsmParser(Parser):
                 self._WS_()
                 self._acl_object_service_()
                 self.name_last_node('object')
+                with self._optional():
+                    self._WS_()
                 self._NL_()
             with self._option():
                 self._token('group-object')
@@ -1477,6 +1481,8 @@ class fwsmParser(Parser):
                 self._WS_()
                 self._acl_object_group_service_()
                 self.name_last_node('group')
+                with self._optional():
+                    self._WS_()
                 self._NL_()
             with self._option():
                 self._void()

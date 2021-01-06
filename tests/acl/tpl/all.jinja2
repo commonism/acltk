@@ -141,6 +141,12 @@ object-group icmp-type Nested0-IG
 {% block object_group_icmp_whitespace_suffix %}
 object-group service ServiceGroupICMPWhiteSpaceSuffix
  service-object icmp{{ ' ' }}
+
+object service wireguard
+ service udp destination eq 51820
+
+object-group service ServiceGroupWithObjectWhitespace
+ service-object object wireguard{{ ' ' }}
 {% endblock %}
 
 {% block object_group_expand %}
