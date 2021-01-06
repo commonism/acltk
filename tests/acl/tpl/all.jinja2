@@ -940,6 +940,10 @@ nat (inside,outside) source static MAPPED-GROUP MAPPED-GROUP
 
 {% block ignored %}
 app-agent heartbeat interval 1000 retry-count 3
+
+ssh pubkey-chain
+  server 127.0.0.1
+    key-hash sha256 ce:a4:65:28:91:26:14:4d:40:ae:3a:4c:68:3e:d8:ff:0c:a1:e5:b5:42:99:e2:6c:84:c6:92:39:74:cd:ec:0f
 {% endblock %}
 
 {% endblock all %}

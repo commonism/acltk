@@ -281,7 +281,7 @@ ignored
 	| "snmp-map" WS TOEOL NL ignored_indent
 	| "snmp-server" WS TOEOL NL
 	| "smtp-server" WS TOEOL NL
-	| "ssh" WS TOEOL NL
+	| "ssh" WS TOEOL NL ignored_indent
 	| "ssl" WS TOEOL NL
 	| "static" WS TOEOL NL
 	| "sysopt" WS TOEOL NL

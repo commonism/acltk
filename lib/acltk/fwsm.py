@@ -3474,6 +3474,7 @@ class fwsmParser(Parser):
                 self._WS_()
                 self._TOEOL_()
                 self._NL_()
+                self._ignored_indent_()
             with self._option():
                 self._token('ssl')
                 self._WS_()
