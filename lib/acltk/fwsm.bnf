@@ -298,6 +298,7 @@ ignored
 	| "tunnel-group" WS TOEOL NL ignored_indent
 	| "user-identity" WS TOEOL NL
 	| "username" WS TOEOL NL ignored_indent
+	| "url-cache" WS TOEOL NL
 	| "virtual" TOEOL NL
 	| "vpn-group-policy" TOEOL NL
 	| "vpn" TOEOL NL ignored_indent
