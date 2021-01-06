@@ -17,7 +17,13 @@ service-module sfr keepalive-timeout 4
 service-module sfr keepalive-counter 6
 {% endblock %}
 
-{%  block names %}
+{% block ignore_license %}
+license smart
+ feature tier standard
+ feature strong-encryption
+{% endblock %}
+    
+{% block names %}
 names
 name 127.1.0.1 localhorst
 name 127.1.0.2 localbernd description localbernd

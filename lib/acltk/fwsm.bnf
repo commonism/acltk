@@ -256,6 +256,7 @@ ignored
 	| "icmp" WS TOEOL NL
 	| "ipv6" WS TOEOL NL
 	| "ip" WS TOEOL NL
+	| "license" WS TOEOL NL ignored_indent
 	| "ldap" WS TOEOL NL ignored_indent
 	| "logging" WS TOEOL NL
 	| "mac-address-table" TOEOL NL
