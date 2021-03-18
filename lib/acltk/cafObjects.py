@@ -1,4 +1,4 @@
-from acltk.aclObjects import ACLRule, NetworkAny, NetworkAny4, NetworkAny6, ACLRules, NATObject
+from acltk.aclObjects import ACLRule, NetworkGroup, NetworkAny, NetworkAny4, NetworkAny6, ACLRules, NATObject
 
 
 class cafBlock:
@@ -113,6 +113,10 @@ class cafNetworkAny(NetworkAny):
 	def __and__(self, other):
 		if isinstance(other, NetworkAny):
 			return True
+		if isinstance(other, NetworkGroup):
+			for i in other.objects:
+				if self & i:
+					return True
 		return False
 
 	def __repr__(self):
@@ -126,6 +130,10 @@ class cafNetworkAny4(NetworkAny4):
 	def __and__(self, other):
 		if isinstance(other, NetworkAny4):
 			return True
+		if isinstance(other, NetworkGroup):
+			for i in other.objects:
+				if self & i:
+					return True
 		return False
 
 	def __repr__(self):
@@ -139,6 +147,10 @@ class cafNetworkAny6(NetworkAny6):
 	def __and__(self, other):
 		if isinstance(other, NetworkAny6):
 			return True
+		if isinstance(other, NetworkGroup):
+			for i in other.objects:
+				if self & i:
+					return True
 		return False
 
 	def __repr__(self):

@@ -23,6 +23,9 @@ object-group network NetworkGroupNested1
 object-group network NetworkGroupNested2
  group-object NetworkGroup2
 
+object-group network NetworkGroup7
+ network-object host 1.1.1.1
+
 access-list caf_filter_0 extended permit ip host 1.1.1.1 host 2.2.2.2
 access-list caf_filter_1 extended permit ip host caf1 host caf2
 access-list caf_filter_2 extended permit ip caf1 255.255.255.0 caf2 255.255.255.0
@@ -34,3 +37,5 @@ access-list caf_filter_61 extended permit ip host 1.1.1.1 host 2.2.2.2
 access-list caf_filter_62 extended permit ip any any
 access-list caf_filter_62 extended permit ip any4 any
 access-list caf_filter_62 extended permit ip any6 any
+
+access-list caf_filter_7 extended permit ip object-group NetworkGroup7 host 1.1.1.1

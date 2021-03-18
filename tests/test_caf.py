@@ -213,3 +213,23 @@ class cafTestFilter(unittest.TestCase):
 		a = cfg.run(self.acls.rules, verbose=True)
 		b = self.rules_by_id('caf_filter_62')
 		self.assertCountEqual(a, b)
+
+	def test_filter_7(self):
+		import acltk
+		g = self.acls.groups.network['NetworkGroup7']
+
+		g.objects = [acltk.aclObjects.NetworkAny()]
+		cfg = cafBlock.fromString('id caf_filter_7 ip src ANY')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), self.rules_by_id('caf_filter_7'))
+
+		cfg = cafBlock.fromString('id caf_filter_7 except ip src ANY')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), [])
+
+		g.objects = [acltk.aclObjects.NetworkAny4()]
+		cfg = cafBlock.fromString('id caf_filter_7 except ip src ANY4')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), [])
+
+		g.objects = [acltk.aclObjects.NetworkAny6()]
+		cfg = cafBlock.fromString('id caf_filter_7 except ip src ANY6')
+		self.assertCountEqual(cfg.run(self.acls.rules, verbose=True), [])
+
