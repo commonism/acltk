@@ -2274,7 +2274,7 @@ class iosParser(Parser):
                 self._ip_()
             with self._option():
                 self._ignored_()
-            self._error('expecting one of: \n \r ! : Current configuration NL Using aaa access-list access_list access_list_ip_extended access_list_ip_standard access_list_remark alias appfw archive arp banner boot boot-end-marker boot-start-marker bridge call-home class-map clock control-plane crypto cts define diagnostic dial-peer dialer-list domain-name domain_name dot11 enable encryption errdisable firewall hostname hw-module ignored interface ip ipv6 isdn key lldp logging mac-address mac-address-table mls mmi multilink no policy-map port-channel power redundancy resource rmon route-map router rtr security service snmp snmp-server spanning-tree system transceiver username version vlan vpdn vrf vtp wism')
+            self._error('expecting one of: \n \r ! : Current configuration NL Using aaa access-list access_list access_list_ip_extended access_list_ip_standard access_list_remark alias appfw archive arp banner boot boot-end-marker boot-start-marker bridge call-home class-map clock control-plane crypto cts define diagnostic dial-peer dialer-list domain-name domain_name dot11 enable encryption errdisable file firewall hostname hw-module ignored interface ip ipv6 isdn key license lldp logging login mac-address mac-address-table memory mls mmi multilink no platform policy-map port-channel power redundancy resource rmon route-map router rtr security service snmp snmp-server spanning-tree switch system transceiver username version vlan vpdn vrf vtp wism')
 
     @tatsumasu()
     def _interface_detail_(self):  # noqa
@@ -2402,7 +2402,7 @@ class iosParser(Parser):
                 self.name_last_node('route')
             with self._option():
                 self._ip_ignored_()
-            self._error('expecting one of: access-list accounting-threshold cef classless default-gateway dhcp excluded-address dhcp pool domain domain name flow-aggregation flow-cache flow-export flow-top-talkers forward-protocol ftp host http inspect ip_ignored ips multicast-routing name-server nat pim prefix-list route sla slb ssh subnet-zero tcp vrf')
+            self._error('expecting one of: access-list accounting-threshold as-path cef classless default-gateway dhcp excluded-address dhcp pool domain domain name flow-aggregation flow-cache flow-export flow-top-talkers forward-protocol ftp host http inspect ip_ignored ips multicast-routing name-server nat pim prefix-list route routing scp sla slb ssh subnet-zero tcp tftp vrf')
         self.ast._define(
             ['cmd', 'name', 'object', 'route'],
             []
@@ -3233,6 +3233,7 @@ class iosParser(Parser):
             with self._option():
                 self._token('control-plane')
                 self._NL_()
+                self._ignored_indent_()
             with self._option():
                 self._token('crypto')
                 self._TOEOL_()
@@ -3282,6 +3283,10 @@ class iosParser(Parser):
                 self._TOEOL_()
                 self._NL_()
             with self._option():
+                self._token('file')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
                 self._token('firewall')
                 self._TOEOL_()
                 self._NL_()
@@ -3304,6 +3309,10 @@ class iosParser(Parser):
                 self._NL_()
                 self._ignored_indent_()
             with self._option():
+                self._token('license')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
                 self._token('lldp')
                 self._TOEOL_()
                 self._NL_()
@@ -3312,11 +3321,19 @@ class iosParser(Parser):
                 self._TOEOL_()
                 self._NL_()
             with self._option():
+                self._token('login')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
                 self._token('mac-address-table')
                 self._TOEOL_()
                 self._NL_()
             with self._option():
                 self._token('mac-address')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('memory')
                 self._TOEOL_()
                 self._NL_()
             with self._option():
@@ -3333,6 +3350,11 @@ class iosParser(Parser):
                 self._NL_()
             with self._option():
                 self._token('no')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('platform')
+                self._WS_()
                 self._TOEOL_()
                 self._NL_()
             with self._option():
@@ -3378,6 +3400,10 @@ class iosParser(Parser):
                 self._NL_()
             with self._option():
                 self._token('security')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('switch')
                 self._TOEOL_()
                 self._NL_()
             with self._option():
@@ -3441,13 +3467,17 @@ class iosParser(Parser):
                 self._NL_()
             with self._option():
                 self._NL_()
-            self._error('expecting one of: \n \r ! : Current configuration NL Using aaa alias appfw archive arp banner boot boot-end-marker boot-start-marker bridge call-home class-map clock control-plane crypto cts define diagnostic dial-peer dialer-list dot11 enable encryption errdisable firewall hw-module ipv6 isdn key lldp logging mac-address mac-address-table mls mmi multilink no policy-map port-channel power redundancy resource rmon route-map router rtr security service snmp snmp-server spanning-tree system transceiver username vlan vpdn vrf vtp wism')
+            self._error('expecting one of: \n \r ! : Current configuration NL Using aaa alias appfw archive arp banner boot boot-end-marker boot-start-marker bridge call-home class-map clock control-plane crypto cts define diagnostic dial-peer dialer-list dot11 enable encryption errdisable file firewall hw-module ipv6 isdn key license lldp logging login mac-address mac-address-table memory mls mmi multilink no platform policy-map port-channel power redundancy resource rmon route-map router rtr security service snmp snmp-server spanning-tree switch system transceiver username vlan vpdn vrf vtp wism')
 
     @tatsumasu()
     def _ip_ignored_(self):  # noqa
         with self._choice():
             with self._option():
                 self._token('cef')
+                self._NL_()
+            with self._option():
+                self._token('as-path')
+                self._TOEOL_()
                 self._NL_()
             with self._option():
                 self._token('inspect')
@@ -3492,9 +3522,14 @@ class iosParser(Parser):
                 self._TOEOL_()
                 self._NL_()
             with self._option():
+                self._token('scp')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
                 self._token('ssh')
                 self._TOEOL_()
                 self._NL_()
+                self._ignored_indent_()
             with self._option():
                 self._token('classless')
                 self._NL_()
@@ -3567,7 +3602,15 @@ class iosParser(Parser):
                 self._token('pim')
                 self._TOEOL_()
                 self._NL_()
-            self._error('expecting one of: accounting-threshold cef classless default-gateway dhcp excluded-address dhcp pool domain flow-aggregation flow-cache flow-export flow-top-talkers forward-protocol ftp host http inspect ips multicast-routing name-server nat pim prefix-list route sla slb ssh subnet-zero tcp vrf')
+            with self._option():
+                self._token('routing')
+                self._TOEOL_()
+                self._NL_()
+            with self._option():
+                self._token('tftp')
+                self._TOEOL_()
+                self._NL_()
+            self._error('expecting one of: accounting-threshold as-path cef classless default-gateway dhcp excluded-address dhcp pool domain flow-aggregation flow-cache flow-export flow-top-talkers forward-protocol ftp host http inspect ips multicast-routing name-server nat pim prefix-list route routing scp sla slb ssh subnet-zero tcp tftp vrf')
 
 
 class iosSemantics(object):

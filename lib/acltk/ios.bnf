@@ -208,7 +208,7 @@ ignored
 	| "call-home" TOEOL NL ignored_indent
 	| "class-map" WS TOEOL NL ignored_indent
 	| "clock" TOEOL NL
-	| "control-plane" NL
+	| "control-plane" NL ignored_indent
 	| "crypto" TOEOL NL ignored_indent
 	| "cts" TOEOL NL
 	| "Current configuration" TOEOL NL
@@ -220,19 +220,24 @@ ignored
 	| "enable" TOEOL NL
 	| "encryption" TOEOL NL
 	| "errdisable" TOEOL NL
+	| "file" TOEOL NL
 	| "firewall" TOEOL NL
 	| "hw-module" TOEOL NL
 	| "ipv6" TOEOL NL ignored_indent
 	| "isdn" TOEOL NL
 	| "key" TOEOL NL ignored_indent
+	| "license" TOEOL NL
 	| "lldp" TOEOL NL
 	| "logging" TOEOL NL
+	| "login" TOEOL NL
 	| "mac-address-table" TOEOL NL
 	| "mac-address" TOEOL NL
+	| "memory" TOEOL NL
 	| "mls" TOEOL NL
 	| "mmi" TOEOL NL
 	| "multilink" TOEOL NL
 	| "no" TOEOL NL
+	| "platform" WS TOEOL NL
 	| "policy-map" WS TOEOL NL ignored_indent
 	| "port-channel" TOEOL NL
 	| "power" TOEOL NL
@@ -243,6 +248,7 @@ ignored
 	| "router" TOEOL NL ignored_indent
 	| "rtr" TOEOL NL
 	| "security" TOEOL NL
+	| "switch" TOEOL NL
 	| "service" TOEOL NL
 	| "snmp-server" TOEOL NL
 	| "snmp" TOEOL NL
@@ -261,6 +267,7 @@ ignored
 
 ip_ignored
 	= "cef" NL
+	| "as-path" TOEOL NL
 	| "inspect" TOEOL NL
 	| "domain" TOEOL NL
 	| "name-server" TOEOL NL
@@ -271,7 +278,8 @@ ip_ignored
 	| "dhcp excluded-address" TOEOL NL
 	| "dhcp pool" {?/[^(!|\n)]*/? NL}*
 	| "tcp" TOEOL NL
-	| "ssh" TOEOL NL
+	| "scp" TOEOL NL
+	| "ssh" TOEOL NL ignored_indent
 	| "classless" NL
 	| "forward-protocol" TOEOL NL
 	| "ips" TOEOL NL
@@ -289,4 +297,6 @@ ip_ignored
 	| "flow-top-talkers" TOEOL NL ignored_indent
 	| "prefix-list" TOEOL NL
 	| "pim" TOEOL NL
+	| "routing" TOEOL NL
+	| "tftp" TOEOL NL
 	;
