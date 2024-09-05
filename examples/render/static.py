@@ -1,4 +1,5 @@
 import datetime
+from pathlib import Path
 from jinja2 import FileSystemLoader, Environment
 from acltk import ACLConfig, cafBlock
 from acltk.aclObjects import NetworkGroup, PortGroup, ServiceGroup, ProtocolGroup, TimeRange, Network, NetworkHost, \
@@ -21,7 +22,7 @@ def main():
 	env = Environment(loader=loader, extensions=['jinja2.ext.loopcontrols'])
 	for i in env.list_templates():
 		print(i)
-	aclconfig = ACLConfig.parse(args.acls)
+	aclconfig = ACLConfig.fromFile(Path(args.acls).open("rb"))
 
 	if args.expand:
 		aclconfig.expand()
