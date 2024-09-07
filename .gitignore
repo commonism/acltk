@@ -1,6 +1,7 @@
 tests/caf/private/*.caf
 tests/acl/private/*.conf
 tests/acl/private/*.txt
+tests/acl/single/
 lib/__pycache__/
 tests/__pycache__/
 build/
