@@ -30,7 +30,7 @@ def add():
 def index():
 	db = shelve.get_shelve()
 	if request.method == 'GET':
-		return render_template('index.html', db=db)
+		return render_template('index.jinja2', db=db)
 	elif request.method == 'POST':
 		pass
 
@@ -61,7 +61,7 @@ def show():
 				warning = str(e)
 		else:
 			cafString = ""
-		return render_template('show.html', aclconfig=acls, args = {'show_not_selected':sns, 'expand_groups':exp, 'warning':warning}, selection=selection, caf=cafString)
+		return render_template('show.jinja2', aclconfig=acls, args = {'show_not_selected':sns, 'expand_groups':exp, 'warning':warning}, selection=selection, caf=cafString)
 
 if __name__ == "__main__":
 	app.run(debug=True)

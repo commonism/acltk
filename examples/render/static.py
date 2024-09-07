@@ -27,7 +27,7 @@ def main():
 	if args.expand:
 		aclconfig.expand()
 
-	template = env.get_template('static.html')
+	template = env.get_template('static.jinja2')
 
 	selection = None
 	caffilter = ""
