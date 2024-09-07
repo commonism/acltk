@@ -93,19 +93,21 @@ class aclTestParse(unittest.TestCase):
 				i.__repr__()
 
 class aclTestBlock(unittest.TestCase):
+	tpl: str
+	Config: object
 	def setUp(self):
 		loader = FileSystemLoader('./acl/tpl/')
 		env = Environment(loader=loader, extensions=[])
 		self.tplargs = {'services':list(PortUtil.services())}
-		self.tpl = {}
+		self.tpls = {}
 		self.ctx = {}
 		for tpl in env.list_templates():
 			name = os.path.splitext(tpl)[0]
-			self.tpl[name] = env.get_template(tpl)
-			self.ctx[name] = self.tpl[name].new_context(self.tplargs)
+			self.tpls[name] = env.get_template(tpl)
+			self.ctx[name] = self.tpls[name].new_context(self.tplargs)
 
-	def _test_block(self, block, deps=None, tpl='all', trace=False):
-#		print(self.tpl[tpl].blocks.keys())
+	def _test_block(self, block, deps=None, tpl=None, trace=False):
+		tpl = tpl or self.tpl
 		if block is not None:
 			fname = 'acl/single/{tpl}-{block}.txt'
 			blocks = [block]
@@ -113,18 +115,22 @@ class aclTestBlock(unittest.TestCase):
 				blocks.extend(deps)
 			data = ''
 			for b in blocks[::-1]:
-				data += concat(self.tpl[tpl].blocks[b](self.ctx[tpl]))
+				data += concat(self.tpls[tpl].blocks[b](self.ctx[tpl]))
 		else:
 			fname = 'acl/single/{tpl}.txt'
-			data = self.tpl[tpl].render(**self.tplargs)
+			data = self.tpls[tpl].render(**self.tplargs)
 
 		fname = fname.format(**{'tpl':tpl,'block':block})
 
 		with open(fname, 'wt') as f:
 			f.write(data)
 
-		cfg = fwsmConfig.fromPath(fname, options=ACLParserOptions(trace=trace))
+		cfg = self.Config.fromPath(fname, options=ACLParserOptions(trace=trace))
 
+
+class fwsmTestBlock(aclTestBlock):
+	Config = fwsmConfig
+	tpl = "fwsm"
 	def test_block_names(self):
 		return self._test_block('names')
 
@@ -173,6 +179,9 @@ class aclTestBlock(unittest.TestCase):
 	def test_block_access_list_rule_expand(self):
 		return self._test_block('access_list_rule_expand', ['object_group_expand'])
 
+	def _test_block_ipv6_access_list(self):
+		return self._test_block('ipv6_access_list')
+
 	def test_block_object_group_service_int(self):
 		return self._test_block('object_group_service_int')
 
@@ -183,7 +192,7 @@ class aclTestBlock(unittest.TestCase):
 		return self._test_block('nat', ['nat_interfaces'], trace=True)
 
 	def test_block_network_object_dynamic_nat(self):
-		return self._test_block('network_object_dynamic_nat', trace=True)
+		return self._test_block('network_object_dynamic_nat', ['nat_interfaces'], trace=True)
 
 	def test_block_nat_and_interfaces(self):
 		return self._test_block('nat_and_interfaces', ['nat_interfaces'], trace=True)
@@ -216,15 +225,15 @@ class aclTestBlock(unittest.TestCase):
 		return self._test_block('object_group_icmp_whitespace_suffix', trace=True)
 
 	def test_block_ignore(self):
-		blocks = list(filter(lambda x: x.startswith("ignore"), self.tpl['all'].blocks.keys()))
+		blocks = list(filter(lambda x: x.startswith("ignore"), self.tpls['fwsm'].blocks.keys()))
 		return self._test_block('ignore', blocks)
 
 
-	def test_all(self):
-		return self._test_block(None, tpl='all')
+	def test_fwsm(self):
+		return self._test_block(None)
 
 	def test_bad(self):
-		for name in self.tpl['bad'].blocks.keys():
+		for name in self.tpls['bad'].blocks.keys():
 			print("Processing {}".format(name))
 			with self.assertRaises(Exception) as e:
 				self._test_block(name, tpl='bad')
@@ -233,5 +242,13 @@ class aclTestBlock(unittest.TestCase):
 				print('>\t{}'.format(i))
 			print('')
 
-	def test_auto(self):
+
+	def _test_auto(self):
 		return self._test_block(None, tpl='auto')
+
+class iosTestBlock(aclTestBlock):
+	Config = iosConfig
+	tpl = "ios"
+	def test_ios(self):
+		return self._test_block(None)
+
