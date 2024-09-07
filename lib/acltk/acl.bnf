@@ -566,6 +566,7 @@ protocol_code
 	| "ipsec"
 	| "ipinip"
 	| "ip"
+	| "ipv6"
 	| "igrp"
 	| "igmp"
 	| "icmp6"

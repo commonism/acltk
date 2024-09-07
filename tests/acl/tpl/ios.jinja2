@@ -71,7 +71,28 @@ ip access-list standard RoutesAllowed
 
 access-list 101 deny   tcp any any range 0 65535 log-input
 
+{%  block ipv6_access_list %}
+ipv6 access-list proto_ipv6
+ sequence 5 permit ipv6 FD00::/64 any
+ sequence 10 permit ipv6 2000::/3 2000::/3
+ sequence 20 permit ipv6 2000::/3 host 2001::102
+ sequence 30 permit ipv6 host 2001::102 host 2000::
+ sequence 170 deny ipv6 any 2001::/125
+ sequence 180 permit ipv6 2001::/48 any
+ sequence 190 deny ipv6 any any
 
+ipv6 access-list proto_tcp
+ sequence 60 permit tcp host FE80::156:0 host FE80::156:1 eq bgp
+ sequence 70 permit tcp host FE80::156:0 eq bgp host FE80::156:1
+
+ipv6 access-list proto_icmp
+ sequence 50 permit icmp any any nd-na
+ sequence 60 permit icmp any any nd-ns
+ sequence 100 permit icmp 2000::/3 2000::/3 echo-request
+ sequence 110 permit icmp 2000::/3 2000::/3 echo-reply
+ sequence 150 permit icmp any any nd-na
+ sequence 160 permit icmp any any nd-na
+{% endblock %}
 
 ip route profile
 ip route 10.0.1.0 255.255.255.0 127.0.0.1

@@ -1,3 +1,4 @@
+from typing import Dict, Union
 import ipaddress
 
 from tatsu.parsing import tatsumasu
@@ -28,6 +29,17 @@ class iosSemantics(aclSemantics, _iosSemantics):
 			return NetworkHost(ast.address)
 
 	def ios_node(self, ast):
+		return ACLNode(ast.host, ast.port)
+
+	def ios_ipv6_host(self, ast):
+		if ast.prefix:
+			return Network(ast.address, ast.prefix)
+		elif ast.address == 'any':
+			return NetworkAny()
+		else:
+			return NetworkHost(ast.address)
+
+	def ios_ipv6_node(self, ast):
 		return ACLNode(ast.host, ast.port)
 
 	def ip(self, ast):
@@ -106,6 +118,39 @@ class iosSemantics(aclSemantics, _iosSemantics):
 
 	def access_list_ip_extended_rule(self, ast):
 		return ACLRule(protocol=ast.protocol, dst=ast.dst, src=ast.src, id=ast.id, mode=ast.mode, remark=ast.remark, icmp=ast.icmp, options=ast.options)
+
+	def ipv6(self, ast):
+		return ast.cmd
+
+	def ipv6_command(self, ast):
+		if ast.cmd == 'access-list':
+			return ast.object
+
+	def ipv6_access_list(self, ast):
+		r = ACLRules()
+		for obj in ast.objects:
+			for i in ["src", "dst"]:
+				if not isinstance(obj[i], ACLNode):
+					x = obj[i]
+					del obj[i]
+					obj[i] = ACLNode(x)
+			r.add(ACLRule(extended=ast.type, id=ast.name, **obj))
+		return r
+
+	def ipv6_access_list_seq(self, ast):
+		ast.rule.options["sequence"] = ast.seq
+		return ast.rule
+
+	def ipv6_access_list_rule(self, ast):
+		return ast
+
+
+	def ipv6_access_list_rule_icmp_options(self, ast):
+		return self.ipv6_access_list_rule_options(ast)
+
+	def ipv6_access_list_rule_options(self, ast) -> Dict[str, Union[str, int]]:
+		return {i.type:i.value for i in ast}
+
 
 	def ignored(self, ast):
 		ast = None

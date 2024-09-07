@@ -243,7 +243,7 @@ class fwsmParser(Parser):
                             self._protocol_int_()
                         self._error('expecting one of: protocol_code protocol_int')
                 self.name_last_node('name')
-            self._error('expecting one of: /[0-9]+/ ah ahp eigrp esp gre icmp icmp6 icmpv6 igmp igrp int ip ipinip ipsec nos object object-group ospf pcp pim pptp protocol_code protocol_int snp tcp udp')
+            self._error('expecting one of: /[0-9]+/ ah ahp eigrp esp gre icmp icmp6 icmpv6 igmp igrp int ip ipinip ipsec ipv6 nos object object-group ospf pcp pim pptp protocol_code protocol_int snp tcp udp')
         self.ast._define(
             ['group', 'name', 'object', 'type'],
             []
@@ -2042,6 +2042,8 @@ class fwsmParser(Parser):
             with self._option():
                 self._token('ip')
             with self._option():
+                self._token('ipv6')
+            with self._option():
                 self._token('igrp')
             with self._option():
                 self._token('igmp')
@@ -2061,7 +2063,7 @@ class fwsmParser(Parser):
                 self._token('ahp')
             with self._option():
                 self._token('ah')
-            self._error('expecting one of: ah ahp eigrp esp gre icmp icmp6 icmpv6 igmp igrp ip ipinip ipsec nos ospf pcp pim pptp snp tcp udp')
+            self._error('expecting one of: ah ahp eigrp esp gre icmp icmp6 icmpv6 igmp igrp ip ipinip ipsec ipv6 nos ospf pcp pim pptp snp tcp udp')
 
     @tatsumasu()
     def _protocol_int_(self):  # noqa

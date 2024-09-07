@@ -17,6 +17,7 @@ command
 	| interface
 	| access_list
 	| ip
+	| ipv6
 	| ignored
 	;
 
@@ -50,6 +51,83 @@ delim_msg
 delim_stop
 	= ()
 	;
+
+ipv6
+    = "ipv6" WS cmd:ipv6_command
+    ;
+
+ipv6_command
+    = cmd:`"access-list"` object:ipv6_access_list
+    | cmd:`ignored` object:ipv6_ignored
+    ;
+
+ipv6_ignored
+    = "unicast-routing" TOEOL
+    | "route" WS TOEOL
+    | "prefix-list" WS TOEOL
+    | "ipv6" TOEOL NL ignored_indent
+    ;
+
+ipv6_access_list
+    = "access-list" WS name:obj_name NL objects:{ipv6_access_list_seq}+
+    ;
+
+ipv6_access_list_seq
+    = SP "sequence" WS seq:int WS rule:ipv6_access_list_rule
+    ;
+
+ipv6_access_list_rule
+(*
+permit [ protocol ] { source-ipv6-prefix/prefix-length | any | host source-ipv6-address } [ operator
+[ port-number ]] { destination-ipv6-prefix / prefix-length | any | host destination-ipv6-address
+} [ operator [ port-number ]] [ dest-option-type [ doh-number | doh-type ]] [ dscp value ]
+[ flow-label value ] [ fragments ] [ log ] [ log-input ] [ mobility ] [ mobility-type [ mh-number |
+mh-type ]] [ routing ] [ routing-type routing-number ] [ sequence value ] [ time-range name ]
+
+deny [ protocol ] { source-ipv6-prefix / prefix-length | any | host source-ipv6-address } [ operator
+port-number ]] { destination-ipv6-prefix/prefix-length | any | host destination-ipv6-address } [
+operator [ port-number ]] [ dest-option-type [ doh-number | doh-type ] ] [ dscp value ] [ flow-label
+value ] [ fragments ] [ log ] [ log-input ] [ mobility ] [ mobility-type [ mh-number | mh-type ]] [
+routing ] [ routing-type routing-number ] [ sequence value ] [ time-range name ] [
+undetermined-transport
+*)
+
+	= mode:acl_mode WS protocol:acl_protocol WS src:ios_ipv6_node WS dst:ios_ipv6_node options:ipv6_access_list_rule_options NL
+	| mode:acl_mode WS protocol:protocol_icmp WS src:ios_ipv6_node WS dst:ios_ipv6_node options:ipv6_access_list_rule_icmp_options NL
+	;
+
+ipv6_access_list_rule_option
+	= type:"dest-option-type" WS value:identifier
+	| type:"dscp" WS value:identifier
+	| type:"flow-label" WS value:identifier
+	| type:"fragments"
+	| type:"log"
+	| type:"log-input"
+	| type:"mobility"
+	| type:"mobility-type" value:int
+	| type:"routing"
+	| type:"routing-type" [value:int]
+	| type:"time-range" WS value:identifier
+	;
+
+
+
+ipv6_access_list_rule_options
+	= {WS ipv6_access_list_rule_option}*
+	;
+
+ipv6_access_list_icmp_rule_option
+    = type:"nd-ns"
+    | type:"nd-na"
+    | type:"router-solicitation"
+    | type:"router-advertisement"
+    | type:"redirect"
+    | type:icmp_type_name
+    ;
+
+ipv6_access_list_rule_icmp_options
+    = {WS ipv6_access_list_icmp_rule_option}*
+    ;
 
 ip
 	= "ip" WS cmd:ip_command
@@ -103,6 +181,16 @@ ios_host
 ios_node
 	= host:ios_host [WS port:acl_port]
 	;
+
+ios_ipv6_host
+    = address:ip6 "/" prefix:int
+    | "host" WS address:ip6
+    | address:"any"
+    ;
+
+ios_ipv6_node
+    = host:ios_ipv6_host [WS port:acl_port]
+    ;
 
 ip_access_list_standard
 	= remark:{SP ip_access_list_remark}+ SP >ip_access_list_standard_rule
@@ -223,7 +311,6 @@ ignored
 	| "file" TOEOL NL
 	| "firewall" TOEOL NL
 	| "hw-module" TOEOL NL
-	| "ipv6" TOEOL NL ignored_indent
 	| "isdn" TOEOL NL
 	| "key" TOEOL NL ignored_indent
 	| "license" TOEOL NL

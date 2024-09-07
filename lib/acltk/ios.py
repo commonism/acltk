@@ -243,7 +243,7 @@ class iosParser(Parser):
                             self._protocol_int_()
                         self._error('expecting one of: protocol_code protocol_int')
                 self.name_last_node('name')
-            self._error('expecting one of: /[0-9]+/ ah ahp eigrp esp gre icmp icmp6 icmpv6 igmp igrp int ip ipinip ipsec nos object object-group ospf pcp pim pptp protocol_code protocol_int snp tcp udp')
+            self._error('expecting one of: /[0-9]+/ ah ahp eigrp esp gre icmp icmp6 icmpv6 igmp igrp int ip ipinip ipsec ipv6 nos object object-group ospf pcp pim pptp protocol_code protocol_int snp tcp udp')
         self.ast._define(
             ['group', 'name', 'object', 'type'],
             []
@@ -2042,6 +2042,8 @@ class iosParser(Parser):
             with self._option():
                 self._token('ip')
             with self._option():
+                self._token('ipv6')
+            with self._option():
                 self._token('igrp')
             with self._option():
                 self._token('igmp')
@@ -2061,7 +2063,7 @@ class iosParser(Parser):
                 self._token('ahp')
             with self._option():
                 self._token('ah')
-            self._error('expecting one of: ah ahp eigrp esp gre icmp icmp6 icmpv6 igmp igrp ip ipinip ipsec nos ospf pcp pim pptp snp tcp udp')
+            self._error('expecting one of: ah ahp eigrp esp gre icmp icmp6 icmpv6 igmp igrp ip ipinip ipsec ipv6 nos ospf pcp pim pptp snp tcp udp')
 
     @tatsumasu()
     def _protocol_int_(self):  # noqa
@@ -2273,6 +2275,8 @@ class iosParser(Parser):
             with self._option():
                 self._ip_()
             with self._option():
+                self._ipv6_()
+            with self._option():
                 self._ignored_()
             self._error('expecting one of: \n \r ! : Current configuration NL Using aaa access-list access_list access_list_ip_extended access_list_ip_standard access_list_remark alias appfw archive arp banner boot boot-end-marker boot-start-marker bridge call-home class-map clock control-plane crypto cts define diagnostic dial-peer dialer-list domain-name domain_name dot11 enable encryption errdisable file firewall hostname hw-module ignored interface ip ipv6 isdn key license lldp logging login mac-address mac-address-table memory mls mmi multilink no platform policy-map port-channel power redundancy resource rmon route-map router rtr security service snmp snmp-server spanning-tree switch system transceiver username version vlan vpdn vrf vtp wism')
 
@@ -2367,6 +2371,230 @@ class iosParser(Parser):
     @tatsumasu()
     def _delim_stop_(self):  # noqa
         self._void()
+
+    @tatsumasu()
+    def _ipv6_(self):  # noqa
+        self._token('ipv6')
+        self._WS_()
+        self._ipv6_command_()
+        self.name_last_node('cmd')
+        self.ast._define(
+            ['cmd'],
+            []
+        )
+
+    @tatsumasu()
+    def _ipv6_command_(self):  # noqa
+        with self._choice():
+            with self._option():
+                self._constant('access-list')
+                self.name_last_node('cmd')
+                self._ipv6_access_list_()
+                self.name_last_node('object')
+            with self._option():
+                self._constant('ignored')
+                self.name_last_node('cmd')
+                self._ipv6_ignored_()
+                self.name_last_node('object')
+            self._error('expecting one of: access-list ipv6 ipv6_access_list ipv6_ignored prefix-list route unicast-routing')
+        self.ast._define(
+            ['cmd', 'object'],
+            []
+        )
+
+    @tatsumasu()
+    def _ipv6_ignored_(self):  # noqa
+        with self._choice():
+            with self._option():
+                self._token('unicast-routing')
+                self._TOEOL_()
+            with self._option():
+                self._token('route')
+                self._WS_()
+                self._TOEOL_()
+            with self._option():
+                self._token('prefix-list')
+                self._WS_()
+                self._TOEOL_()
+            with self._option():
+                self._token('ipv6')
+                self._TOEOL_()
+                self._NL_()
+                self._ignored_indent_()
+            self._error('expecting one of: ipv6 prefix-list route unicast-routing')
+
+    @tatsumasu()
+    def _ipv6_access_list_(self):  # noqa
+        self._token('access-list')
+        self._WS_()
+        self._obj_name_()
+        self.name_last_node('name')
+        self._NL_()
+
+        def block2():
+            self._ipv6_access_list_seq_()
+        self._positive_closure(block2)
+        self.name_last_node('objects')
+        self.ast._define(
+            ['name', 'objects'],
+            []
+        )
+
+    @tatsumasu()
+    def _ipv6_access_list_seq_(self):  # noqa
+        self._SP_()
+        self._token('sequence')
+        self._WS_()
+        self._int_()
+        self.name_last_node('seq')
+        self._WS_()
+        self._ipv6_access_list_rule_()
+        self.name_last_node('rule')
+        self.ast._define(
+            ['rule', 'seq'],
+            []
+        )
+
+    @tatsumasu()
+    def _ipv6_access_list_rule_(self):  # noqa
+        with self._choice():
+            with self._option():
+                self._acl_mode_()
+                self.name_last_node('mode')
+                self._WS_()
+                self._acl_protocol_()
+                self.name_last_node('protocol')
+                self._WS_()
+                self._ios_ipv6_node_()
+                self.name_last_node('src')
+                self._WS_()
+                self._ios_ipv6_node_()
+                self.name_last_node('dst')
+                self._ipv6_access_list_rule_options_()
+                self.name_last_node('options')
+                self._NL_()
+            with self._option():
+                self._acl_mode_()
+                self.name_last_node('mode')
+                self._WS_()
+                self._protocol_icmp_()
+                self.name_last_node('protocol')
+                self._WS_()
+                self._ios_ipv6_node_()
+                self.name_last_node('src')
+                self._WS_()
+                self._ios_ipv6_node_()
+                self.name_last_node('dst')
+                self._ipv6_access_list_rule_icmp_options_()
+                self.name_last_node('options')
+                self._NL_()
+            self._error('expecting one of: acl_mode deny permit')
+        self.ast._define(
+            ['dst', 'mode', 'options', 'protocol', 'src'],
+            []
+        )
+
+    @tatsumasu()
+    def _ipv6_access_list_rule_option_(self):  # noqa
+        with self._choice():
+            with self._option():
+                self._token('dest-option-type')
+                self.name_last_node('type')
+                self._WS_()
+                self._identifier_()
+                self.name_last_node('value')
+            with self._option():
+                self._token('dscp')
+                self.name_last_node('type')
+                self._WS_()
+                self._identifier_()
+                self.name_last_node('value')
+            with self._option():
+                self._token('flow-label')
+                self.name_last_node('type')
+                self._WS_()
+                self._identifier_()
+                self.name_last_node('value')
+            with self._option():
+                self._token('fragments')
+                self.name_last_node('type')
+            with self._option():
+                self._token('log')
+                self.name_last_node('type')
+            with self._option():
+                self._token('log-input')
+                self.name_last_node('type')
+            with self._option():
+                self._token('mobility')
+                self.name_last_node('type')
+            with self._option():
+                self._token('mobility-type')
+                self.name_last_node('type')
+                self._int_()
+                self.name_last_node('value')
+            with self._option():
+                self._token('routing')
+                self.name_last_node('type')
+            with self._option():
+                self._token('routing-type')
+                self.name_last_node('type')
+                with self._optional():
+                    self._int_()
+                    self.name_last_node('value')
+            with self._option():
+                self._token('time-range')
+                self.name_last_node('type')
+                self._WS_()
+                self._identifier_()
+                self.name_last_node('value')
+            self._error('expecting one of: dest-option-type dscp flow-label fragments log log-input mobility mobility-type routing routing-type time-range')
+        self.ast._define(
+            ['type', 'value'],
+            []
+        )
+
+    @tatsumasu()
+    def _ipv6_access_list_rule_options_(self):  # noqa
+
+        def block0():
+            self._WS_()
+            self._ipv6_access_list_rule_option_()
+        self._closure(block0)
+
+    @tatsumasu()
+    def _ipv6_access_list_icmp_rule_option_(self):  # noqa
+        with self._choice():
+            with self._option():
+                self._token('nd-ns')
+                self.name_last_node('type')
+            with self._option():
+                self._token('nd-na')
+                self.name_last_node('type')
+            with self._option():
+                self._token('router-solicitation')
+                self.name_last_node('type')
+            with self._option():
+                self._token('router-advertisement')
+                self.name_last_node('type')
+            with self._option():
+                self._token('redirect')
+                self.name_last_node('type')
+            with self._option():
+                self._icmp_type_name_()
+                self.name_last_node('type')
+            self._error('expecting one of: address-mask-reply address-mask-request administratively-prohibited alternate-address conversion-error destination-unreachable dod-host-prohibited dod-net-prohibited echo echo-reply echo-request general-parameter-problem host-isolated host-precedence-unreachable host-redirect host-tos-redirect host-tos-unreachable host-unknown host-unreachable icmp_type_name information-reply information-request mask-reply mask-request membership-query membership-reduction membership-report mobile-redirect nd-na nd-ns neighbor-advertisement neighbor-redirect neighbor-solicitation net-redirect net-tos-redirect net-tos-unreachable net-unreachable network-unknown no-room-for-option option-missing packet-too-big parameter-problem port-unreachable precedence-unreachable protocol-unreachable reassembly-timeout redirect router-advertisement router-renumbering router-solicitation source-quench source-route-failed time-exceeded timestamp-reply timestamp-request traceroute ttl-exceeded unreachable')
+        self.ast._define(
+            ['type'],
+            []
+        )
+
+    @tatsumasu()
+    def _ipv6_access_list_rule_icmp_options_(self):  # noqa
+
+        def block0():
+            self._WS_()
+            self._ipv6_access_list_icmp_rule_option_()
+        self._closure(block0)
 
     @tatsumasu()
     def _ip_(self):  # noqa
@@ -2551,6 +2779,42 @@ class iosParser(Parser):
     @tatsumasu()
     def _ios_node_(self):  # noqa
         self._ios_host_()
+        self.name_last_node('host')
+        with self._optional():
+            self._WS_()
+            self._acl_port_()
+            self.name_last_node('port')
+        self.ast._define(
+            ['host', 'port'],
+            []
+        )
+
+    @tatsumasu()
+    def _ios_ipv6_host_(self):  # noqa
+        with self._choice():
+            with self._option():
+                self._ip6_()
+                self.name_last_node('address')
+                self._token('/')
+                self._int_()
+                self.name_last_node('prefix')
+            with self._option():
+                self._token('host')
+                self._WS_()
+                self._ip6_()
+                self.name_last_node('address')
+            with self._option():
+                self._token('any')
+                self.name_last_node('address')
+            self._error('expecting one of: /[a-fA-F0-9]*:[a-fA-F0-9\\.\\:]+/ any host ip6')
+        self.ast._define(
+            ['address', 'prefix'],
+            []
+        )
+
+    @tatsumasu()
+    def _ios_ipv6_node_(self):  # noqa
+        self._ios_ipv6_host_()
         self.name_last_node('host')
         with self._optional():
             self._WS_()
@@ -3295,11 +3559,6 @@ class iosParser(Parser):
                 self._TOEOL_()
                 self._NL_()
             with self._option():
-                self._token('ipv6')
-                self._TOEOL_()
-                self._NL_()
-                self._ignored_indent_()
-            with self._option():
                 self._token('isdn')
                 self._TOEOL_()
                 self._NL_()
@@ -3467,7 +3726,7 @@ class iosParser(Parser):
                 self._NL_()
             with self._option():
                 self._NL_()
-            self._error('expecting one of: \n \r ! : Current configuration NL Using aaa alias appfw archive arp banner boot boot-end-marker boot-start-marker bridge call-home class-map clock control-plane crypto cts define diagnostic dial-peer dialer-list dot11 enable encryption errdisable file firewall hw-module ipv6 isdn key license lldp logging login mac-address mac-address-table memory mls mmi multilink no platform policy-map port-channel power redundancy resource rmon route-map router rtr security service snmp snmp-server spanning-tree switch system transceiver username vlan vpdn vrf vtp wism')
+            self._error('expecting one of: \n \r ! : Current configuration NL Using aaa alias appfw archive arp banner boot boot-end-marker boot-start-marker bridge call-home class-map clock control-plane crypto cts define diagnostic dial-peer dialer-list dot11 enable encryption errdisable file firewall hw-module isdn key license lldp logging login mac-address mac-address-table memory mls mmi multilink no platform policy-map port-channel power redundancy resource rmon route-map router rtr security service snmp snmp-server spanning-tree switch system transceiver username vlan vpdn vrf vtp wism')
 
     @tatsumasu()
     def _ip_ignored_(self):  # noqa
@@ -3941,6 +4200,36 @@ class iosSemantics(object):
     def delim_stop(self, ast):  # noqa
         return ast
 
+    def ipv6(self, ast):  # noqa
+        return ast
+
+    def ipv6_command(self, ast):  # noqa
+        return ast
+
+    def ipv6_ignored(self, ast):  # noqa
+        return ast
+
+    def ipv6_access_list(self, ast):  # noqa
+        return ast
+
+    def ipv6_access_list_seq(self, ast):  # noqa
+        return ast
+
+    def ipv6_access_list_rule(self, ast):  # noqa
+        return ast
+
+    def ipv6_access_list_rule_option(self, ast):  # noqa
+        return ast
+
+    def ipv6_access_list_rule_options(self, ast):  # noqa
+        return ast
+
+    def ipv6_access_list_icmp_rule_option(self, ast):  # noqa
+        return ast
+
+    def ipv6_access_list_rule_icmp_options(self, ast):  # noqa
+        return ast
+
     def ip(self, ast):  # noqa
         return ast
 
@@ -3969,6 +4258,12 @@ class iosSemantics(object):
         return ast
 
     def ios_node(self, ast):  # noqa
+        return ast
+
+    def ios_ipv6_host(self, ast):  # noqa
+        return ast
+
+    def ios_ipv6_node(self, ast):  # noqa
         return ast
 
     def ip_access_list_standard(self, ast):  # noqa
