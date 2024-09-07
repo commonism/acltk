@@ -1,4 +1,4 @@
-from typing import Dict, Union
+from typing import Union
 import ipaddress
 
 from tatsu.parsing import tatsumasu
@@ -177,7 +177,7 @@ class iosSemantics(aclSemantics, _iosSemantics):
     def ipv6_access_list_rule_icmp_options(self, ast):
         return self.ipv6_access_list_rule_options(ast)
 
-    def ipv6_access_list_rule_options(self, ast) -> Dict[str, Union[str, int]]:
+    def ipv6_access_list_rule_options(self, ast) -> dict[str, Union[str, int]]:
         return {i.type: i.value for i in ast}
 
     def ignored(self, ast):
