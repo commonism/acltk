@@ -66,5 +66,3 @@ set_r
 
 set = [comments] id:[set_id] objects:{set_r}*
 	;
-
-

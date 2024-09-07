@@ -1,6 +1,13 @@
 from acltk.aclObjects import ACLRule, Network, NetworkHost, NetworkAny, NetworkGroup, ACLNode, NetworkAny4, NetworkAny6
-from acltk.cafObjects import cafOpUnion, cafBlock, cafNetworkAny, cafNetworkAny4, cafNetworkAny6, cafOpIntersect, \
-    cafOpExcept
+from acltk.cafObjects import (
+    cafOpUnion,
+    cafBlock,
+    cafNetworkAny,
+    cafNetworkAny4,
+    cafNetworkAny6,
+    cafOpIntersect,
+    cafOpExcept,
+)
 from acltk.caf import cafSemantics
 
 
@@ -9,17 +16,17 @@ class RealCafSemantics(cafSemantics):
         cafSemantics.__init__(self)
 
     def network(self, ast):
-        if ast.address == 'any':
+        if ast.address == "any":
             return NetworkAny()
-        elif ast.address == 'any4':
+        elif ast.address == "any4":
             return NetworkAny4()
-        elif ast.address == 'any6':
+        elif ast.address == "any6":
             return NetworkAny6()
-        elif ast.address == 'ANY':
+        elif ast.address == "ANY":
             return cafNetworkAny()
-        elif ast.address == 'ANY4':
+        elif ast.address == "ANY4":
             return cafNetworkAny4()
-        elif ast.address == 'ANY6':
+        elif ast.address == "ANY6":
             return cafNetworkAny6()
         if ast.netmask is None:
             return NetworkHost(ast.address)
@@ -37,7 +44,7 @@ class RealCafSemantics(cafSemantics):
                     a = ast[i - 1]
                     b = ast[i + 1]
 
-                    if item == 'intersect':
+                    if item == "intersect":
                         ast[i] = cafOpIntersect(a, b)
                         del ast[i + 1]
                         del ast[i - 1]
@@ -50,13 +57,13 @@ class RealCafSemantics(cafSemantics):
                     if (i + 1) % 2 != 0:
                         continue
 
-                    if item in ('union', 'except'):
+                    if item in ("union", "except"):
                         a = ast[i - 1]
                         b = ast[i + 1]
 
-                        if item == 'union':
+                        if item == "union":
                             ast[i] = cafOpUnion(a, b)
-                        elif item == 'except':
+                        elif item == "except":
                             ast[i] = cafOpExcept(a, b)
                         del ast[i + 1]
                         del ast[i - 1]
@@ -77,7 +84,7 @@ class RealCafSemantics(cafSemantics):
     def net(self, ast):
         if len(ast.object) == 1:
             return ast.object[0]
-        n = NetworkGroup('', '')
+        n = NetworkGroup("", "")
         for network in ast.object:
             n.add(network)
         return n
@@ -92,11 +99,10 @@ class RealCafSemantics(cafSemantics):
             return objects[0]
         ip = []
         for i in objects:
-            if 'ip' in i:
+            if "ip" in i:
                 ip.extend(i.ip)
 
-        nodes = {'src': NetworkGroup('src', ''),
-                 'dst': NetworkGroup('dst', '')}
+        nodes = {"src": NetworkGroup("src", ""), "dst": NetworkGroup("dst", "")}
 
         for i in ip:
             nodes[i[0]].add(i[1])
@@ -107,12 +113,12 @@ class RealCafSemantics(cafSemantics):
             elif len(v.objects) == 1:
                 nodes[k] = v.objects[0]
             else:
-                nodes[k] = NetworkGroup('','')
+                nodes[k] = NetworkGroup("", "")
                 for i in v.objects:
                     nodes[k].add(i)
-#                raise ValueError("failed")
+        #                raise ValueError("failed")
 
-        return ACLRule(id=ast.id, src=ACLNode(nodes['src']), dst=ACLNode(nodes['dst']))
+        return ACLRule(id=ast.id, src=ACLNode(nodes["src"]), dst=ACLNode(nodes["dst"]))
 
     def set_r(self, ast):
         if isinstance(ast, list) and len(ast) == 1 and ast[0] == None:

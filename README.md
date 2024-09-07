@@ -5,7 +5,7 @@
 ### INSTALLATION
 Install
  * python 3.8
- * tatsu 5.5 
+ * tatsu 5.5
 
 ### OPERATION
 ```python
@@ -31,7 +31,7 @@ Currently you can filter ACLs by
   * ip src|dst {addr ["/" netmask]}+
   * ip src|dst ANY ANY4 ANY6 any any4 any6
   * ip ... "ANY*" is special, it will filter out "any" rules.
-   
+
 e.g.
 ```
 (
@@ -90,7 +90,7 @@ python3 -m venv ~/venv-acltk/
 
 ```
 #### Running unittests
-In order to generate the `all.txt` config from the template `all.jinja2` the `test_acl.py` has to be run,  
+In order to generate the `all.txt` config from the template `all.jinja2` the `test_acl.py` has to be run,
 ```shell script
 cd tests/
 PYTHONPATH=../lib/ ~/venv-acltk/bin/python -m unittest test_acl.py
