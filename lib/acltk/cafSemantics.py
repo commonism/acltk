@@ -8,13 +8,7 @@ from acltk.cafObjects import (
     cafOpIntersect,
     cafOpExcept,
 )
-from acltk.caf import cafSemantics
-
-
-class RealCafSemantics(cafSemantics):
-    def __init__(self):
-        cafSemantics.__init__(self)
-
+class RealCafSemantics:
     def network(self, ast):
         if ast.address == "any":
             return NetworkAny()

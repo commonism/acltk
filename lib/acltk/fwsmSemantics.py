@@ -1,4 +1,4 @@
-from acltk.fwsm import fwsmSemantics as _fwsmSemantics, fwsmParser as _fwsmParser
+from acltk.fwsm import fwsmParser as _fwsmParser
 from acltk.aclSemantics import aclSemantics, aclParser
 from acltk.aclObjects import (
     ACLConfig,
@@ -22,10 +22,9 @@ from acltk.aclObjects import (
 from acltk.fwsmObjects import Webtype
 
 
-class fwsmSemantics(aclSemantics, _fwsmSemantics):
+class fwsmSemantics(aclSemantics):
     def __init__(self, parser):
         aclSemantics.__init__(self, parser)
-        _fwsmSemantics.__init__(self)
 
     def name(self, ast):
         n = Name(**ast)
@@ -97,14 +96,14 @@ class fwsmSemantics(aclSemantics, _fwsmSemantics):
             if ast.src["mapped"].type == "static":
                 # For source port translation, the objects must specify the source service.
                 # The order of the service objects in the command for source port translation is service real_obj mapped_obj.
-                if ast.service[1].src and not ast.service[2].dst and ast.service[2].src and not ast.service[2].dst:
-                    real["service"] = ast.service[1]
-                    mapped["service"] = ast.service[2]
+                if ast.service[2].src and not ast.service[2].dst and ast.service[4].src and not ast.service[4].dst:
+                    real["service"] = ast.service[2]
+                    mapped["service"] = ast.service[4]
                 # For destination port translation, the objects must specify the destination service.
                 # The order of the service objects for destination port translation is service mapped_obj real_obj.
-                elif not ast.service[1].src and ast.service[2].dst and not ast.service[2].src and ast.service[2].dst:
-                    mapped["service"] = ast.service[1]
-                    real["service"] = ast.service[2]
+                elif not ast.service[2].src and ast.service[2].dst and not ast.service[4].src and ast.service[4].dst:
+                    mapped["service"] = ast.service[2]
+                    real["service"] = ast.service[4]
                 # In the rare case where you specify both the source and destination ports in the object,
                 # the first service object contains the real source port / mapped destination port;
                 # the second service object contains the mapped source port / real destination port.
@@ -114,8 +113,8 @@ class fwsmSemantics(aclSemantics, _fwsmSemantics):
                     raise ValueError("unexpected")
                 # For identity port translation, simply use the same service object for both the real and mapped ports (source and / or destination ports, depending on your configuration).
             elif ast.src["mapped"].type == "dynamic":
-                real["service"] = ast.service[1]
-                mapped["service"] = ast.service[2]
+                real["service"] = ast.service[2]
+                mapped["service"] = ast.service[4]
             else:
                 raise ValueError(ast.src["mapped"].type)
 

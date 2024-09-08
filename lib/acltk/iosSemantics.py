@@ -3,16 +3,15 @@ import ipaddress
 
 from tatsu.parsing import tatsumasu
 
-from acltk.ios import iosSemantics as _iosSemantics, iosParser as _iosParser
+from acltk.ios import iosParser as _iosParser
 from acltk.aclSemantics import aclSemantics, aclParser
 from acltk.aclObjects import ACLNode, ACLRules, Network, ACLRule, NetworkHost, Protocol, NetworkAny, NetworkWildcard
 from acltk.iosObjects import iosConfig, Route
 
 
-class iosSemantics(aclSemantics, _iosSemantics):
+class iosSemantics(aclSemantics):
     def __init__(self, parser):
         aclSemantics.__init__(self, parser)
-        _iosSemantics.__init__(self)
 
     def grammar(self, ast):
         return iosConfig(ast)
@@ -218,7 +217,7 @@ class iosSemantics(aclSemantics, _iosSemantics):
 class iosParser(aclParser, _iosParser):
     def __init__(self, **kwargs):
         aclParser.__init__(self)
-        _iosParser.__init__(self, kwargs)
+        _iosParser.__init__(self, **kwargs)
         self.delim = None
 
     @tatsumasu()

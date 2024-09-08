@@ -161,7 +161,7 @@ class aclSemantics:
         return ast[1]
 
     def object_group(self, ast):
-        return ast[1]
+        return ast[2]
 
     def object_group_type(self, ast):
         action = {
@@ -275,20 +275,20 @@ class aclSemantics:
         return ast
 
     def service_object_op(self, ast):
-        if ast[0] == "range":
-            return PortRange(ast[1], ast[2])
+        if ast.op == "range":
+            return PortRange(ast.begin, ast.end)
         else:
-            return Port(ast[0], ast[1])
+            return Port(ast.op, ast.port)
 
     def port_group_object(self, ast):
         assert ast is not None, "object is None"
-        if ast[0] == "port-object":
-            if ast[1] == "range":
-                return PortRange(ast[2], ast[3])
+        if ast.type == "port-object":
+            if ast.op == "range":
+                return PortRange(ast.begin, ast.end)
             else:
-                return Port(ast[1], ast[2])
-        elif ast[0] == "group-object":
-            return ast[1]
+                return Port(ast.op, ast.port)
+        elif ast.type == "group-object":
+            return ast.object
 
     def protocol_group_object(self, ast):
         assert ast.type is not None, "object type is None"
