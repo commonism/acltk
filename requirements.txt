@@ -1,2 +1,2 @@
 jinja2
-tatsu==5.5
+tatsu==5.12.1
