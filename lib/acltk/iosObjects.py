@@ -1,4 +1,7 @@
 import ipaddress
+
+from tatsu.infos import ParserConfig
+
 from acltk.aclObjects import ACLConfig, ACLRules, ACLRule, Interface
 
 
@@ -52,16 +55,20 @@ class iosConfig(ACLConfig):
         """
         from acltk.iosSemantics import iosParser, iosSemantics
 
-        parser = iosParser(parseinfo=False, trace_length=200)
+        config = ParserConfig(parseinfo=False,
+                              trace_length=200,
+                              rule_name="grammar",
+                              whitespace="",
+                              nameguard=True,
+                              )
+        parser = iosParser(config = config)
         semantics = iosSemantics(parser)
         config = parser.parse(
             data,
-            "grammar",
+
             filename=filename,
             trace=options.trace if options else False,
             colorize=options.trace if options else False,
-            whitespace="",
-            nameguard=True,
             semantics=semantics,
         )
         return config

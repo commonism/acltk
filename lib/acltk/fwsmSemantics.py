@@ -212,6 +212,6 @@ class fwsmSemantics(aclSemantics, _fwsmSemantics):
 
 
 class fwsmParser(aclParser, _fwsmParser):
-    def __init__(self, parseinfo):
+    def __init__(self, **kwargs):
         aclParser.__init__(self)
-        _fwsmParser.__init__(self, parseinfo=parseinfo)
+        _fwsmParser.__init__(self, **kwargs)

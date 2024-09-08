@@ -1,3 +1,5 @@
+from tatsu.infos import ParserConfig
+
 from acltk.aclObjects import ACLRule, NetworkGroup, NetworkAny, NetworkAny4, NetworkAny6, ACLRules, NATObject
 
 
@@ -27,16 +29,16 @@ class cafBlock:
         from acltk.caf import cafParser
         from acltk.cafSemantics import RealCafSemantics
 
-        parser = cafParser(parseinfo=False, trace_length=200)
+        parser = cafParser(config=ParserConfig(rule_name="grammar",
+                                               parseinfo=False,
+                                               trace_length=200,
+                                               semantics=RealCafSemantics(),
+                                               nameguard=True,))
         config = parser.parse(
             data,
-            "grammar",
             filename=filename,
             trace=trace,
             colorize=trace,
-            whitespace=None,
-            nameguard=True,
-            semantics=RealCafSemantics(),
         )
         return config
 

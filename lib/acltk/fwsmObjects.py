@@ -1,4 +1,6 @@
 import tatsu.ast
+from tatsu.infos import ParserConfig
+
 from acltk.aclObjects import ACLConfig, NetworkAny
 
 
@@ -20,16 +22,15 @@ class fwsmConfig(ACLConfig):
         """
         from acltk.fwsmSemantics import fwsmParser, fwsmSemantics
 
-        parser = fwsmParser(parseinfo=False)
+        config = ParserConfig(parseinfo=False, trace_length=200, rule_name="grammar", whitespace="",
+            nameguard=True,)
+        parser = fwsmParser(config = config)
         semantics = fwsmSemantics(parser)
         config = parser.parse(
             data,
-            "grammar",
             filename=filename,
             trace=options.trace if options else False,
             colorize=options.trace if options else False,
-            whitespace="",
-            nameguard=True,
             semantics=semantics,
         )
         return config
