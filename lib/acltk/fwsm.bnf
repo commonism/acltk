@@ -33,8 +33,8 @@ interface_detail
 	| type:"nameif" WS value:identifier [WS] NL
 	| type:("ip" WS "address") WS value:(ip4 WS ip4) WS "standby" WS standby:ip4 [WS] NL
 	| type:("ipv6" WS "address") WS value:(ip6 "/" int) WS "standby" WS standby:ip6 [WS] NL
-	| ["no" WS] TOEOL NL
-	| ()
+	| type:`None` ["no" WS] TOEOL NL
+	| type:`None` ()
 	;
 
 
@@ -165,8 +165,8 @@ nat
 
 *)
 nat
-	= "nat" WS iface:nat_interfaces [WS pos:nat_pos] WS src:nat_src [WS dst:nat_dst] [WS service:nat_srv] options:{WS nat_options}* [WS] NL
-	| "nat" WS "(" acl_interface_id ")" TOEOL
+	= type:`service` "nat" WS iface:nat_interfaces [WS pos:nat_pos] WS src:nat_src [WS dst:nat_dst] [WS service:nat_srv] options:{WS nat_options}* [WS] NL
+	| type:`None` "nat" WS "(" acl_interface_id ")" TOEOL
 	;
 
 nat_mapped_node

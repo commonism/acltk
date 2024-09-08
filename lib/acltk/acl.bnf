@@ -180,7 +180,7 @@ acl_port
 acl_icmp_options
 	= WS type:"object-group" WS group:acl_object_group_icmp
 	| WS type:icmp_type [WS code:icmp_code_int]
-	| ()
+	| type:`None` ()
 	;
 
 acl_options
@@ -335,8 +335,8 @@ service_object
 	;
 
 service_object_op
-	= ("lt"|"gt"|"eq"|"neq") WS port
-	| "range" WS port WS port
+	= op:("lt"|"gt"|"eq"|"neq") WS port:port
+	| op:"range" WS begin:port WS end:port
 	;
 
 service_object_source
@@ -359,17 +359,19 @@ protocol_icmp
 	;
 
 protocol_tcp_udp
-	= ("tcp-udp"|"tcp"|"udp")
+	= "tcp-udp"
+	| "tcp"
+	| "udp"
 	;
 
 object_group_type
 	= type:"network" WS name:obj_name NL [SP >description] objects:{SP network_group_object}
 	(* PR 8.3 *)
-	| "service" WS name:obj_name WS type:protocol_tcp_udp NL [SP >description] objects:{SP port_group_object}
+	| "service" WS name:obj_name WS type:protocol_tcp_udp NL [SP >description] objects:{SP port_group_object}*
 	(* PR 9.3 *)
-	| type:"service" WS name:obj_name NL [SP >description] objects:{SP service_group_object}
-	| type:"icmp-type" WS name:obj_name NL [SP >description] objects:{SP icmp_group_object}
-	| type:"protocol" WS name:obj_name NL [SP >description] objects:{SP protocol_group_object}
+	| type:"service" WS name:obj_name NL [SP >description] objects:{SP service_group_object}*
+	| type:"icmp-type" WS name:obj_name NL [SP >description] objects:{SP icmp_group_object}*
+	| type:"protocol" WS name:obj_name NL [SP >description] objects:{SP protocol_group_object}*
 	;
 
 service_group_object
@@ -378,14 +380,14 @@ service_group_object
 	| type:"service-object" WS protocol:(protocol_code|protocol_int) [WS] NL
 	| type:"service-object" WS protocol:"object" WS object:acl_object_service [WS] NL
 	| type:"group-object" WS group:acl_object_group_service [WS] NL
-	| ()
+	| type:`None` ()
 	;
 
 port_group_object
-	= "port-object" WS "eq" WS port NL
-	| "port-object" WS "range" WS port WS port NL
-	| "group-object" WS acl_object_group_port NL
-	| ()
+	= type:"port-object" WS op:"eq" WS port NL
+	| type:"port-object" WS op:"range" WS begin:port WS end:port NL
+	| type:"group-object" WS object:acl_object_group_port NL
+	| type:`None` ()
 	;
 
 network_group_object
@@ -394,20 +396,20 @@ network_group_object
 	| type:"network-object" WS name:(acl_name_ws|ip4) WS netmask:ip4 NL
 	| type:"network-object" WS name:(acl_name_slash|ip6) "/" netmask:int NL
 	| type:"group-object" WS group:acl_object_group_network NL
-	| ()
+	| type:`None`
 	;
 
 icmp_group_object
 	= type:"icmp-object" WS name:icmp_type NL
 	| type:"group-object" WS group:acl_object_group_icmp NL
-	| ()
+	| type:`None`
 	;
 
 
 protocol_group_object
 	= type:"protocol-object" WS name:obj_name NL
 	| type:"group-object" WS group:acl_object_group_protocol NL
-	| ()
+	| type:`None`
 	;
 
 port
