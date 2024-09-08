@@ -47,7 +47,7 @@ class cafTestRun(unittest.TestCase):
     def setUp(self):
         loader = FileSystemLoader("./acl/tpl/")
         env = Environment(loader=loader, extensions=[])
-        self.tpl = env.get_template("all.jinja2")
+        self.tpl = env.get_template("fwsm.jinja2")
         self.ctx = self.tpl.new_context({})
 
         data = concat(self.tpl.blocks["all"](self.ctx))

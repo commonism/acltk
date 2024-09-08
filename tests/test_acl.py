@@ -25,7 +25,7 @@ class aclTestObjects(unittest.TestCase):
 
 class aclTestParse(unittest.TestCase):
     def test_ios(self):
-        cfg = iosConfig.fromPath("acl/ios.txt")
+        cfg = iosConfig.fromPath("acl/single/ios.txt")
         self.assertIsNotNone(cfg)
         cfg.names.__repr__()
         for i in cfg.interfaces.values():
