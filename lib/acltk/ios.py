@@ -2716,6 +2716,51 @@ class iosParser(Parser):
                 self._NL_()
                 self._define(['type', 'value'], [])
             with self._option():
+                with self._group():
+                    self._token('ipv6')
+                    self._WS_()
+                    self._token('address')
+                self.name_last_node('type')
+                self._WS_()
+                with self._group():
+                    self._ip6_()
+                    with self._optional():
+                        self._token('/')
+                        self._int_()
+                self.name_last_node('value')
+                with self._optional():
+                    self._WS_()
+                    self._token('link-local')
+                with self._optional():
+                    self._WS_()
+                self._NL_()
+                self._define(['type', 'value'], [])
+            with self._option():
+                with self._group():
+                    self._token('ipv6')
+                    self._WS_()
+                    self._token('traffic-filter')
+                self.name_last_node('type')
+                self._WS_()
+                with self._group():
+                    self._obj_name_()
+                    self._WS_()
+                    with self._group():
+                        with self._choice():
+                            with self._option():
+                                self._token('in')
+                            with self._option():
+                                self._token('out')
+                            self._error(
+                                'expecting one of: '
+                                "'in' 'out'"
+                            )
+                self.name_last_node('value')
+                with self._optional():
+                    self._WS_()
+                self._NL_()
+                self._define(['type', 'value'], [])
+            with self._option():
                 self._token('switchport')
                 self.name_last_node('type')
                 self._WS_()
@@ -2738,7 +2783,7 @@ class iosParser(Parser):
                 self._define(['type'], [])
             self._error(
                 'expecting one of: '
-                "'\\n' '\\r' 'description' 'ip'"
+                "'\\n' '\\r' 'description' 'ip' 'ipv6'"
                 "'switchport' <NL> <TOEOL> [^\\n]*"
             )
 
