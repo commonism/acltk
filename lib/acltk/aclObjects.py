@@ -81,7 +81,7 @@ class Interface:
                     if (op:=i.value["value"]["op"]) == "set":
                         self.switchport.trunk = i.value["value"]["vlans"]
                     elif op == "add":
-                        self.switchport.trunk.items.extend(i.value["value"]["vlans"])
+                        self.switchport.trunk.items.extend(i.value["value"]["vlans"].items)
             elif i.type[0] == "ip":
                 if i.type[1] == "address":
                     self.addresses.append(InterfaceAddress(*i.value))

@@ -129,6 +129,7 @@ class aclTestBlock(unittest.TestCase):
             f.write(data)
 
         cfg = self.Config.fromPath(fname, options=ACLParserOptions(trace=trace))
+        return cfg
 
 
 class fwsmTestBlock(aclTestBlock):
@@ -263,3 +264,19 @@ class iosTestBlock(aclTestBlock):
         cfg = self._test_block("interface_switchport_trunk", trace=True)
         print(cfg)
 
+    def test_object_group_network(self):
+        cfg = self._test_block("object_group_network", trace=True)
+        print(cfg)
+
+    def test_object_group_network_host(self):
+        cfg = self._test_block("object_group_network_host", trace=True)
+        print(cfg)
+
+
+    def test_object_group_service_icmp(self):
+        cfg = self._test_block("object_group_service_icmp", trace=True)
+        print(cfg)
+
+    def test_ip_access_list(self):
+        cfg = self._test_block("ip_access_list", trace=True)
+        print(cfg)

@@ -115,3 +115,37 @@ banner motd 
 banner test
 
 banner motd ^Cbanner test 2^C
+
+{% block object_group_network %}
+
+{% block object_group_network_network %}
+object-group network RFC5735
+ description Special-Use IPv4 Addresses
+ 0.0.0.0 255.0.0.0
+!
+{% endblock %}
+
+{% block object_group_network_host %}
+object-group network host
+ description Special-Use IPv4 Addresses
+ host 1.1.1.1
+!
+{% endblock %}
+
+{% endblock %}
+
+
+{% block object_group_service_icmp %}
+object-group service pingpong
+ description icmp echo request & response
+ icmp echo
+ icmp echo-reply
+!
+{% endblock %}
+
+{% block ip_access_list %}
+ip access-list extended Inside
+ 80 remark from the outerlands
+ 80 deny ip 1.1.1.1 0.0.0.255 any
+!
+{% endblock %}
