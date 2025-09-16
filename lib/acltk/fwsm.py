@@ -1433,6 +1433,8 @@ class fwsmParser(Parser):
                 self._WS_()
                 self._obj_name_()
                 self.name_last_node('name')
+                with self._optional():
+                    self._WS_()
                 self._NL_()
                 with self._optional():
                     self._SP_()
@@ -1458,6 +1460,8 @@ class fwsmParser(Parser):
                 self._WS_()
                 self._protocol_tcp_udp_()
                 self.name_last_node('type')
+                with self._optional():
+                    self._WS_()
                 self._NL_()
                 with self._optional():
                     self._SP_()
@@ -1481,6 +1485,8 @@ class fwsmParser(Parser):
                 self._WS_()
                 self._obj_name_()
                 self.name_last_node('name')
+                with self._optional():
+                    self._WS_()
                 self._NL_()
                 with self._optional():
                     self._SP_()
@@ -1504,6 +1510,8 @@ class fwsmParser(Parser):
                 self._WS_()
                 self._obj_name_()
                 self.name_last_node('name')
+                with self._optional():
+                    self._WS_()
                 self._NL_()
                 with self._optional():
                     self._SP_()
@@ -1527,6 +1535,8 @@ class fwsmParser(Parser):
                 self._WS_()
                 self._obj_name_()
                 self.name_last_node('name')
+                with self._optional():
+                    self._WS_()
                 self._NL_()
                 with self._optional():
                     self._SP_()

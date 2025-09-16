@@ -1433,6 +1433,8 @@ class iosParser(Parser):
                 self._WS_()
                 self._obj_name_()
                 self.name_last_node('name')
+                with self._optional():
+                    self._WS_()
                 self._NL_()
                 with self._optional():
                     self._SP_()
@@ -1458,6 +1460,8 @@ class iosParser(Parser):
                 self._WS_()
                 self._protocol_tcp_udp_()
                 self.name_last_node('type')
+                with self._optional():
+                    self._WS_()
                 self._NL_()
                 with self._optional():
                     self._SP_()
@@ -1481,6 +1485,8 @@ class iosParser(Parser):
                 self._WS_()
                 self._obj_name_()
                 self.name_last_node('name')
+                with self._optional():
+                    self._WS_()
                 self._NL_()
                 with self._optional():
                     self._SP_()
@@ -1504,6 +1510,8 @@ class iosParser(Parser):
                 self._WS_()
                 self._obj_name_()
                 self.name_last_node('name')
+                with self._optional():
+                    self._WS_()
                 self._NL_()
                 with self._optional():
                     self._SP_()
@@ -1527,6 +1535,8 @@ class iosParser(Parser):
                 self._WS_()
                 self._obj_name_()
                 self.name_last_node('name')
+                with self._optional():
+                    self._WS_()
                 self._NL_()
                 with self._optional():
                     self._SP_()
@@ -1554,9 +1564,8 @@ class iosParser(Parser):
     def _service_group_object_(self):
         with self._choice():
             with self._option():
-                self._token('service-object')
+                self._constant('service-object')
                 self.name_last_node('type')
-                self._WS_()
                 self._protocol_icmp_()
                 self.name_last_node('protocol')
                 with self._optional():
@@ -1574,9 +1583,8 @@ class iosParser(Parser):
                 self._NL_()
                 self._define(['icmp_code', 'icmp_type', 'protocol', 'type'], [])
             with self._option():
-                self._token('service-object')
+                self._constant('service-object')
                 self.name_last_node('type')
-                self._WS_()
                 self._protocol_tcp_udp_()
                 self.name_last_node('protocol')
                 with self._optional():
@@ -1592,9 +1600,8 @@ class iosParser(Parser):
                 self._NL_()
                 self._define(['dst', 'protocol', 'src', 'type'], [])
             with self._option():
-                self._token('service-object')
+                self._constant('service-object')
                 self.name_last_node('type')
-                self._WS_()
                 with self._group():
                     with self._choice():
                         with self._option():
@@ -1610,19 +1617,6 @@ class iosParser(Parser):
                     self._WS_()
                 self._NL_()
                 self._define(['protocol', 'type'], [])
-            with self._option():
-                self._token('service-object')
-                self.name_last_node('type')
-                self._WS_()
-                self._token('object')
-                self.name_last_node('protocol')
-                self._WS_()
-                self._acl_object_service_()
-                self.name_last_node('object')
-                with self._optional():
-                    self._WS_()
-                self._NL_()
-                self._define(['object', 'protocol', 'type'], [])
             with self._option():
                 self._token('group-object')
                 self.name_last_node('type')
@@ -1640,7 +1634,13 @@ class iosParser(Parser):
                 self._define(['type'], [])
             self._error(
                 'expecting one of: '
-                "'group-object' 'service-object'"
+                "'ah' 'ahp' 'eigrp' 'esp' 'gre' 'group-"
+                "object' 'icmp' 'icmp6' 'icmpv6' 'igmp'"
+                "'igrp' 'ip' 'ipinip' 'ipsec' 'ipv6'"
+                "'nos' 'ospf' 'pcp' 'pim' 'pptp' 'snp'"
+                "'tcp' 'tcp-udp' 'udp' <int>"
+                '<protocol_code> <protocol_icmp>'
+                '<protocol_int> <protocol_tcp_udp> [0-9]+'
             )
 
     @tatsumasu()
@@ -1692,9 +1692,8 @@ class iosParser(Parser):
     def _network_group_object_(self):
         with self._choice():
             with self._option():
-                self._token('network-object')
+                self._constant('network-object')
                 self.name_last_node('type')
-                self._WS_()
                 self._token('host')
                 self.name_last_node('name')
                 self._WS_()
@@ -1711,23 +1710,50 @@ class iosParser(Parser):
                             '<acl_name_ws> <ip4> <ip6>'
                         )
                 self.name_last_node('address')
+                with self._optional():
+                    self._WS_()
                 self._NL_()
                 self._define(['address', 'name', 'type'], [])
             with self._option():
-                self._token('network-object')
+                self._constant('network-object')
                 self.name_last_node('type')
-                self._WS_()
-                self._token('object')
+                self._token('range')
                 self.name_last_node('name')
                 self._WS_()
-                self._acl_object_network_()
-                self.name_last_node('object')
-                self._NL_()
-                self._define(['name', 'object', 'type'], [])
-            with self._option():
-                self._token('network-object')
-                self.name_last_node('type')
+                with self._group():
+                    with self._choice():
+                        with self._option():
+                            self._acl_name_ws_()
+                        with self._option():
+                            self._ip4_()
+                        with self._option():
+                            self._ip6_()
+                        self._error(
+                            'expecting one of: '
+                            '<acl_name_ws> <ip4> <ip6>'
+                        )
+                self.name_last_node('address')
                 self._WS_()
+                with self._group():
+                    with self._choice():
+                        with self._option():
+                            self._acl_name_ws_()
+                        with self._option():
+                            self._ip4_()
+                        with self._option():
+                            self._ip6_()
+                        self._error(
+                            'expecting one of: '
+                            '<acl_name_ws> <ip4> <ip6>'
+                        )
+                self.name_last_node('address')
+                with self._optional():
+                    self._WS_()
+                self._NL_()
+                self._define(['address', 'name', 'type'], [])
+            with self._option():
+                self._constant('network-object')
+                self.name_last_node('type')
                 with self._group():
                     with self._choice():
                         with self._option():
@@ -1742,12 +1768,13 @@ class iosParser(Parser):
                 self._WS_()
                 self._ip4_()
                 self.name_last_node('netmask')
+                with self._optional():
+                    self._WS_()
                 self._NL_()
                 self._define(['name', 'netmask', 'type'], [])
             with self._option():
-                self._token('network-object')
+                self._constant('network-object')
                 self.name_last_node('type')
-                self._WS_()
                 with self._group():
                     with self._choice():
                         with self._option():
@@ -1762,6 +1789,8 @@ class iosParser(Parser):
                 self._token('/')
                 self._int_()
                 self.name_last_node('netmask')
+                with self._optional():
+                    self._WS_()
                 self._NL_()
                 self._define(['name', 'netmask', 'type'], [])
             with self._option():
@@ -1777,7 +1806,13 @@ class iosParser(Parser):
                 self.name_last_node('type')
             self._error(
                 'expecting one of: '
-                "'group-object' 'network-object'"
+                "'group-object' 'host' 'range' (?:(?:25[0"
+                '-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-'
+                '9])\\.){3,3}(?:25[0-5]|(?:2[0-'
+                '4]|1{0,1}[0-9]){0,1}[0-9])'
+                '<acl_name_slash> <acl_name_ws>'
+                '<acl_names_id> <ip4> <ip6>'
+                '[a-fA-F0-9]*:[a-fA-F0-9\\.\\:]+'
             )
 
     @tatsumasu()
@@ -2586,6 +2621,8 @@ class iosParser(Parser):
             with self._option():
                 self._interface_()
             with self._option():
+                self._object_group_()
+            with self._option():
                 self._access_list_()
             with self._option():
                 self._ip_()
@@ -2608,18 +2645,19 @@ class iosParser(Parser):
                 "'interface' 'ip' 'ipv6' 'isdn' 'key'"
                 "'license' 'lldp' 'logging' 'login' 'mac-"
                 "address' 'mac-address-table' 'memory'"
-                "'mls' 'mmi' 'multilink' 'no' 'platform'"
-                "'policy-map' 'port-channel' 'power'"
-                "'redundancy' 'resource' 'rmon' 'route-"
-                "map' 'router' 'rtr' 'security' 'service'"
-                "'snmp' 'snmp-server' 'spanning-tree'"
-                "'switch' 'system' 'transceiver'"
-                "'username' 'version' 'vlan' 'vpdn' 'vrf'"
-                "'vtp' 'wism' <NL> <access_list>"
+                "'mls' 'mmi' 'multilink' 'no' 'object-"
+                "group' 'platform' 'policy-map' 'port-"
+                "channel' 'power' 'redundancy' 'resource'"
+                "'rmon' 'route-map' 'router' 'rtr'"
+                "'security' 'service' 'snmp' 'snmp-"
+                "server' 'spanning-tree' 'switch'"
+                "'system' 'transceiver' 'username'"
+                "'version' 'vlan' 'vpdn' 'vrf' 'vtp'"
+                "'wism' <NL> <access_list>"
                 '<access_list_ip_extended>'
                 '<access_list_ip_standard>'
                 '<access_list_remark> <domain_name>'
-                '<ignored>'
+                '<ignored> <object_group>'
             )
 
     @tatsumasu()
@@ -2678,6 +2716,16 @@ class iosParser(Parser):
                 self._NL_()
                 self._define(['type', 'value'], [])
             with self._option():
+                self._token('switchport')
+                self.name_last_node('type')
+                self._WS_()
+                self._switchport_cmd_()
+                self.name_last_node('value')
+                with self._optional():
+                    self._WS_()
+                self._NL_()
+                self._define(['type', 'value'], [])
+            with self._option():
                 self._constant('None')
                 self.name_last_node('type')
                 self._TOEOL_()
@@ -2690,8 +2738,8 @@ class iosParser(Parser):
                 self._define(['type'], [])
             self._error(
                 'expecting one of: '
-                "'\\n' '\\r' 'description' 'ip' <NL>"
-                '<TOEOL> [^\\n]*'
+                "'\\n' '\\r' 'description' 'ip'"
+                "'switchport' <NL> <TOEOL> [^\\n]*"
             )
 
     @tatsumasu()
@@ -2754,7 +2802,7 @@ class iosParser(Parser):
                 self._define(['cmd', 'object'], [])
             self._error(
                 'expecting one of: '
-                "'access-list' 'ipv6' 'prefix-list'"
+                "'access-list' 'ipv6' 'nd' 'prefix-list'"
                 "'route' 'unicast-routing'"
                 '<ipv6_access_list> <ipv6_ignored>'
             )
@@ -2764,6 +2812,10 @@ class iosParser(Parser):
         with self._choice():
             with self._option():
                 self._token('unicast-routing')
+                self._TOEOL_()
+            with self._option():
+                self._token('nd')
+                self._WS_()
                 self._TOEOL_()
             with self._option():
                 self._token('route')
@@ -2780,8 +2832,8 @@ class iosParser(Parser):
                 self._ignored_indent_()
             self._error(
                 'expecting one of: '
-                "'ipv6' 'prefix-list' 'route' 'unicast-"
-                "routing'"
+                "'ipv6' 'nd' 'prefix-list' 'route'"
+                "'unicast-routing'"
             )
 
     @tatsumasu()
@@ -3090,7 +3142,7 @@ class iosParser(Parser):
 
                 def block0():
                     self._ip_access_list_standard_()
-                self._positive_closure(block0)
+                self._closure(block0)
                 self.name_last_node('objects')
                 self._define(['name', 'objects', 'type'], [])
             with self._option():
@@ -3103,7 +3155,7 @@ class iosParser(Parser):
 
                 def block1():
                     self._ip_access_list_extended_()
-                self._positive_closure(block1)
+                self._closure(block1)
                 self.name_last_node('objects')
                 self._define(['name', 'objects', 'type'], [])
             self._error(
@@ -3165,27 +3217,45 @@ class iosParser(Parser):
     def _ios_host_(self):
         with self._choice():
             with self._option():
+                self._constant('wildcard')
+                self.name_last_node('type')
                 self._ip4_()
                 self.name_last_node('address')
-                with self._optional():
-                    self._WS_()
-                    self._ip4_()
-                    self.name_last_node('wildcard')
-                    self._define(['wildcard'], [])
-                self._define(['address', 'wildcard'], [])
+                self._WS_()
+                self._ip4_()
+                self.name_last_node('wildcard')
+                self._define(['address', 'type', 'wildcard'], [])
+            with self._option():
+                self._constant('host')
+                self.name_last_node('type')
+                self._ip4_()
+                self.name_last_node('address')
+                self._define(['address', 'type'], [])
             with self._option():
                 self._token('host')
+                self.name_last_node('type')
                 self._WS_()
                 self._ip4_()
                 self.name_last_node('address')
-                self._define(['address'], [])
+                self._define(['address', 'type'], [])
             with self._option():
+                self._constant('object-group')
+                self.name_last_node('type')
+                self._token('object-group')
+                self._WS_()
+                self._acl_object_group_network_()
+                self.name_last_node('group')
+                self._define(['group', 'type'], [])
+            with self._option():
+                self._constant('any')
+                self.name_last_node('type')
                 self._token('any')
                 self.name_last_node('address')
+                self._define(['address', 'type'], [])
             self._error(
                 'expecting one of: '
-                "'any' 'host' (?:(?:25[0-5]|(?:2[0-"
-                '4]|1{0,1}[0-9]){0,1}[0-'
+                "'any' 'host' 'object-group' (?:(?:25[0-"
+                '5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-'
                 '9])\\.){3,3}(?:25[0-5]|(?:2[0-'
                 '4]|1{0,1}[0-9]){0,1}[0-9]) <ip4>'
             )
@@ -3884,6 +3954,120 @@ class iosParser(Parser):
                 'expecting one of: '
                 '1[0-9][0-9] 2[0-6][0-9][0-9]'
             )
+
+    @tatsumasu()
+    def _switchport_cmd_(self):
+        with self._choice():
+            with self._option():
+                self._token('mode')
+                self.name_last_node('type')
+                self._WS_()
+                with self._group():
+                    with self._choice():
+                        with self._option():
+                            self._token('access')
+                        with self._option():
+                            self._token('trunk')
+                        self._error(
+                            'expecting one of: '
+                            "'access' 'trunk'"
+                        )
+                self.name_last_node('mode')
+                self._TOEOL_()
+                self._define(['mode', 'type'], [])
+            with self._option():
+                self._token('trunk')
+                self.name_last_node('type')
+                self._WS_()
+                self._switchport_trunk_cmd_()
+                self.name_last_node('value')
+                self._TOEOL_()
+                self._define(['type', 'value'], [])
+            self._error(
+                'expecting one of: '
+                "'mode' 'trunk'"
+            )
+
+    @tatsumasu()
+    def _vlan_(self):
+        with self._choice():
+            with self._option():
+                self._constant('range')
+                self.name_last_node('type')
+                self._int_()
+                self.name_last_node('begin')
+                self._token('-')
+                self._int_()
+                self.name_last_node('end')
+                self._define(['begin', 'end', 'type'], [])
+            with self._option():
+                self._constant('vlan')
+                self.name_last_node('type')
+                self._int_()
+                self.name_last_node('vlan')
+                self._define(['type', 'vlan'], [])
+            self._error(
+                'expecting one of: '
+                '<int> [0-9]+'
+            )
+
+    @tatsumasu()
+    def _vlan_list_(self):
+
+        def sep0():
+            self._token(',')
+
+        def block1():
+            self._vlan_()
+        self._positive_gather(block1, sep0)
+
+    @tatsumasu()
+    def _switchport_trunk_op_(self):
+        with self._choice():
+            with self._option():
+                self._token('add')
+                self.name_last_node('op')
+                self._WS_()
+                self._vlan_list_()
+                self.name_last_node('vlans')
+                self._define(['op', 'vlans'], [])
+            with self._option():
+                self._constant('set')
+                self.name_last_node('op')
+                self._vlan_list_()
+                self.name_last_node('vlans')
+                self._define(['op', 'vlans'], [])
+            self._error(
+                'expecting one of: '
+                "'add' <vlan_list>"
+            )
+
+    @tatsumasu()
+    def _switchport_trunk_cmd_(self):
+        self._token('allowed')
+        self.name_last_node('type')
+        self._WS_()
+        self._token('vlan')
+        self._WS_()
+        with self._choice():
+            with self._option():
+                self._token('add')
+                self.name_last_node('op')
+                self._WS_()
+                self._vlan_list_()
+                self.name_last_node('vlans')
+                self._define(['op', 'vlans'], [])
+            with self._option():
+                self._constant('set')
+                self.name_last_node('op')
+                self._vlan_list_()
+                self.name_last_node('vlans')
+                self._define(['op', 'vlans'], [])
+            self._error(
+                'expecting one of: '
+                "'add' <vlan_list>"
+            )
+        self._define(['op', 'type', 'vlans'], [])
 
     @tatsumasu()
     def _ignored_indent_(self):
