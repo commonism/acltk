@@ -83,13 +83,18 @@ class Interface:
                     elif op == "add":
                         self.switchport.trunk.items.extend(i.value["value"]["vlans"].items)
             elif i.type[0] == "ip":
-                if i.type[1] == "address":
-                    self.addresses.append(InterfaceAddress(*i.value))
-                elif i.type[1] == "access-group":
-                    self.access_groups[i.value[1]] = InterfaceAccessGroup(self, *i.value)
-            elif i.type[0] == "ipv6":
-                if i.type[1] == "address":
+                if i.type[2] == "address":
                     self.addresses.append(InterfaceAddress(i.value[0], i.value[2]))
+                elif i.type[2] == "access-group":
+                    self.access_groups[f"{i.type[0]}-{i.value[2]}"] = InterfaceAccessGroup(self, i.value[0], i.value[2])
+            elif i.type[0] == "ipv6":
+                if i.type[2] == "address":
+                    if isinstance(i.value, list):
+                        self.addresses.append(InterfaceAddress(i.value[0], i.value[2]))
+                    else:
+                        self.addresses.append(InterfaceAddress(i.value, "128"))
+                elif i.type[2] == "traffic-filter":
+                    self.access_groups[f"{i.type[0]}-{i.value[2]}"] = InterfaceAccessGroup(self, i.value[0], i.value[2])
 
 
     def __repr__(self):

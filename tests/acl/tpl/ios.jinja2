@@ -12,6 +12,16 @@ interface Example_If
  ip access-group 102 out
 !
 
+{% block interface_ipv6 %}
+interface Example_If
+ description Example Interface
+ bandwidth 1000001
+ ipv6 address FE80::A link-local
+ ipv6 address 2001::A/125
+ ipv6 traffic-filter Inside_IPv6 in
+!
+{% endblock %}
+
 {% block interface_switchport_trunk %}
 interface trunked
  switchport mode trunk

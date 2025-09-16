@@ -46,6 +46,8 @@ interface_detail
 	= type:"description" WS value:TOEOL NL
 	| type:("ip" WS "address") WS value:(ip4 WS ip4 [WS "secondary"]) [WS] NL
 	| type:("ip" WS "access-group") WS value:(obj_name WS ("in"|"out")) [WS] NL
+	| type:("ipv6" WS "address") WS value:(ip6 ["/" int]) [WS "link-local"] [WS] NL
+	| type:("ipv6" WS "traffic-filter") WS value:(obj_name WS ("in"|"out")) [WS] NL
 	| type:"switchport" WS value:switchport_cmd [WS] NL
 	| type:`None` TOEOL NL
 	| type:`None` ()

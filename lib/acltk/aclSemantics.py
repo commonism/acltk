@@ -73,14 +73,6 @@ class aclSemantics:
     def interface_detail(self, ast):
         if ast.type is None:
             return None
-        if ast.type[1] is None and len(ast.type) == 3:
-            T = namedtuple("InterfaceDetail", ["type", "value"])
-
-            t = T(
-                (ast.type[0], ast.type[2]),
-                (ast.value[0], ast.value[2])
-            )
-            return t
         return ast
 
     def hour(self, ast):

@@ -257,6 +257,10 @@ class iosTestBlock(aclTestBlock):
     def test_ios(self):
         return self._test_block(None)
 
+    def test_interface_ipv6(self):
+        cfg = self._test_block("interface_ipv6", trace=True)
+        assert cfg
+
     def test_block_ipv6_access_list(self):
         return self._test_block("ipv6_access_list", trace=True)
 
