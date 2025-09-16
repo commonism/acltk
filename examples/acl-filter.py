@@ -1,4 +1,4 @@
-from acltk.acl import aclParser
+from acltk.aclSemantics import aclParser
 from acltk.aclObjects import NetworkAny, NetworkHost, ACLNode, ACLRule, Network, ACLConfig, ACLParserOptions
 
 
