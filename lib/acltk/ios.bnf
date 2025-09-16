@@ -1,6 +1,26 @@
 #include :: "ip.bnf"
 #include :: "acl.bnf"
 
+@override
+network_group_object
+	= type:`network-object` name:"host" WS address:(acl_name_ws|ip4|ip6) [WS] NL
+	| type:`network-object` name:"range" WS address:(acl_name_ws|ip4|ip6) WS address:(acl_name_ws|ip4|ip6) [WS] NL
+	| type:`network-object` name:(acl_name_ws|ip4) WS netmask:ip4 [WS] NL
+	| type:`network-object` name:(acl_name_slash|ip6) "/" netmask:int [WS] NL
+	| type:"group-object" WS group:acl_object_group_network NL
+	| type:`None`
+	;
+
+@override
+service_group_object
+	= type:`service-object` protocol:protocol_icmp [WS icmp_type:icmp_type [WS icmp_code:icmp_code_int]] [WS] NL
+	| type:`service-object` protocol:protocol_tcp_udp [WS] src:service_object_source [WS] dst:service_object_destination [WS] NL
+	| type:`service-object` protocol:(protocol_code|protocol_int) [WS] NL
+    | type:"group-object" WS group:acl_object_group_service [WS] NL
+	| type:`None` ()
+	;
+
+
 grammar
 	=
 	@:{command ~}+ ("line"|"end"|$)
@@ -15,6 +35,7 @@ command
 	| hostname
 	| domain_name
 	| interface
+	| object_group
 	| access_list
 	| ip
 	| ipv6
@@ -175,9 +196,11 @@ ip_access_list_standard_rule
 	;
 
 ios_host
-	= address:ip4 [WS wildcard:ip4]
-	| "host" WS address:ip4
-	| address:"any"
+	= type:`wildcard` address:ip4 WS wildcard:ip4
+	| type:`host` address:ip4
+	| type:"host" WS address:ip4
+	| type:`object-group` "object-group" WS group:acl_object_group_network
+	| type:`any` address:"any"
 	;
 
 ios_node

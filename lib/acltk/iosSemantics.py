@@ -18,16 +18,20 @@ class iosSemantics(aclSemantics):
     def grammar(self, ast):
         return iosConfig(ast)
 
-    def ios_host(self, ast):
-        if ast.wildcard:
+    def ios_host(self, ast) -> Union[Network, NetworkAny, NetworkHost]:
+        if ast.type == "wildcard":
             try:
                 return Network(ast.address, ast.wildcard)
             except:
                 return NetworkWildcard(ast.address, ast.wildcard)
-        elif ast.address == "any":
+        elif ast.type == "object-group":
+            return ast.group
+        elif ast.type == "any":
             return NetworkAny()
-        else:
+        elif ast.type == "host":
             return NetworkHost(ast.address)
+        else:
+            raise ValueError(f"Unknown type {ast.type}")
 
     def ios_node(self, ast):
         return ACLNode(ast.host, ast.port)
