@@ -1197,7 +1197,7 @@ class ACLConfig:
         self.objects = ACLObjects()
         self.groups = ACLObjects()
         self.rules = ACLRules()
-        self.access_groups = {}
+        self.access_groups: dict[str, list[Interface]] = collections.defaultdict(list)
         self.nat = {1: list(), 2: list(), 3: list()}
         for i in list(ast):
             if isinstance(i, tatsu.ast.AST) and "hostname" in i:
@@ -1211,7 +1211,7 @@ class ACLConfig:
             elif isinstance(i, Interface):
                 self.interfaces[i.alias] = i
                 for k, v in i.access_groups.items():
-                    self.access_groups[v.name] = v
+                    self.access_groups[v.name].append(v)
             elif isinstance(i, TimeRange):
                 self.objects.time[i.name] = i
             elif isinstance(i, NetworkObject):

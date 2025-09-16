@@ -780,8 +780,9 @@ thead			{ font-style: italic; }
 		<td class="different_acl_id" colspan="8">
 			<a id="access_group_{{ obj.id }}">{{ obj.id }}</a>
 {%- if obj.id in aclconfig.access_groups %}
-{%- set iag=aclconfig.access_groups[obj.id] %}
+{%- for iag in aclconfig.access_groups[obj.id] %}
 	<a href="#interface_{{ iag.iface.alias }}">{{ iag.iface.alias }}/{{ iag.direction }}</a>
+{% endfor -%}
 {%- endif %}
 		</td>
 	</tr>
