@@ -175,8 +175,8 @@ ip_route
 
 ip_access_list
 	(* ip access-list { { standard | extended } { access-list-name | access-list-number } | helper egress check } *)
-	= type:"standard" WS name:obj_name NL objects:{ip_access_list_standard}+
-	| type:"extended" WS name:obj_name NL objects:{ip_access_list_extended}+
+	= type:"standard" WS name:obj_name NL objects:{ip_access_list_standard}*
+	| type:"extended" WS name:obj_name NL objects:{ip_access_list_extended}*
 	;
 
 ip_access_list_standard_rule_option
