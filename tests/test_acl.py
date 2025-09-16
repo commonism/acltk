@@ -258,3 +258,8 @@ class iosTestBlock(aclTestBlock):
 
     def test_block_ipv6_access_list(self):
         return self._test_block("ipv6_access_list", trace=True)
+
+    def test_interface_switchport_trunk(self):
+        cfg = self._test_block("interface_switchport_trunk", trace=True)
+        print(cfg)
+

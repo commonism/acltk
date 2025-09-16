@@ -25,6 +25,7 @@ interface_detail
 	= type:"description" WS value:TOEOL NL
 	| type:("ip" WS "address") WS value:(ip4 WS ip4 [WS "secondary"]) [WS] NL
 	| type:("ip" WS "access-group") WS value:(obj_name WS ("in"|"out")) [WS] NL
+	| type:"switchport" WS value:switchport_cmd [WS] NL
 	| type:`None` TOEOL NL
 	| type:`None` ()
 	;
@@ -275,6 +276,28 @@ access_list_ip_extended_id
 	| /2[0-6][0-9][0-9]/ &WS
 	;
 
+switchport_cmd
+    = type:"mode" WS mode:("access"|"trunk") TOEOL
+    | type:"trunk" WS value:switchport_trunk_cmd TOEOL
+    ;
+
+vlan
+    = type:`range` begin:int "-" end:int
+    | type:`vlan` vlan:int
+    ;
+
+vlan_list
+    = ",".{ vlan }+
+    ;
+
+switchport_trunk_op
+    = op:"add" WS vlans:vlan_list
+    | op:`set` vlans:vlan_list
+    ;
+
+switchport_trunk_cmd
+    = type:"allowed" WS "vlan" WS >switchport_trunk_op
+    ;
 
 ignored_indent
 	= {/^ [^\n]*/ NL}*

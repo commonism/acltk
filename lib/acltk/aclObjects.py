@@ -49,6 +49,11 @@ class InterfaceAccessGroup:
         self.name = name
         self.direction = direction
 
+class Switchport:
+    def __init__(self):
+        self.mode = ""
+        self.access: VLAN | None = None
+        self.trunk: VLANs | None = None
 
 class Interface:
     def __init__(self, alias, details):
@@ -58,6 +63,7 @@ class Interface:
         self.nameif = None
         self.routes = set()
         self.description = None
+        self.switchport : Switchport | None = None
 
         for i in details:
             if i is None:  # no [ip address|...]
@@ -66,6 +72,16 @@ class Interface:
                 self.nameif = i.value
             elif i.type == "description":
                 self.description = i.value
+            elif i.type == "switchport":
+                if self.switchport is None:
+                    self.switchport = Switchport()
+                if i.value["type"] == "mode":
+                    self.switchport.mode = i.value["mode"]
+                elif i.value["type"] == "trunk":
+                    if (op:=i.value["value"]["op"]) == "set":
+                        self.switchport.trunk = i.value["value"]["vlans"]
+                    elif op == "add":
+                        self.switchport.trunk.items.extend(i.value["value"]["vlans"])
             elif i.type[0] == "ip":
                 if i.type[1] == "address":
                     self.addresses.append(InterfaceAddress(*i.value))
@@ -75,8 +91,33 @@ class Interface:
                 if i.type[1] == "address":
                     self.addresses.append(InterfaceAddress(i.value[0], i.value[2]))
 
+
     def __repr__(self):
         return f"Interface {self.alias}"
+
+
+class VLAN:
+    def __init__(self, value):
+        self.value = value
+
+    def __repr__(self):
+        return f"VLAN {self.value}"
+
+class VLANRange:
+    def __init__(self, start, end):
+        self.start = start
+        self.end = end
+
+    def __repr__(self):
+        return f"VLANRange {self.start}-{self.end}"
+
+class VLANs:
+    def __init__(self, items):
+        assert all((isinstance(obj, (VLAN, VLANRange)) for obj in items))
+        self.items = items
+
+    def __repr__(self):
+        return f"VLANS {self.items}"
 
 
 class NATReal:

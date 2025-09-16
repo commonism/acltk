@@ -12,6 +12,13 @@ interface Example_If
  ip access-group 102 out
 !
 
+{% block interface_switchport_trunk %}
+interface trunked
+ switchport mode trunk
+ switchport trunk allowed vlan 1,4,7,9-11
+ switchport trunk allowed vlan add 13
+!
+{% endblock %}
 
 ip access-list extended example_out
  permit tcp host 127.0.0.1 host 127.0.0.2

@@ -102,6 +102,20 @@ inactive
 {%- endfor -%}
 {%- endmacro -%}
 
+{%- macro vlans(obj) -%}
+{%- for i in obj.items -%}
+{%- if i.__class__.__name__ == 'VLAN' -%}
+{{ i.value }}
+{%- elif i.__class__.__name__ == 'VLANRange' -%}
+{{ i.start }}-{{ i.end }}
+{% else %}
+{{ i.__class__.__name__ }}
+{%- endif -%}
+{%- if not loop.last -%}
+,
+{%- endif -%}
+{%- endfor -%}
+{%- endmacro -%}
 
 {%- macro visible(obj) -%}
 {%- if selection is not none and obj not in selection -%}
@@ -237,6 +251,30 @@ thead			{ font-style: italic; }
 		<td>{{ addr.interface }}</td>
 	</tr>
 {% endfor %}
+
+{% if obj.switchport %}
+	<tr {{ visible(obj) }}>
+		<td></td>
+		<td>SwitchPort {{ obj.switchport.mode }}</td>
+		<td></td>
+	</tr>
+{% if obj.switchport.access %}
+	<tr {{ visible(obj) }}>
+		<td></td>
+		<td>access</td>
+		<td>{{ obj.switchport.access.value }}</td>
+	</tr>
+{% endif %}
+
+{% if obj.switchport.trunk %}
+	<tr {{ visible(obj) }}>
+		<td></td>
+		<td>trunk</td>
+		<td>{{ vlans(obj.switchport.trunk) }}</td>
+	</tr>
+{% endif %}
+
+{% endif %}
 
 {% for direction, group in obj.access_groups.items() %}
 	<tr {{ visible(obj) }}>

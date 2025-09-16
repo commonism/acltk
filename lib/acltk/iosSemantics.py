@@ -1,11 +1,13 @@
-from typing import Union
+from typing import Union, List
 import ipaddress
 
 from tatsu.parsing import tatsumasu
 
+from acltk import ACLConfig
 from acltk.ios import iosParser as _iosParser
 from acltk.aclSemantics import aclSemantics, aclParser
-from acltk.aclObjects import ACLNode, ACLRules, Network, ACLRule, NetworkHost, Protocol, NetworkAny, NetworkWildcard
+from acltk.aclObjects import ACLNode, ACLRules, Network, ACLRule, NetworkHost, Protocol, NetworkAny, NetworkWildcard, \
+    VLANRange, VLAN, VLANs, TimeRange
 from acltk.iosObjects import iosConfig, Route
 
 
@@ -209,6 +211,21 @@ class iosSemantics(aclSemantics):
             gw = ipaddress.ip_address(ast.gw)
 
         return Route(ipaddress.ip_network(f"{ast.prefix}/{ast.mask}"), gw)
+
+    def vlan(self, ast) -> Union[VLAN,VLANRange]:
+        if ast.type == "vlan":
+            return VLAN(ast.vlan)
+        elif ast.type == "range":
+            return VLANRange(ast.begin,ast.end)
+
+    def vlan_list(self, ast) -> List[Union[VLAN,VLANRange]]:
+        return VLANs(ast)
+
+    def switchport_trunk_cmd(self, ast):
+        return ast
+
+    def switchport_cmd(self, ast):
+        return ast
 
     def delim_start(self, ast):
         self.parser.delim = ast
