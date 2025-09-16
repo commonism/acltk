@@ -15,7 +15,7 @@ class iosSemantics(aclSemantics):
     def __init__(self, parser):
         aclSemantics.__init__(self, parser)
 
-    def grammar(self, ast):
+    def grammar(self, ast) -> ACLConfig:
         return iosConfig(ast)
 
     def ios_host(self, ast) -> Union[Network, NetworkAny, NetworkHost]:
@@ -33,10 +33,10 @@ class iosSemantics(aclSemantics):
         else:
             raise ValueError(f"Unknown type {ast.type}")
 
-    def ios_node(self, ast):
+    def ios_node(self, ast) -> ACLRules:
         return ACLNode(ast.host, ast.port)
 
-    def ios_ipv6_host(self, ast):
+    def ios_ipv6_host(self, ast) -> Union[Network, NetworkAny, NetworkHost]:
         if ast.prefix:
             return Network(ast.address, ast.prefix)
         elif ast.address == "any":
@@ -44,13 +44,13 @@ class iosSemantics(aclSemantics):
         else:
             return NetworkHost(ast.address)
 
-    def ios_ipv6_node(self, ast):
+    def ios_ipv6_node(self, ast) -> ACLNode:
         return ACLNode(ast.host, ast.port)
 
     def ip(self, ast):
         return ast.cmd
 
-    def ip_command(self, ast):
+    def ip_command(self, ast) -> Union[None, ACLRules, Route]:
         if ast.cmd == "access-list":
             return ast.object
         elif ast.cmd == "domain name":
@@ -77,7 +77,7 @@ class iosSemantics(aclSemantics):
             ast["remark"] = remark
         return ast
 
-    def ip_access_list(self, ast):
+    def ip_access_list(self, ast) -> ACLRules:
         r = ACLRules()
         if ast.type == "extended":
             for obj in ast.objects:
@@ -109,7 +109,7 @@ class iosSemantics(aclSemantics):
                 )
         return r
 
-    def access_list_ip_standard(self, ast):
+    def access_list_ip_standard(self, ast) -> ACLRule:
         if ast.remark:
             remark = []
             for i in ast.remark:
@@ -118,7 +118,7 @@ class iosSemantics(aclSemantics):
             ast["remark"] = remark
         return self.access_list_ip_standard_rule(ast)
 
-    def access_list_ip_standard_rule(self, ast):
+    def access_list_ip_standard_rule(self, ast) -> ACLRule:
         if not isinstance(ast.src, ACLNode):
             src = ACLNode(ast.src)
         else:
@@ -133,7 +133,7 @@ class iosSemantics(aclSemantics):
             options=ast.options,
         )
 
-    def access_list_ip_extended(self, ast):
+    def access_list_ip_extended(self, ast) -> ACLRule:
         if ast.remark:
             remark = []
             for i in ast.remark:
@@ -142,7 +142,7 @@ class iosSemantics(aclSemantics):
             ast["remark"] = remark
         return self.access_list_ip_extended_rule(ast)
 
-    def access_list_ip_extended_rule(self, ast):
+    def access_list_ip_extended_rule(self, ast) -> ACLRule:
         return ACLRule(
             protocol=ast.protocol,
             dst=ast.dst,
@@ -154,14 +154,14 @@ class iosSemantics(aclSemantics):
             options=ast.options,
         )
 
-    def ipv6(self, ast):
+    def ipv6(self, ast) -> Union[None, ACLRules]:
         return ast.cmd
 
-    def ipv6_command(self, ast):
+    def ipv6_command(self, ast) -> Union[None, ACLRules]:
         if ast.cmd == "access-list":
             return ast.object
 
-    def ipv6_access_list(self, ast):
+    def ipv6_access_list(self, ast) -> ACLRules:
         r = ACLRules()
         for obj in ast.objects:
             for i in ["src", "dst"]:
@@ -179,33 +179,33 @@ class iosSemantics(aclSemantics):
     def ipv6_access_list_rule(self, ast):
         return ast
 
-    def ipv6_access_list_rule_icmp_options(self, ast):
+    def ipv6_access_list_rule_icmp_options(self, ast) -> dict[str, Union[str, int, TimeRange]]:
         return self.ipv6_access_list_rule_options(ast)
 
-    def ipv6_access_list_rule_options(self, ast) -> dict[str, Union[str, int]]:
+    def ipv6_access_list_rule_options(self, ast) -> dict[str, Union[str, int, TimeRange]]:
         return {i.type: i.value for i in ast}
 
-    def ignored(self, ast):
+    def ignored(self, ast) -> None:
         ast = None
         return None
 
-    def ip_ignored(self, ast):
+    def ip_ignored(self, ast) -> None:
         ast = None
         return None
 
-    def ip_access_list_extended_rule_options(self, ast):
+    def ip_access_list_extended_rule_options(self, ast) -> dict[str, Union[str, int, TimeRange]]:
         r = {}
         for i in ast:
             r[i.type] = i.value
         return r
 
-    def ip_access_list_standard_rule_options(self, ast):
+    def ip_access_list_standard_rule_options(self, ast) -> dict[str, Union[str, int, TimeRange]]:
         r = {}
         for i in ast:
             r[i.type] = i.value
         return r
 
-    def ip_route(self, ast):
+    def ip_route(self, ast) -> Route:
         if ast.prefix is None:
             return None
 
