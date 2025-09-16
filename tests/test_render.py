@@ -30,7 +30,7 @@ class renderTest(unittest.TestCase):
     def setUp(self):
         loader = FileSystemLoader(renderpath("tpl/"))
         env = Environment(loader=loader, extensions=["jinja2.ext.loopcontrols"])
-        self.template = env.get_template("static.html")
+        self.template = env.get_template("static.jinja2")
 
     def _test_render_single(self, aclpath, cafpath, sort=None, trace=False):
         acl = ACLConfig.fromPath(aclpath, options=ACLParserOptions(trace=trace))
