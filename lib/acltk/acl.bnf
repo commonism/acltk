@@ -365,13 +365,13 @@ protocol_tcp_udp
 	;
 
 object_group_type
-	= type:"network" WS name:obj_name NL [SP >description] objects:{SP network_group_object}
+	= type:"network" WS name:obj_name [WS] NL [SP >description] objects:{SP network_group_object}
 	(* PR 8.3 *)
-	| "service" WS name:obj_name WS type:protocol_tcp_udp NL [SP >description] objects:{SP port_group_object}*
+	| "service" WS name:obj_name WS type:protocol_tcp_udp [WS] NL [SP >description] objects:{SP port_group_object}*
 	(* PR 9.3 *)
-	| type:"service" WS name:obj_name NL [SP >description] objects:{SP service_group_object}*
-	| type:"icmp-type" WS name:obj_name NL [SP >description] objects:{SP icmp_group_object}*
-	| type:"protocol" WS name:obj_name NL [SP >description] objects:{SP protocol_group_object}*
+	| type:"service" WS name:obj_name [WS] NL [SP >description] objects:{SP service_group_object}*
+	| type:"icmp-type" WS name:obj_name [WS] NL [SP >description] objects:{SP icmp_group_object}*
+	| type:"protocol" WS name:obj_name [WS] NL [SP >description] objects:{SP protocol_group_object}*
 	;
 
 service_group_object
