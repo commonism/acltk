@@ -64,6 +64,7 @@ ipv6_command
 
 ipv6_ignored
     = "unicast-routing" TOEOL
+    | "nd"  WS TOEOL
     | "route" WS TOEOL
     | "prefix-list" WS TOEOL
     | "ipv6" TOEOL NL ignored_indent
